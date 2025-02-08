@@ -29,7 +29,7 @@ const Spawn: React.FC<SpawnProps> = ({ round,setHealthPoints }) => {
               { id: uuidv4(), position: -7, src: 'enemy1.png', hp: 100 },
             ])
             
-        }, 300)
+        }, 500)
         return () => clearInterval(interval)
         }
     }, [round])
@@ -83,11 +83,11 @@ const Spawn: React.FC<SpawnProps> = ({ round,setHealthPoints }) => {
       damagePlayer(enemies);
     }, [enemies]);
 
-    const buyTowers = (event: React.MouseEvent<HTMLImageElement>) => {
+    const buyTowers = (event: React.MouseEvent<HTMLImageElement>, siteNumber:number) => {
       if (round === 1) {
         (event.target as HTMLImageElement).src = '/tower1.png';
         setTower((prevTower) => {
-          const newTower = { id: uuidv4(), position: 15 * (prevTower.length + 1), attack: 50, furthestEnemyInRange: null };
+          const newTower = { id: uuidv4(), position: 15 * siteNumber, attack: 50, furthestEnemyInRange: null };
           console.log([...prevTower, newTower]);
           return [...prevTower, newTower];
         });
@@ -107,7 +107,7 @@ const Spawn: React.FC<SpawnProps> = ({ round,setHealthPoints }) => {
     useEffect(() => {
       setTower((prevTowers) =>
         prevTowers.map((tower) => {
-          const furthestEnemy = getFurthestEnemyInRadius(tower.position, 15);
+          const furthestEnemy = getFurthestEnemyInRadius(tower.position, 10);
           if (furthestEnemy && furthestEnemy.id !== tower.furthestEnemyInRange?.id) {
             return { ...tower, furthestEnemyInRange: furthestEnemy };
           }
@@ -123,7 +123,7 @@ const Spawn: React.FC<SpawnProps> = ({ round,setHealthPoints }) => {
             if (tower.furthestEnemyInRange) {
               towerAttack(tower.attack, tower.furthestEnemyInRange);
             }
-            const furthestEnemy = getFurthestEnemyInRadius(tower.position, 15);
+            const furthestEnemy = getFurthestEnemyInRadius(tower.position, 10);
             return furthestEnemy?.id !== tower.furthestEnemyInRange?.id
               ? { ...tower, furthestEnemyInRange: furthestEnemy }
               : tower;
@@ -151,10 +151,10 @@ const Spawn: React.FC<SpawnProps> = ({ round,setHealthPoints }) => {
   return (
   <div className='relative  h-4/5 border border-white overflow-hidden'>
     <img src='/map.png' className='object-cover w-full h-full z-0' alt='map' />
-    <img src='/buildingSite.png' className='absolute top-[20%] left-[15%] w-20 h-20 z-10' onClick={buyTowers} />
-    <img src='/buildingSite.png' className='absolute top-[20%] left-[30%] w-20 h-20 z-10' onClick={buyTowers}/>
-    <img src='/buildingSite.png' className='absolute top-[20%] left-[45%] w-20 h-20 z-10' onClick={buyTowers}/>
-    <img src='/buildingSite.png' className='absolute top-[20%] left-[60%] w-20 h-20 z-10' onClick={buyTowers}/>
+    <img src='/buildingSite.png' className='absolute top-[20%] left-[15%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 1)} />
+    <img src='/buildingSite.png' className='absolute top-[20%] left-[30%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 2)}/>
+    <img src='/buildingSite.png' className='absolute top-[20%] left-[45%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 3)}/>
+    <img src='/buildingSite.png' className='absolute top-[20%] left-[60%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 4)}/>
     {createEnemy()}
   </div>
       
