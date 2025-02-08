@@ -21,3 +21,17 @@ body {
   height: 100vh;
   width: 100vw;
 }
+@keyframes slide {
+  from {
+    left: var(--tower-position);
+    top: 20%;
+  }
+  to {
+    left: var(--enemy-position);
+    top: 50%;
+  }
+}
+
+.animate-slide {
+  animation: slide 1s forwards;
+}
