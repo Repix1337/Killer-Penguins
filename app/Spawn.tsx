@@ -14,13 +14,12 @@ interface Enemy {
 interface Tower {
   id: string;
   position: number;
-  atack: number;
+  attack: number;
   furthestEnemyInRange: Enemy | null;
 }
 
 const Spawn: React.FC<SpawnProps> = ({ round,setHealthPoints }) => {
   const [enemies, setEnemies] = useState<Enemy[]>([]);
-  const [furthestEnemy, setFurthestEnemy] = useState<Enemy | null>(null);
   const [tower, setTower] = useState<Tower[]>([]);
     useEffect(() => {
         if (round === 1) {
@@ -30,7 +29,7 @@ const Spawn: React.FC<SpawnProps> = ({ round,setHealthPoints }) => {
               { id: uuidv4(), position: -7, src: 'enemy1.png', hp: 100 },
             ])
             
-        }, 500)
+        }, 300)
         return () => clearInterval(interval)
         }
     }, [round])
@@ -88,13 +87,13 @@ const Spawn: React.FC<SpawnProps> = ({ round,setHealthPoints }) => {
       if (round === 1) {
         (event.target as HTMLImageElement).src = '/tower1.png';
         setTower((prevTower) => {
-          const newTower = { id: uuidv4(), position: 15 * (prevTower.length + 1), atack: 50, furthestEnemyInRange: null };
+          const newTower = { id: uuidv4(), position: 15 * (prevTower.length + 1), attack: 50, furthestEnemyInRange: null };
           console.log([...prevTower, newTower]);
           return [...prevTower, newTower];
         });
       }
     }
-    const towerAttack = (towerAttack:number,furthestEnemy:Enemy) => {
+    const towerAttack = (towerAttack: number, furthestEnemy: Enemy) => {
       setEnemies((prevEnemies) =>
         prevEnemies.map((enemy) => {
           if (furthestEnemy && enemy.id === furthestEnemy.id) {
@@ -103,75 +102,52 @@ const Spawn: React.FC<SpawnProps> = ({ round,setHealthPoints }) => {
           return enemy;
         })
       );
-  };
-  useEffect(() => {
-    const interval = setInterval(() => {
+    };
+
+    useEffect(() => {
       setTower((prevTowers) =>
         prevTowers.map((tower) => {
           const furthestEnemy = getFurthestEnemyInRadius(tower.position, 15);
           if (furthestEnemy && furthestEnemy.id !== tower.furthestEnemyInRange?.id) {
-            towerAttack(tower.atack, furthestEnemy);
             return { ...tower, furthestEnemyInRange: furthestEnemy };
           }
           return tower;
         })
       );
-    }, 500);
-  
-    return () => clearInterval(interval);
-  }, [round, enemies]);
-  
-  useEffect(() => {
-    setTower((prevTowers) =>
-      prevTowers.map((tower) => {
-        const furthestEnemy = getFurthestEnemyInRadius(tower.position, 15);
-        if (furthestEnemy && furthestEnemy.id !== tower.furthestEnemyInRange?.id) {
-          return { ...tower, furthestEnemyInRange: furthestEnemy };
-        }
-        return tower;
-      })
-    );
-  }, [enemies]);
+    }, [enemies]); 
+    
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setTower((prevTowers) =>
+          prevTowers.map((tower) => {
+            if (tower.furthestEnemyInRange) {
+              towerAttack(tower.attack, tower.furthestEnemyInRange);
+            }
+            const furthestEnemy = getFurthestEnemyInRadius(tower.position, 15);
+            return furthestEnemy?.id !== tower.furthestEnemyInRange?.id
+              ? { ...tower, furthestEnemyInRange: furthestEnemy }
+              : tower;
+          })
+        );
+      }, 1000);
+    
+      return () => clearInterval(interval);
+    }, []); 
+    
 
-useEffect(() => {
-  const interval = setInterval(() => {
-    setTower((prevTowers) =>
-      prevTowers.map((tower) => {
-        const furthestEnemy = getFurthestEnemyInRadius(tower.position, 15);
-        if (furthestEnemy && furthestEnemy.id !== tower.furthestEnemyInRange?.id) {
-          return { ...tower, furthestEnemyInRange: furthestEnemy };
-        }
-        return tower;
-      })
-    );
-  }, 500);
+    const getFurthestEnemyInRadius = (towerPosition: number, radius: number) => {
+      const enemiesInRadius = enemies.filter(
+        (enemy) => enemy.position <= towerPosition + radius && enemy.position >= towerPosition - radius
+      );
 
-  return () => clearInterval(interval);
-}, [round, enemies]);
+      if (enemiesInRadius.length === 0) {
+        return null;
+      }
 
-useEffect(() => {
-  const interval = setInterval(() => {
-  tower.forEach((tower) => {
-    if (tower.furthestEnemyInRange) {
-      towerAttack(tower.atack, tower.furthestEnemyInRange);
-    }
-  });
-}, 500);
-}, [tower]);
-
-const getFurthestEnemyInRadius = (towerPosition: number, radius: number) => {
-  const enemiesInRadius = enemies.filter(
-    (enemy) => enemy.position <= towerPosition + radius && enemy.position >= towerPosition - radius
-  );
-
-  if (enemiesInRadius.length === 0) {
-    return null;
-  }
-
-  return enemiesInRadius.reduce((maxEnemy, currentEnemy) => {
-    return currentEnemy.position > maxEnemy.position ? currentEnemy : maxEnemy;
-  }, enemiesInRadius[0]);
-};
+      return enemiesInRadius.reduce((maxEnemy, currentEnemy) => {
+        return currentEnemy.position > maxEnemy.position ? currentEnemy : maxEnemy;
+      }, enemiesInRadius[0]);
+    };
   return (
   <div className='relative  h-4/5 border border-white overflow-hidden'>
     <img src='/map.png' className='object-cover w-full h-full z-0' alt='map' />
