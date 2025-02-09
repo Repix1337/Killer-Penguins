@@ -31,6 +31,8 @@ body {
     top: 50%;
   }
 }
+
 .animate-slide {
-  animation: slide 1s ease-in-out forwards;
+  animation-name: slide;
+  animation-timing-function: linear;
 }
