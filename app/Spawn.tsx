@@ -26,12 +26,17 @@ interface Tower {
 }
 
 const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints }) => {
+  // Game state
   const [enemies, setEnemies] = useState<Enemy[]>([]);
-  const [attackEffects, setAttackEffects] = useState<{ id: string; towerPosition: number; enemyPosition: number; timestamp?: number }[]>([]);
   const [tower, setTower] = useState<Tower[]>([]);
-  const attackDuration = 1000;
+  const [attackEffects, setAttackEffects] = useState<{ 
+    id: string; 
+    towerPosition: number; 
+    enemyPosition: number; 
+    timestamp?: number 
+  }[]>([]);
 
-  // Spawn enemies at regular intervals when the round is 1
+  // Enemy spawning - creates new enemies every second
   useEffect(() => {
     if (round === 1) {
       const interval = setInterval(() => {
@@ -44,15 +49,71 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints }) => {
     }
   }, [round]);
 
-  // Move enemies at regular intervals when the round is 1
+  // Enemy movement - updates position every 50ms
   useEffect(() => {
     if (round === 1) {
-      const interval = setInterval(() => {
-        moveEnemy();
-      }, 50);
+      const interval = setInterval(moveEnemy, 50);
       return () => clearInterval(interval);
     }
   }, [round]);
+
+  // Main tower attack logic
+  const towerAttack = useCallback((tower: Tower, furthestEnemy: Enemy) => {
+    if (tower.isAttacking) return;
+    setTower((prevTowers) =>
+      prevTowers.map((t) =>
+        t.id === tower.id ? { ...t, isAttacking: true } : t
+      )
+    );
+  
+    const newEffect = { 
+      id: uuidv4(), 
+      towerPosition: tower.position, 
+      enemyPosition: furthestEnemy.position, 
+      timestamp: Date.now() 
+    };
+    
+    setAttackEffects((prevEffects) => [...prevEffects, newEffect]);
+  
+    setTimeout(() => {
+      setAttackEffects((prevEffects) => 
+        prevEffects.filter((effect) => effect.id !== newEffect.id)
+      );
+      setTower((prevTowers) =>
+        prevTowers.map((t) =>
+          t.id === tower.id ? { ...t, isAttacking: false } : t
+        )
+      );
+    }, 1000);
+  
+    setEnemies((prevEnemies) =>
+      prevEnemies.map((enemy) => {
+        if (furthestEnemy && enemy.id === furthestEnemy.id) {
+          return { ...enemy, hp: enemy.hp - tower.attack };
+        }
+        return enemy;
+      })
+    );
+  }, []);
+
+  // Tower targeting system - updates target when enemies move
+  useEffect(() => {
+    setTower((prevTowers) =>
+      prevTowers.map((tower) => ({
+        ...tower,
+        furthestEnemyInRange: getFurthestEnemyInRadius(tower.position, 10)
+      }))
+    );
+  }, [enemies]);
+
+  // Tower attack execution - triggers attacks when targets are available
+  useEffect(() => {
+    tower.forEach((t) => {
+      if (t.furthestEnemyInRange && !t.isAttacking) {
+        towerAttack(t, t.furthestEnemyInRange);
+      }
+    });
+  }, [tower, towerAttack]); // Added towerAttack to dependencies
 
   // Create enemy elements
   const createEnemy = () => {
@@ -112,46 +173,6 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints }) => {
     }
   };
 
-  // First, wrap towerAttack in useCallback to memoize it
-  const towerAttack = useCallback((tower: Tower, furthestEnemy: Enemy) => {
-    if (tower.isAttacking) return;
-  
-    setTower((prevTowers) =>
-      prevTowers.map((t) =>
-        t.id === tower.id ? { ...t, isAttacking: true } : t
-      )
-    );
-  
-    const newEffect = { 
-      id: uuidv4(), 
-      towerPosition: tower.position, 
-      enemyPosition: furthestEnemy.position, 
-      timestamp: Date.now() 
-    };
-    
-    setAttackEffects((prevEffects) => [...prevEffects, newEffect]);
-  
-    setTimeout(() => {
-      setAttackEffects((prevEffects) => 
-        prevEffects.filter((effect) => effect.id !== newEffect.id)
-      );
-      setTower((prevTowers) =>
-        prevTowers.map((t) =>
-          t.id === tower.id ? { ...t, isAttacking: false } : t
-        )
-      );
-    }, 1000);
-  
-    setEnemies((prevEnemies) =>
-      prevEnemies.map((enemy) => {
-        if (furthestEnemy && enemy.id === furthestEnemy.id) {
-          return { ...enemy, hp: enemy.hp - tower.attack };
-        }
-        return enemy;
-      })
-    );
-  }, []);
-
   // Component for attack animation
   const attackAnimation = () => {
     return attackEffects.map((effect) => (
@@ -169,33 +190,6 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints }) => {
           
       ));
   };
-
-  // Update towers to target the furthest enemy in range
-  useEffect(() => {
-    setTower((prevTowers) =>
-      prevTowers.map((tower) => ({
-        ...tower,
-        furthestEnemyInRange: getFurthestEnemyInRadius(tower.position, 10)
-      }))
-    );
-  }, [enemies]); // Only trigger when enemies change
-
-  // Handle tower attacks at regular intervals
-  useEffect(() => {
-    tower.forEach((t) => {
-      if (t.furthestEnemyInRange && !t.isAttacking) {
-        towerAttack(t, t.furthestEnemyInRange);
-      }
-    });
-  }, [tower]); // Only trigger when tower state changes
-
-  // Remove attack effects after a certain time
-  
-  useEffect(() => {
-    console.log('attackEffects:', attackEffects);
-  }, [attackEffects]);
-
-  
 
   // Get the furthest enemy within a certain radius from the tower
   const getFurthestEnemyInRadius = (towerPosition: number, radius: number) => {
