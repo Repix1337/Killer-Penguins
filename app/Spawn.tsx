@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useCallback, use } from 'react';
+import React, { useState, useEffect, useCallback} from 'react';
 import { v4 as uuidv4 } from 'uuid';
+
+
 
 // Define the props for the Spawn component
 interface SpawnProps {
@@ -16,7 +18,9 @@ interface Enemy {
   id: string;
   position: number;
   hp: number;
+  damage: number;
   src: string;
+  type: string;
 }
 
 // Define the Tower interface
@@ -53,15 +57,42 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     element: HTMLImageElement;
   }[]>([]);
   
+  // Add this new state near other state declarations
+  const [isPageVisible, setIsPageVisible] = useState(true);
+
+  // Add this new useEffect for visibility tracking
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsPageVisible(!document.hidden);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+  
   // Enemy spawning - creates new enemies every second
   useEffect(() => {
+    if (!isPageVisible) return; // Stop if page is not visible
+
     const interval = setInterval(() => {
     if (round > 0 && enemyCount < 20 * round) {
+       if (enemyCount % 5 !== 0) {
         setEnemies((prevEnemy) => [
           ...prevEnemy,
-          { id: uuidv4(), position: -7, src: 'enemy1.png', hp: 100 },
+          { id: uuidv4(), position: -7, src: 'enemy1.png', hp: 100, damage: 5, type: 'basic' },
         ]);
         setEnemyCount((prevCount) => prevCount + 1);
+      }
+      else if (enemyCount % 5 === 0)
+      {
+        setEnemies((prevEnemy) => [
+          ...prevEnemy,
+          { id: uuidv4(), position: -7, src: 'enemy2.png', hp: 50, damage: 10, type: 'stealth' },
+        ]);
+        setEnemyCount((prevCount) => prevCount + 1);
+      }
     }
     else if (round === 0) {
       setEnemies([]);
@@ -74,30 +105,31 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       setRound(0);
       setEnemyCount(0);
       setHealthPoints(100);
-      setMoney(100);
+      setMoney(200);
       setEnemies([]);
       setTower([]);
       setShowUpgradeMenu(false);
-      const towerElements = document.querySelectorAll('img[src="/tower1.png"]');
+      const towerElements = document.querySelectorAll('img[src="/tower1.png"]') && document.querySelectorAll('img[src="/tower2.png"]') as NodeListOf<HTMLImageElement>;
   towerElements.forEach((element) => {
     (element as HTMLImageElement).src = '/buildingSite.png';
   });
     }
   }, 1000 / round);
   return () => clearInterval(interval);
-  }, [round,enemyCount,hp]);
+  }, [round,enemyCount,hp, isPageVisible]); // Add isPageVisible to dependencies
 
   // Enemy movement - updates position every 50ms
   useEffect(() => {
-    if (round > 0) {
-      const interval = setInterval(moveEnemy, 50);
-      return () => clearInterval(interval);
-    }
-  }, [round]);
+    if (!isPageVisible || round <= 0) return; // Stop if page is not visible
+
+    const interval = setInterval(moveEnemy, 50);
+    return () => clearInterval(interval);
+  }, [round, isPageVisible]); // Add isPageVisible to dependencies
 
   // Main tower attack logic
   const towerAttack = useCallback((tower: Tower, furthestEnemy: Enemy) => {
     if (tower.isAttacking) return;
+   
     setTower((prevTowers) =>
       prevTowers.map((t) =>
         t.id === tower.id ? { ...t, isAttacking: true } : t
@@ -132,26 +164,32 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
         return enemy;
       })
     );
+  
   }, []);
 
   // Tower targeting system - updates target when enemies move
   useEffect(() => {
+    if (!isPageVisible) return; // Stop if page is not visible
+
     setTower((prevTowers) =>
       prevTowers.map((tower) => ({
         ...tower,
-        furthestEnemyInRange: getFurthestEnemyInRadius(tower.position, tower.radius)
+        furthestEnemyInRange: getFurthestEnemyInRadius(tower.position, tower.radius, tower.type) ?? null
       })
       )
     );
-  }, [enemies]);
+  }, [enemies, isPageVisible]); // Add isPageVisible to dependencies
+  
   // Tower attack execution - triggers attacks when targets are available
   useEffect(() => {
+    if (!isPageVisible) return; // Stop if page is not visible
+
     tower.forEach((t) => {
       if (t.furthestEnemyInRange && !t.isAttacking) {
         towerAttack(t, t.furthestEnemyInRange);
       }
     });
-  }, [tower, towerAttack]); // Added towerAttack to dependencies
+  }, [tower, towerAttack, isPageVisible]); // Add isPageVisible to dependencies
 
   // Create enemy elements
   const createEnemy = () => {
@@ -190,7 +228,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   const damagePlayer = (enemies: Enemy[]) => {
     enemies.forEach((enemy) => {
       if (enemy.position >= 100) {
-        setHealthPoints((prevHealthPoints) => prevHealthPoints - 1);
+        setHealthPoints((prevHealthPoints) => prevHealthPoints - enemy.damage);
       }
     });
   };
@@ -228,7 +266,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
           furthestEnemyInRange: null, 
           isAttacking: false, 
           price: 100, 
-          type: 'basic',
+          type: type,
           maxDamage: 100,
           maxAttackSpeed: 300,
           radius: 10
@@ -249,10 +287,10 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
           furthestEnemyInRange: null, 
           isAttacking: false, 
           price: 200, 
-          type: 'basic',
+          type: type,
           maxDamage: 100,
           maxAttackSpeed: 1000,
-          radius: 50
+          radius: 80
         };
         return [...prevTower, newTower];
       });
@@ -356,9 +394,11 @@ const closeTowerSelectMenu = () => {
   
 
   // Get the furthest enemy within a certain radius from the tower
-  const getFurthestEnemyInRadius = (towerPosition: number, radius: number) => {
+  const getFurthestEnemyInRadius = (towerPosition: number, radius: number, type: string) => {
+    
     const enemiesInRadius = enemies.filter(
-      (enemy) => enemy.position <= towerPosition + radius && enemy.position >= towerPosition - radius
+      (enemy) => enemy.position <= towerPosition + radius && enemy.position >= towerPosition - radius 
+      && type === "sniper" ? enemy.type === "stealth" || enemy.type != "stealth"  : enemy.type != "stealth" 
     );
 
     if (enemiesInRadius.length === 0) {
@@ -368,8 +408,7 @@ const closeTowerSelectMenu = () => {
     return enemiesInRadius.reduce((maxEnemy, currentEnemy) => {
       return currentEnemy.position > maxEnemy.position ? currentEnemy : maxEnemy;
     }, enemiesInRadius[0]);
-  };
-
+  }
   return (
     <div className='relative h-4/5 border border-white overflow-hidden'>
       <img src='/map.png' className='object-cover w-full h-full z-0' alt='map' />
