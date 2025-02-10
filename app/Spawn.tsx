@@ -7,6 +7,8 @@ interface SpawnProps {
   setHealthPoints: React.Dispatch<React.SetStateAction<number>>;
   money: number;
   setMoney: React.Dispatch<React.SetStateAction<number>>;
+  setRound: React.Dispatch<React.SetStateAction<number>>;
+  hp: number;
 }
 
 // Define the Enemy interface
@@ -27,7 +29,7 @@ interface Tower {
   price: number;
 }
 
-const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney }) => {
+const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp }) => {
   // Game state
   const [enemies, setEnemies] = useState<Enemy[]>([]);
   const [tower, setTower] = useState<Tower[]>([]);
@@ -37,22 +39,43 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney }
     enemyPosition: number; 
     timestamp?: number 
   }[]>([]);
+  const [enemyCount, setEnemyCount] = useState(0);
   // Enemy spawning - creates new enemies every second
   useEffect(() => {
-    if (round === 1) {
-      const interval = setInterval(() => {
+    const interval = setInterval(() => {
+    if (round > 0 && enemyCount < 20 * round) {
         setEnemies((prevEnemy) => [
           ...prevEnemy,
           { id: uuidv4(), position: -7, src: 'enemy1.png', hp: 100 },
         ]);
-      }, 1000);
-      return () => clearInterval(interval);
+        setEnemyCount((prevCount) => prevCount + 1);
     }
-  }, [round]);
+    else if (round === 0) {
+      setEnemies([]);
+    }
+    else if (enemyCount === 20 * round) {
+      setRound((prevRound) => prevRound + 1);
+      setEnemyCount(0);
+    }
+    if (hp <= 0) {
+      setRound(0);
+      setEnemyCount(0);
+      setHealthPoints(100);
+      setMoney(100);
+      setEnemies([]);
+      setTower([]);
+      const towerElements = document.querySelectorAll('img[src="/tower1.png"]');
+  towerElements.forEach((element) => {
+    (element as HTMLImageElement).src = '/buildingSite.png';
+  });
+    }
+  }, 1000 / round);
+  return () => clearInterval(interval);
+  }, [round,enemyCount,hp]);
 
   // Enemy movement - updates position every 50ms
   useEffect(() => {
-    if (round === 1) {
+    if (round > 0) {
       const interval = setInterval(moveEnemy, 50);
       return () => clearInterval(interval);
     }
@@ -118,7 +141,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney }
 
   // Create enemy elements
   const createEnemy = () => {
-    if (round === 1) {
+    if (round > 0) {
       return enemies.map((enemy) => (
         <img
           key={enemy.id}
@@ -164,12 +187,12 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney }
   }, [enemies]);
 
   // Buy towers and place them on the map
-  const buyTowers = (event: React.MouseEvent<HTMLImageElement>, siteNumber: number) => {
-    if (round === 1 && (event.target as HTMLImageElement).src.includes('buildingSite') && money >= 100) {
+  const buyTowers = (event: React.MouseEvent<HTMLImageElement>, positionX: number,price: number) => {
+    if (round > 0 && (event.target as HTMLImageElement).src.includes('buildingSite') && money >= price) {
       (event.target as HTMLImageElement).src = '/tower1.png';
-      setMoney((prevMoney) => prevMoney - 100);
+      setMoney((prevMoney) => prevMoney - price);
       setTower((prevTower) => {
-        const newTower = { id: uuidv4(), position: 15 * siteNumber, attack: 50,
+        const newTower = { id: uuidv4(), position: positionX, attack: 50,
            furthestEnemyInRange: null, isAttacking: false, price: 100 };
         return [...prevTower, newTower];
       });
@@ -185,7 +208,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney }
           key={effect.id}
           className='z-20 animate-slide h-6 w-6 absolute text-red-500'
           style={{
-            '--tower-position': `${effect.towerPosition}%`,
+            '--tower-position': `${effect.towerPosition + 1}%`,
             '--enemy-position': `${effect.enemyPosition + 2.5}%`,
             left: `${effect.towerPosition}%`,
             animationDuration: `100ms`,
@@ -215,10 +238,12 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney }
   return (
     <div className='relative h-4/5 border border-white overflow-hidden'>
       <img src='/map.png' className='object-cover w-full h-full z-0' alt='map' />
-      <img src='/buildingSite.png' className='absolute top-[20%] left-[15%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 1)} />
-      <img src='/buildingSite.png' className='absolute top-[20%] left-[30%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 2)} />
-      <img src='/buildingSite.png' className='absolute top-[20%] left-[45%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 3)} />
-      <img src='/buildingSite.png' className='absolute top-[20%] left-[60%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 4)} />
+      <img src='/buildingSite.png' className='absolute top-[20%] left-[10%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 10,100)} />
+      <img src='/buildingSite.png' className='absolute top-[20%] left-[25%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 25,150)} />
+      <img src='/buildingSite.png' className='absolute top-[20%] left-[40%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 40,200)} />
+      <img src='/buildingSite.png' className='absolute top-[20%] left-[55%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 55,250)} />
+      <img src='/buildingSite.png' className='absolute top-[20%] left-[70%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 70,300)} />
+      <img src='/buildingSite.png' className='absolute top-[20%] left-[85%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 85,350)} />
       {createEnemy()}
       {attackAnimation()}
     </div>

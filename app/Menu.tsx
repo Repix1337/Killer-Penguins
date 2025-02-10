@@ -12,7 +12,7 @@ const Menu = () => {
     
   return (
     <div>
-    <Spawn round={round} setHealthPoints={setHealthPoints} money={money} setMoney={setMoney}/>
+    <Spawn round={round} setHealthPoints={setHealthPoints} money={money} setMoney={setMoney} setRound={setRound} hp={HealthPoints}/>
     <div className='flex flex-col align-center text-center'>
     <div className=' text-white' onClick={onClick}>Start</div>
     <div>Round: {round}</div>
