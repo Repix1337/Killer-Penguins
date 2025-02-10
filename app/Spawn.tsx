@@ -109,10 +109,12 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       setEnemies([]);
       setTower([]);
       setShowUpgradeMenu(false);
-      const towerElements = document.querySelectorAll('img[src="/tower1.png"]') && document.querySelectorAll('img[src="/tower2.png"]') as NodeListOf<HTMLImageElement>;
-  towerElements.forEach((element) => {
-    (element as HTMLImageElement).src = '/buildingSite.png';
-  });
+      const tower1Elements = document.querySelectorAll('img[src="/tower1.png"]') as NodeListOf<HTMLImageElement>;
+      const tower2Elements = document.querySelectorAll('img[src="/tower2.png"]') as NodeListOf<HTMLImageElement>;
+
+      [...tower1Elements, ...tower2Elements].forEach((element) => {
+        element.src = '/buildingSite.png';
+      });
     }
   }, 1000 / round);
   return () => clearInterval(interval);
@@ -122,7 +124,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   useEffect(() => {
     if (!isPageVisible || round <= 0) return; // Stop if page is not visible
 
-    const interval = setInterval(moveEnemy, 50);
+    const interval = setInterval(moveEnemy, 25);
     return () => clearInterval(interval);
   }, [round, isPageVisible]); // Add isPageVisible to dependencies
 
@@ -217,7 +219,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       prevEnemies
         .map((enemy) => ({
           ...enemy,
-          position: enemy.position + 0.25,
+          position: enemy.position + 0.125,
         }))
         .filter((enemy) => enemy.position <= 100)
         .filter((enemy) => enemy.hp > 0)
