@@ -1,11 +1,12 @@
-import { Exo_2 } from 'next/font/google';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, use } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 // Define the props for the Spawn component
 interface SpawnProps {
   round: number;
   setHealthPoints: React.Dispatch<React.SetStateAction<number>>;
+  money: number;
+  setMoney: React.Dispatch<React.SetStateAction<number>>;
 }
 
 // Define the Enemy interface
@@ -23,9 +24,10 @@ interface Tower {
   attack: number;
   furthestEnemyInRange: Enemy | null;
   isAttacking: boolean;
+  price: number;
 }
 
-const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints }) => {
+const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney }) => {
   // Game state
   const [enemies, setEnemies] = useState<Enemy[]>([]);
   const [tower, setTower] = useState<Tower[]>([]);
@@ -35,7 +37,6 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints }) => {
     enemyPosition: number; 
     timestamp?: number 
   }[]>([]);
-
   // Enemy spawning - creates new enemies every second
   useEffect(() => {
     if (round === 1) {
@@ -74,7 +75,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints }) => {
     };
     
     setAttackEffects((prevEffects) => [...prevEffects, newEffect]);
-  
+    setMoney((prevMoney) => prevMoney + 10);
     setTimeout(() => {
       setAttackEffects((prevEffects) => 
         prevEffects.filter((effect) => effect.id !== newEffect.id)
@@ -164,15 +165,18 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints }) => {
 
   // Buy towers and place them on the map
   const buyTowers = (event: React.MouseEvent<HTMLImageElement>, siteNumber: number) => {
-    if (round === 1 && (event.target as HTMLImageElement).src.includes('buildingSite')) {
+    if (round === 1 && (event.target as HTMLImageElement).src.includes('buildingSite') && money >= 100) {
       (event.target as HTMLImageElement).src = '/tower1.png';
+      setMoney((prevMoney) => prevMoney - 100);
       setTower((prevTower) => {
-        const newTower = { id: uuidv4(), position: 15 * siteNumber, attack: 50, furthestEnemyInRange: null, isAttacking: false};
+        const newTower = { id: uuidv4(), position: 15 * siteNumber, attack: 50,
+           furthestEnemyInRange: null, isAttacking: false, price: 100 };
         return [...prevTower, newTower];
       });
+      
     }
   };
-
+  
   // Component for attack animation
   const attackAnimation = () => {
     return attackEffects.map((effect) => (
@@ -190,6 +194,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints }) => {
           
       ));
   };
+
+  
 
   // Get the furthest enemy within a certain radius from the tower
   const getFurthestEnemyInRadius = (towerPosition: number, radius: number) => {
