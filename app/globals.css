@@ -34,5 +34,5 @@ body {
 
 .animate-slide {
   animation-name: slide;
-  animation-timing-function: linear;
+  animation-timing-function: ease-in-out;
 }

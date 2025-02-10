@@ -31,6 +31,7 @@ interface Tower {
   type: string;
   maxDamage: number;
   maxAttackSpeed: number;
+  radius: number;
 }
 
 const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp }) => {
@@ -45,7 +46,13 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   }[]>([]);
   const [enemyCount, setEnemyCount] = useState(0);
   const [showUpgradeMenu, setShowUpgradeMenu] = useState(false);
+  const [showTowerSelectMenu, setShowTowerSelectMenu] = useState(false);
   const [selectedTowerID, setSelectedTowerID] = useState('');
+  const [selectedTower, setSelectedTower] = useState<{ 
+    towerPosition: number; 
+    element: HTMLImageElement;
+  }[]>([]);
+  
   // Enemy spawning - creates new enemies every second
   useEffect(() => {
     const interval = setInterval(() => {
@@ -132,11 +139,11 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     setTower((prevTowers) =>
       prevTowers.map((tower) => ({
         ...tower,
-        furthestEnemyInRange: getFurthestEnemyInRadius(tower.position, 10)
-      }))
+        furthestEnemyInRange: getFurthestEnemyInRadius(tower.position, tower.radius)
+      })
+      )
     );
   }, [enemies]);
-
   // Tower attack execution - triggers attacks when targets are available
   useEffect(() => {
     tower.forEach((t) => {
@@ -195,15 +202,27 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
 
   // Buy towers and place them on the map
   const buyTowers = (event: React.MouseEvent<HTMLImageElement>, positionX: number,price: number) => {
-    if (round > 0 && (event.target as HTMLImageElement).src.includes('buildingSite') && money >= price) {
+    if (round > 0 && (event.target as HTMLImageElement).src.includes('buildingSite')) {
+      setShowTowerSelectMenu(true);
       const newTowerId = uuidv4();  // Generate ID first
-      (event.target as HTMLImageElement).src = '/tower1.png';
-      (event.target as HTMLImageElement).id = newTowerId;  // Set the image element ID
-      setMoney((prevMoney) => prevMoney - price);
+      (event.target as HTMLImageElement).id = newTowerId;  // Set the ID of the clicked element
+      setSelectedTowerID(newTowerId);  // Set the selected tower ID
+      setSelectedTower([{ towerPosition: positionX, element: event.target as HTMLImageElement }]);
+    }
+    else if (round > 0 && !(event.target as HTMLImageElement).src.includes('buildingSite')) {
+      setShowUpgradeMenu(true);
+      setSelectedTowerID((event.target as HTMLImageElement).id);
+    }
+  };
+  const selectTowerType = (type: string, newTowerId: string) => {
+    if (type === 'basic' && money >= 100) {
+      selectedTower[0].element.src = "/tower1.png";
+      setShowTowerSelectMenu(false);
+      setMoney((prevMoney) => prevMoney - 100);
       setTower((prevTower) => {
         const newTower = { 
           id: newTowerId,  // Use the same ID
-          position: positionX, 
+          position: selectedTower[0].towerPosition, 
           attack: 50, 
           attackSpeed: 1000,
           furthestEnemyInRange: null, 
@@ -211,19 +230,37 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
           price: 100, 
           type: 'basic',
           maxDamage: 100,
-          maxAttackSpeed: 500
+          maxAttackSpeed: 300,
+          radius: 10
         };
         return [...prevTower, newTower];
       });
-      setSelectedTowerID(newTowerId);  // Set the selected tower ID
     }
-    else if (round > 0 && (event.target as HTMLImageElement).src.includes('tower1')) {
-      setShowUpgradeMenu(true);
-      setSelectedTowerID((event.target as HTMLImageElement).id);
-      console.log((event.target as HTMLImageElement).id)
+    else if (type === 'sniper' && money >= 200) {
+      selectedTower[0].element.src = "/tower2.png";
+      setShowTowerSelectMenu(false);
+      setMoney((prevMoney) => prevMoney - 200);
+      setTower((prevTower) => {
+        const newTower = { 
+          id: newTowerId,  // Use the same ID
+          position: selectedTower[0].towerPosition, 
+          attack: 100, 
+          attackSpeed: 2000,
+          furthestEnemyInRange: null, 
+          isAttacking: false, 
+          price: 200, 
+          type: 'basic',
+          maxDamage: 100,
+          maxAttackSpeed: 1000,
+          radius: 50
+        };
+        return [...prevTower, newTower];
+      });
     }
-  };
-
+}
+const closeTowerSelectMenu = () => {
+  setShowTowerSelectMenu(false);
+}
   const upgradeTower = () => {
     if (showUpgradeMenu) {
       const selectedTower = tower.find(t => t.id === selectedTowerID);
@@ -276,6 +313,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   const closeUpgradeMenu = () => {
     setShowUpgradeMenu(false);
   }
+  
   const upgradeDamage = () => {
     if (money >= 150){
       setMoney((prevMoney) => prevMoney - 150);
@@ -344,6 +382,25 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       {createEnemy()}
       {attackAnimation()}
       {upgradeTower()}
+      {showTowerSelectMenu && (
+      <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-400 flex flex-col items-center justify-center p-4 rounded-lg gap-2'>
+        <h1 className="text-xl font-bold mb-2">Tower Select Menu</h1>
+        <div>
+          <button onClick={() => selectTowerType("basic",selectedTowerID)}>
+            <img src='/tower1.png' className='w-16 h-16'/>
+          </button>
+          <button onClick={() => selectTowerType("sniper",selectedTowerID)}>
+            <img src='/tower2.png' className='w-16 h-16'/>
+          </button>
+        </div>
+        <button 
+              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-full mt-2"
+              onClick={closeTowerSelectMenu}
+              >
+                Close
+              </button>
+      </div>
+    )}
     </div>
   );
 };
