@@ -24,9 +24,13 @@ interface Tower {
   id: string;
   position: number;
   attack: number;
+  attackSpeed: number;
   furthestEnemyInRange: Enemy | null;
   isAttacking: boolean;
   price: number;
+  type: string;
+  maxDamage: number;
+  maxAttackSpeed: number;
 }
 
 const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp }) => {
@@ -40,6 +44,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     timestamp?: number 
   }[]>([]);
   const [enemyCount, setEnemyCount] = useState(0);
+  const [showUpgradeMenu, setShowUpgradeMenu] = useState(false);
+  const [selectedTowerID, setSelectedTowerID] = useState('');
   // Enemy spawning - creates new enemies every second
   useEffect(() => {
     const interval = setInterval(() => {
@@ -64,6 +70,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       setMoney(100);
       setEnemies([]);
       setTower([]);
+      setShowUpgradeMenu(false);
       const towerElements = document.querySelectorAll('img[src="/tower1.png"]');
   towerElements.forEach((element) => {
     (element as HTMLImageElement).src = '/buildingSite.png';
@@ -98,7 +105,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     };
     
     setAttackEffects((prevEffects) => [...prevEffects, newEffect]);
-    setMoney((prevMoney) => prevMoney + 10);
+    setMoney((prevMoney) => prevMoney + tower.attack / 5);
     setTimeout(() => {
       setAttackEffects((prevEffects) => 
         prevEffects.filter((effect) => effect.id !== newEffect.id)
@@ -108,7 +115,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
           t.id === tower.id ? { ...t, isAttacking: false } : t
         )
       );
-    }, 1000);
+    }, tower.attackSpeed);
   
     setEnemies((prevEnemies) =>
       prevEnemies.map((enemy) => {
@@ -189,17 +196,107 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   // Buy towers and place them on the map
   const buyTowers = (event: React.MouseEvent<HTMLImageElement>, positionX: number,price: number) => {
     if (round > 0 && (event.target as HTMLImageElement).src.includes('buildingSite') && money >= price) {
+      const newTowerId = uuidv4();  // Generate ID first
       (event.target as HTMLImageElement).src = '/tower1.png';
+      (event.target as HTMLImageElement).id = newTowerId;  // Set the image element ID
       setMoney((prevMoney) => prevMoney - price);
       setTower((prevTower) => {
-        const newTower = { id: uuidv4(), position: positionX, attack: 50,
-           furthestEnemyInRange: null, isAttacking: false, price: 100 };
+        const newTower = { 
+          id: newTowerId,  // Use the same ID
+          position: positionX, 
+          attack: 50, 
+          attackSpeed: 1000,
+          furthestEnemyInRange: null, 
+          isAttacking: false, 
+          price: 100, 
+          type: 'basic',
+          maxDamage: 100,
+          maxAttackSpeed: 500
+        };
         return [...prevTower, newTower];
       });
-      
+      setSelectedTowerID(newTowerId);  // Set the selected tower ID
+    }
+    else if (round > 0 && (event.target as HTMLImageElement).src.includes('tower1')) {
+      setShowUpgradeMenu(true);
+      setSelectedTowerID((event.target as HTMLImageElement).id);
+      console.log((event.target as HTMLImageElement).id)
     }
   };
-  
+
+  const upgradeTower = () => {
+    if (showUpgradeMenu) {
+      const selectedTower = tower.find(t => t.id === selectedTowerID);
+      
+      return (
+        <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-400 flex flex-col items-center justify-center p-4 rounded-lg gap-2'>
+          <h1 className="text-xl font-bold mb-2">Upgrade Menu</h1>
+          {selectedTower && (
+            <>
+              {selectedTower.attack < selectedTower.maxDamage ? (
+                <button 
+                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-full"
+                  onClick={upgradeDamage}
+                  disabled={money < 150}
+                >
+                  Upgrade Damage (150$ for +25dmg)
+                </button>
+              ) : (
+                <div className="bg-gray-500 text-white font-bold py-2 px-4 rounded w-full text-center">
+                  Max Damage Reached
+                </div>
+              )}
+              {selectedTower.attackSpeed > selectedTower.maxAttackSpeed ? (
+                <button 
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
+                  onClick={upgradeAttackSpeed}
+                  disabled={money < 200}
+                >
+                  Upgrade Attack Speed (200$ for -100ms)
+                </button>
+              ) : (
+                <div className="bg-gray-500 text-white font-bold py-2 px-4 rounded w-full text-center">
+                  Max Attack Speed Reached
+                </div>
+              )}
+              <button 
+                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-full mt-2"
+                onClick={closeUpgradeMenu}
+              >
+                Close
+              </button>
+            </>
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const closeUpgradeMenu = () => {
+    setShowUpgradeMenu(false);
+  }
+  const upgradeDamage = () => {
+    if (money >= 150){
+      setMoney((prevMoney) => prevMoney - 150);
+      setTower((prevTower) => 
+        prevTower.map((t) =>
+          t.id === selectedTowerID ? { ...t, attack: t.attack + 25 } : t
+        )
+      );
+    }
+    
+  }
+  const upgradeAttackSpeed = () => {
+    if (money >= 200){
+      setMoney((prevMoney) => prevMoney - 200);
+      setTower((prevTower) => 
+        prevTower.map((t) =>
+          t.id === selectedTowerID ? { ...t, attackSpeed: t.attackSpeed - 100 } : t
+        )
+      );
+    }
+  }
   // Component for attack animation
   const attackAnimation = () => {
     return attackEffects.map((effect) => (
@@ -246,6 +343,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       <img src='/buildingSite.png' className='absolute top-[20%] left-[85%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 85,350)} />
       {createEnemy()}
       {attackAnimation()}
+      {upgradeTower()}
     </div>
   );
 };
