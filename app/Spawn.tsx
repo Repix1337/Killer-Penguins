@@ -16,7 +16,8 @@ interface SpawnProps {
 // Define the Enemy interface
 interface Enemy {
   id: string;
-  position: number;
+  positionX: number;
+  positionY: number;
   hp: number;
   speed: number;
   damage: number;
@@ -27,7 +28,8 @@ interface Enemy {
 // Define the Tower interface
 interface Tower {
   id: string;
-  position: number;
+  positionX: number;
+  positionY: number;
   attack: number;
   attackSpeed: number;
   furthestEnemyInRange: Enemy[] | null;
@@ -47,8 +49,10 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   const [tower, setTower] = useState<Tower[]>([]);
   const [attackEffects, setAttackEffects] = useState<{ 
     id: string; 
-    towerPosition: number; 
-    enemyPosition: number; 
+    towerPositionX: number; 
+    towerPositionY: number; 
+    enemyPositionX: number; 
+    enemyPositionY: number; 
     timestamp?: number 
   }[]>([]);
   const [enemyCount, setEnemyCount] = useState(0);
@@ -56,7 +60,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   const [showTowerSelectMenu, setShowTowerSelectMenu] = useState(false);
   const [selectedTowerID, setSelectedTowerID] = useState('');
   const [selectedTower, setSelectedTower] = useState<{ 
-    towerPosition: number; 
+    towerPositionX: number; 
+    towerPositionY: number; 
     element: HTMLImageElement;
   }[]>([]);
   
@@ -84,7 +89,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
        if (enemyCount % 5 !== 0) {
         setEnemies((prevEnemy) => [
           ...prevEnemy,
-          { id: uuidv4(), position: -7, src: 'enemy1.png', hp: 100, damage: 5, type: 'basic', speed: 0.125 },
+          { id: uuidv4(), positionX: -7,positionY: 50, src: 'enemy1.png', hp: 100, damage: 5, type: 'basic', speed: 0.125 },
         ]);
         setEnemyCount((prevCount) => prevCount + 1);
       }
@@ -92,7 +97,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       {
         setEnemies((prevEnemy) => [
           ...prevEnemy,
-          { id: uuidv4(), position: -7, src: 'enemy2.png', hp: 50, damage: 10, type: 'stealth', speed: 0.125 },
+          { id: uuidv4(), positionX: -7,positionY: 50, src: 'enemy2.png', hp: 50, damage: 10, type: 'stealth', speed: 0.125 },
         ]);
         setEnemyCount((prevCount) => prevCount + 1);
       }
@@ -101,7 +106,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       if (enemyCount % 5 !== 0) {
        setEnemies((prevEnemy) => [
          ...prevEnemy,
-         { id: uuidv4(), position: -7, src: 'enemy3.png', hp: 200, damage: 5, type: 'basic', speed: 0.125 },
+         { id: uuidv4(), positionX: -7,positionY: 50, src: 'enemy3.png', hp: 200, damage: 5, type: 'basic', speed: 0.125 },
        ]);
        setEnemyCount((prevCount) => prevCount + 1);
      }
@@ -109,7 +114,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
      {
        setEnemies((prevEnemy) => [
          ...prevEnemy,
-         { id: uuidv4(), position: -7, src: 'enemy2.png', hp: 50, damage: 10, type: 'stealth', speed: 0.125 },
+         { id: uuidv4(), positionX: -7,positionY: 50, src: 'enemy2.png', hp: 50, damage: 10, type: 'stealth', speed: 0.125 },
        ]);
        setEnemyCount((prevCount) => prevCount + 1);
      }
@@ -160,8 +165,10 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   
     const newEffects = targets.map(target => ({
       id: uuidv4(),
-      towerPosition: tower.position,
-      enemyPosition: target.position,
+      towerPositionX: tower.positionX,
+      towerPositionY: tower.positionY,
+      enemyPositionX: target.positionX,
+      enemyPositionY: target.positionY,
       timestamp: Date.now()
     }));
     
@@ -197,7 +204,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     setTower((prevTowers) =>
       prevTowers.map((tower) => ({
         ...tower,
-        furthestEnemyInRange: getFurthestEnemyInRadius(tower.position, tower.radius, tower.canHitStealth, tower.attackType) ?? null
+        furthestEnemyInRange: getFurthestEnemyInRadius(tower.positionX, tower.radius, tower.canHitStealth, tower.attackType) ?? null
       })
       )
     );
@@ -224,8 +231,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
           alt='enemy'
           style={{
             position: 'absolute',
-            top: '50%',
-            left: `${enemy.position}%`,
+            top: `${enemy.positionY}%`,
+            left: `${enemy.positionX}%`,
             transform: 'translateY(-50%)',
             zIndex: 10,
           }}
@@ -240,9 +247,9 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       prevEnemies
         .map((enemy) => ({
           ...enemy,
-          position: enemy.position + enemy.speed,
+          positionX: enemy.positionX + enemy.speed,
         }))
-        .filter((enemy) => enemy.position <= 100)
+        .filter((enemy) => enemy.positionX <= 100)
         .filter((enemy) => enemy.hp > 0)
     );
   };
@@ -250,7 +257,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   // Reduce player's health points if enemies reach the end
   const damagePlayer = (enemies: Enemy[]) => {
     enemies.forEach((enemy) => {
-      if (enemy.position >= 100) {
+      if (enemy.positionX >= 100) {
         setHealthPoints((prevHealthPoints) => prevHealthPoints - enemy.damage);
       }
     });
@@ -262,13 +269,13 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   }, [enemies]);
 
   // Buy towers and place them on the map
-  const buyTowers = (event: React.MouseEvent<HTMLImageElement>, positionX: number,price: number) => {
+  const buyTowers = (event: React.MouseEvent<HTMLImageElement>, positionX: number,positionY:number) => {
     if (round > 0 && (event.target as HTMLImageElement).src.includes('buildingSite')) {
       setShowTowerSelectMenu(true);
       const newTowerId = uuidv4();  // Generate ID first
       (event.target as HTMLImageElement).id = newTowerId;  // Set the ID of the clicked element
       setSelectedTowerID(newTowerId);  // Set the selected tower ID
-      setSelectedTower([{ towerPosition: positionX, element: event.target as HTMLImageElement }]);
+      setSelectedTower([{ towerPositionX: positionX, towerPositionY: positionY, element: event.target as HTMLImageElement }]);
     }
     else if (round > 0 && !(event.target as HTMLImageElement).src.includes('buildingSite')) {
       setShowUpgradeMenu(true);
@@ -283,7 +290,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       setTower((prevTower) => {
         const newTower = { 
           id: newTowerId,  // Use the same ID
-          position: selectedTower[0].towerPosition, 
+          positionX: selectedTower[0].towerPositionX, 
+          positionY: selectedTower[0].towerPositionY,
           attack: 50, 
           attackSpeed: 1000,
           furthestEnemyInRange: null, 
@@ -306,7 +314,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       setTower((prevTower) => {
         const newTower = { 
           id: newTowerId,  // Use the same ID
-          position: selectedTower[0].towerPosition, 
+          positionX: selectedTower[0].towerPositionX, 
+          positionY: selectedTower[0].towerPositionY,
           attack: 100, 
           attackSpeed: 2000,
           furthestEnemyInRange: null, 
@@ -329,7 +338,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       setTower((prevTower) => {
         const newTower = { 
           id: newTowerId,  // Use the same ID
-          position: selectedTower[0].towerPosition, 
+          positionX: selectedTower[0].towerPositionX, 
+          positionY: selectedTower[0].towerPositionY,
           attack: 25, 
           attackSpeed: 400,
           furthestEnemyInRange: null, 
@@ -427,7 +437,7 @@ const closeTowerSelectMenu = () => {
                 className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-full mt-2"
                 onClick={() => sellTower(selectedTower.price)}
               >
-                SellTower
+                Sell Tower
               </button>
               <button 
                 className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-full mt-2"
@@ -520,10 +530,12 @@ const closeTowerSelectMenu = () => {
           key={effect.id}
           className='z-20 animate-slide h-6 w-6 absolute text-red-500'
           style={{
-            '--tower-position': `${effect.towerPosition + 1}%`,
-            '--enemy-position': `${effect.enemyPosition + 2.5}%`,
-            left: `${effect.towerPosition}%`,
-            animationDuration: `100ms`,
+            '--tower-positionX': `${effect.towerPositionX + 1}%`,
+            '--tower-positionY': `${effect.towerPositionY}%`,
+            '--enemy-positionX': `${effect.enemyPositionX + 2.5}%`,
+            '--enemy-positionY': `${effect.enemyPositionY + 2.5}%`,
+            left: `${effect.towerPositionX}%`,
+            animationDuration: `150ms`,
           } as React.CSSProperties}
         />
           
@@ -535,8 +547,8 @@ const closeTowerSelectMenu = () => {
   // Get the furthest enemy within a certain radius from the tower
   const getFurthestEnemyInRadius = (towerPosition: number, radius: number, canHitStealth: boolean, attackType: string) => {
     const enemiesInRadius = enemies.filter((enemy) => {
-      const isInRange = enemy.position <= towerPosition + radius && 
-                       enemy.position >= towerPosition - radius;
+      const isInRange = enemy.positionX <= towerPosition + radius && 
+                       enemy.positionX >= towerPosition - radius;
       
       if (canHitStealth) {
           return isInRange;
@@ -550,7 +562,7 @@ const closeTowerSelectMenu = () => {
     }
   
     // Sort all enemies by position in descending order
-    const sortedEnemies = enemiesInRadius.sort((a, b) => b.position - a.position);
+    const sortedEnemies = enemiesInRadius.sort((a, b) => b.positionX - a.positionX);
   
     // Return array of enemies based on attackType
     if (attackType === 'double' && sortedEnemies.length >= 2) {
@@ -566,12 +578,18 @@ const closeTowerSelectMenu = () => {
   return (
     <div className='relative h-4/5 border border-white overflow-hidden'>
       <img src='/map.png' className='object-cover w-full h-full z-0' alt='map' />
-      <img src='/buildingSite.png' className='absolute top-[20%] left-[10%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 10,100)} />
-      <img src='/buildingSite.png' className='absolute top-[20%] left-[25%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 25,150)} />
-      <img src='/buildingSite.png' className='absolute top-[20%] left-[40%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 40,200)} />
-      <img src='/buildingSite.png' className='absolute top-[20%] left-[55%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 55,250)} />
-      <img src='/buildingSite.png' className='absolute top-[20%] left-[70%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 70,300)} />
-      <img src='/buildingSite.png' className='absolute top-[20%] left-[85%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 85,350)} />
+      <img src='/buildingSite.png' className='absolute top-[20%] left-[10%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 10,20)} />
+      <img src='/buildingSite.png' className='absolute top-[20%] left-[25%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 25,20)} />
+      <img src='/buildingSite.png' className='absolute top-[20%] left-[40%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 40,20)} />
+      <img src='/buildingSite.png' className='absolute top-[20%] left-[55%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 55,20)} />
+      <img src='/buildingSite.png' className='absolute top-[20%] left-[70%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 70,20)} />
+      <img src='/buildingSite.png' className='absolute top-[20%] left-[85%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 85,20)} />
+      <img src='/buildingSite.png' className='absolute top-[70%] left-[10%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 10,70)} />
+      <img src='/buildingSite.png' className='absolute top-[70%] left-[25%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 25,70)} />
+      <img src='/buildingSite.png' className='absolute top-[70%] left-[40%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 40,70)} />
+      <img src='/buildingSite.png' className='absolute top-[70%] left-[55%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 55,70)} />
+      <img src='/buildingSite.png' className='absolute top-[70%] left-[70%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 70,70)} />
+      <img src='/buildingSite.png' className='absolute top-[70%] left-[85%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 85,70)} />
       {createEnemy()}
       {attackAnimation()}
       {upgradeTower()}

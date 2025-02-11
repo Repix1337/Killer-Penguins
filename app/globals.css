@@ -23,12 +23,12 @@ body {
 }
 @keyframes slide {
   from {
-    left: var(--tower-position);
-    top: 20%;
+    left: var(--tower-positionX);
+    top: var(--tower-positionY);
   }
   to {
-    left: var(--enemy-position);
-    top: 50%;
+    left: var(--enemy-positionX);
+    top: var(--enemy-positionY);
   }
 }
 
