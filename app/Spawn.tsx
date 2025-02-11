@@ -80,53 +80,85 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     };
   }, []);
   
-  // Enemy spawning - creates new enemies every second
-  useEffect(() => {
-    if (!isPageVisible) return; // Stop if page is not visible
+  // First, extract enemy types as constants
+const ENEMY_TYPES = {
+  BASIC: {
+    src: 'enemy1.png',
+    hp: 100,
+    damage: 5,
+    type: 'basic',
+    speed: 0.125
+  },
+  STEALTH: {
+    src: 'enemy2.png',
+    hp: 50,
+    damage: 10,
+    type: 'stealth',
+    speed: 0.125
+  },
+  TANK: {
+    src: 'enemy3.png',
+    hp: 350,
+    damage: 5,
+    type: 'basic',
+    speed: 0.100
+  },
+  SPEEDY: {
+    src: 'enemy4.png',
+    hp: 50,
+    damage: 35,
+    type: 'speedy',
+    speed: 1
+  },
+  STEALTHYTANK: {
+    src: 'stealthyTank.png',
+    hp: 250,
+    damage: 20,
+    type: 'stealthytank',
+    speed: 0.125
+  },
+  STEALTHYSPEEDY: {
+    src: 'stealthySpeedy.png',
+    hp: 50,
+    damage: 50,
+    type: 'stealthyspeedy',
+    speed: 1
+  }
+};
 
-    const interval = setInterval(() => {
-    if (round > 0 && round <= 9 && enemyCount < 15 * round) {
-       if (enemyCount % 5 !== 0) {
-        setEnemies((prevEnemy) => [
-          ...prevEnemy,
-          { id: uuidv4(), positionX: -7,positionY: 50, src: 'enemy1.png', hp: 100, damage: 5, type: 'basic', speed: 0.125 },
-        ]);
-        setEnemyCount((prevCount) => prevCount + 1);
-      }
-      else if (enemyCount % 5 === 0)
-      {
-        setEnemies((prevEnemy) => [
-          ...prevEnemy,
-          { id: uuidv4(), positionX: -7,positionY: 50, src: 'enemy2.png', hp: 50, damage: 10, type: 'stealth', speed: 0.125 },
-        ]);
-        setEnemyCount((prevCount) => prevCount + 1);
-      }
-    }
-    else if (round >= 10 && enemyCount < 15 * round) {
-      if (enemyCount % 5 !== 0) {
-       setEnemies((prevEnemy) => [
-         ...prevEnemy,
-         { id: uuidv4(), positionX: -7,positionY: 50, src: 'enemy3.png', hp: 200, damage: 5, type: 'basic', speed: 0.125 },
-       ]);
-       setEnemyCount((prevCount) => prevCount + 1);
-     }
-     else if (enemyCount % 5 === 0)
-     {
-       setEnemies((prevEnemy) => [
-         ...prevEnemy,
-         { id: uuidv4(), positionX: -7,positionY: 50, src: 'enemy2.png', hp: 50, damage: 10, type: 'stealth', speed: 0.125 },
-       ]);
-       setEnemyCount((prevCount) => prevCount + 1);
-     }
-   }
-    else if (round === 0) {
-      setEnemies([]);
-    }
-    else if (enemyCount === 15 * round) {
-      setRound((prevRound) => prevRound + 1);
-      setEnemyCount(0);
-    }
-    if (hp <= 0) {
+// Then, create helper function for spawning enemies
+const createNewEnemy = (type: keyof typeof ENEMY_TYPES) => ({
+  id: uuidv4(),
+  positionX: -7,
+  positionY: 50,
+  ...ENEMY_TYPES[type]
+});
+
+useEffect(() => {
+  if (hp <= 0) {
+    alert('Game Over! You lost!');
+    setRound(0);
+    setEnemyCount(0);
+    setHealthPoints(100);
+    setMoney(200);
+    setEnemies([]);
+    setTower([]);
+    setShowUpgradeMenu(false);
+    const tower1Elements = document.querySelectorAll('img[src="/tower1.png"]') as NodeListOf<HTMLImageElement>;
+    const tower2Elements = document.querySelectorAll('img[src="/tower2.png"]') as NodeListOf<HTMLImageElement>;
+    const tower3Elements = document.querySelectorAll('img[src="/rapidshooter.png"]') as NodeListOf<HTMLImageElement>;
+    [...tower1Elements, ...tower2Elements, ...tower3Elements].forEach((element) => {
+      element.src = '/buildingSite.png';
+    });
+  }
+}, [hp]);
+
+useEffect(() => {
+  if (!isPageVisible) return; // Stop if page is not visible   
+  const spawnEnemies = () => {
+    // Check for game over first
+    if (round > 30 && enemies.length === 0) {
+      alert('Congratulations! You won!');
       setRound(0);
       setEnemyCount(0);
       setHealthPoints(100);
@@ -136,14 +168,65 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       setShowUpgradeMenu(false);
       const tower1Elements = document.querySelectorAll('img[src="/tower1.png"]') as NodeListOf<HTMLImageElement>;
       const tower2Elements = document.querySelectorAll('img[src="/tower2.png"]') as NodeListOf<HTMLImageElement>;
-      const tower3Elements = document.querySelectorAll('img[src="/rapidShooter.png"]') as NodeListOf<HTMLImageElement>;
+      const tower3Elements = document.querySelectorAll('img[src="/rapidshooter.png"]') as NodeListOf<HTMLImageElement>;
       [...tower1Elements, ...tower2Elements, ...tower3Elements].forEach((element) => {
         element.src = '/buildingSite.png';
       });
+      return;
     }
-  }, 1000 / round);
-  return () => clearInterval(interval);
-  }, [round,enemyCount,hp, isPageVisible]); // Add isPageVisible to dependencies
+
+    // Early rounds - Basic enemies
+    if ((round > 0 && round <= 4) || (round > 5 && round < 10)) {
+      if (enemyCount < 10 * round) {
+        setEnemies(prev => [...prev, createNewEnemy('BASIC')]);
+        setEnemyCount(prev => prev + 1);
+      }
+    }
+    // Boss round - Stealth enemies
+    else if (round === 5 && enemyCount < 10 * round) {
+      const enemyType = enemyCount % 2 === 0 ? 'STEALTH' : 'SPEEDY';
+      setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
+      setEnemyCount(prev => prev + 1);
+    }
+    // Later rounds - Mixed enemies
+    else if (round >= 10 && round <= 15 && enemyCount < 10 * round) {
+      const enemyType = enemyCount % 3 === 0 ? 'STEALTH' : 
+                       enemyCount % 3 === 1 ? 'SPEEDY' : 'BASIC';
+      setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
+      setEnemyCount(prev => prev + 1);
+    }
+    else if (round > 15 && round <= 22 && enemyCount < 10 * round) {
+      const enemyType = enemyCount % 3 === 0 ? 'STEALTH' : 
+                       enemyCount % 3 === 1 ? 'SPEEDY' : 'TANK';
+      setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
+      setEnemyCount(prev => prev + 1);
+    }
+    else if (round > 22 && round <= 30 && enemyCount < 15 * round) {
+      const enemyType = enemyCount % 3 === 0 ? 'STEALTHYTANK' : 
+                       enemyCount % 3 === 1 ? 'STEALTHYSPEEDY' : 'TANK';
+      setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
+      setEnemyCount(prev => prev + 1);
+    }
+    // Game reset
+    else if (round === 0) {
+      setEnemies([]);
+    }
+    // Round completion
+    if (enemies.length === 0 && enemyCount === 10 * round ||  enemyCount === 15 * round) {
+      setRound(prev => prev + 1);
+      setEnemyCount(0);
+    }
+  };
+
+  const spawnInterval = setInterval(() => {
+    if (round > 0) {
+      spawnEnemies();
+    }
+  }, Math.max(1000 / round, 70));
+
+  // Cleanup
+  return () => clearInterval(spawnInterval);
+}, [round, enemyCount, enemies.length, isPageVisible]); 
 
   // Enemy movement - updates position every 50ms
   useEffect(() => {
@@ -173,7 +256,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     }));
     
     setAttackEffects((prevEffects) => [...prevEffects, ...newEffects]);
-    setMoney((prevMoney) => prevMoney + (tower.attack * targets.length) / 5);
+    setMoney((prevMoney) => prevMoney + Math.floor(tower.attack / 7.5));
     setTimeout(() => {
       setAttackEffects((prevEffects) => 
         prevEffects.filter((effect) => !newEffects.find(e => e.id === effect.id))
@@ -271,6 +354,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   // Buy towers and place them on the map
   const buyTowers = (event: React.MouseEvent<HTMLImageElement>, positionX: number,positionY:number) => {
     if (round > 0 && (event.target as HTMLImageElement).src.includes('buildingSite')) {
+      setShowUpgradeMenu(false);
       setShowTowerSelectMenu(true);
       const newTowerId = uuidv4();  // Generate ID first
       (event.target as HTMLImageElement).id = newTowerId;  // Set the ID of the clicked element
@@ -279,6 +363,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     }
     else if (round > 0 && !(event.target as HTMLImageElement).src.includes('buildingSite')) {
       setShowUpgradeMenu(true);
+      setShowTowerSelectMenu(false);
       setSelectedTowerID((event.target as HTMLImageElement).id);
     }
   };
@@ -344,7 +429,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
           attackSpeed: 400,
           furthestEnemyInRange: null, 
           isAttacking: false, 
-          price: 200, 
+          price: 500, 
           type: type,
           maxDamage: 75,
           maxAttackSpeed: 200,
@@ -372,9 +457,9 @@ const closeTowerSelectMenu = () => {
                 <button 
                   className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-full"
                   onClick={upgradeDamage}
-                  disabled={money < 150}
+                  disabled={money < 250}
                 >
-                  Upgrade Damage (150$ for +25dmg)
+                  Upgrade Damage (250$ for +25dmg)
                 </button>
               ) : (
                 <div className="bg-gray-500 text-white font-bold py-2 px-4 rounded w-full text-center">
@@ -385,9 +470,9 @@ const closeTowerSelectMenu = () => {
                 <button 
                   className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
                   onClick={upgradeAttackSpeed}
-                  disabled={money < 200}
+                  disabled={money < 500}
                 >
-                  Upgrade Attack Speed (200$ for -100ms)
+                  Upgrade Attack Speed (500$ for -200ms)
                 </button>
               ) : (
                 <div className="bg-gray-500 text-white font-bold py-2 px-4 rounded w-full text-center">
@@ -398,9 +483,9 @@ const closeTowerSelectMenu = () => {
                 <button 
                   className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
                   onClick={upgradeDoubleAttack}
-                  disabled={money < 1000}
+                  disabled={money < 1500}
                 >
-                  Upgrade Double Attack (1000$)
+                  Upgrade Double Attack (1500$)
                 </button>
               ) : selectedTower.type === "basic" ?(
                 <div className="bg-gray-500 text-white font-bold py-2 px-4 rounded w-full text-center">
@@ -411,9 +496,9 @@ const closeTowerSelectMenu = () => {
                 <button 
                   className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
                   onClick={upgradeToTrippleAttack}
-                  disabled={money < 2000}
+                  disabled={money < 2500}
                 >
-                  Upgrade Tripple Attack (2000$)
+                  Upgrade Tripple Attack (2500$)
                 </button>
               ) : selectedTower.type === "rapidShooter" ?(
                 <div className="bg-gray-500 text-white font-bold py-2 px-4 rounded w-full text-center">
@@ -445,6 +530,13 @@ const closeTowerSelectMenu = () => {
               >
                 Close
               </button>
+              <div>
+                <h1>Stats:</h1>
+                <div>Attack: {selectedTower.attack}</div>
+                <div>Attack Speed: {selectedTower.attackSpeed}</div>
+                <div>Attack Type: {selectedTower.attackType}</div>
+                <div>Can hit stealth: {selectedTower.canHitStealth ? 'Yes' : 'No'}</div>
+              </div>
             </>
           )}
         </div>
@@ -458,8 +550,8 @@ const closeTowerSelectMenu = () => {
   }
   
   const upgradeDamage = () => {
-    if (money >= 150){
-      setMoney((prevMoney) => prevMoney - 150);
+    if (money >= 250){
+      setMoney((prevMoney) => prevMoney - 250);
       setTower((prevTower) => 
         prevTower.map((t) =>
           t.id === selectedTowerID ? { ...t, attack: t.attack + 25 } : t
@@ -469,18 +561,18 @@ const closeTowerSelectMenu = () => {
     
   }
   const upgradeAttackSpeed = () => {
-    if (money >= 200){
-      setMoney((prevMoney) => prevMoney - 200);
+    if (money >= 500){
+      setMoney((prevMoney) => prevMoney - 500);
       setTower((prevTower) => 
         prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t, attackSpeed: t.attackSpeed - 100 } : t
+          t.id === selectedTowerID ? { ...t, attackSpeed: t.attackSpeed - 200 } : t
         )
       );
     }
   }
   const upgradeDoubleAttack = () => {
-    if (money >= 1000){
-      setMoney((prevMoney) => prevMoney - 1000);
+    if (money >= 1500){
+      setMoney((prevMoney) => prevMoney - 1500);
       setTower((prevTower) => 
         prevTower.map((t) =>
           t.id === selectedTowerID ? { ...t,  attackType: 'double' } : t
@@ -490,7 +582,7 @@ const closeTowerSelectMenu = () => {
   }
   const upgradeToTrippleAttack = () => {
     if (money >= 2000){
-      setMoney((prevMoney) => prevMoney - 2000);
+      setMoney((prevMoney) => prevMoney - 2500);
       setTower((prevTower) => 
         prevTower.map((t) =>
           t.id === selectedTowerID ? { ...t, attackType: 'triple'} : t
@@ -553,7 +645,7 @@ const closeTowerSelectMenu = () => {
       if (canHitStealth) {
           return isInRange;
       } else {
-          return isInRange && enemy.type !== "stealth";
+          return isInRange && (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");
       }
     });
   
@@ -576,7 +668,7 @@ const closeTowerSelectMenu = () => {
     }
   }
   return (
-    <div className='relative h-4/5 border border-white overflow-hidden'>
+    <div className='relative h-4/5 border border-white overflow-hidden' suppressHydrationWarning>
       <img src='/map.png' className='object-cover w-full h-full z-0' alt='map' />
       <img src='/buildingSite.png' className='absolute top-[20%] left-[10%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 10,20)} />
       <img src='/buildingSite.png' className='absolute top-[20%] left-[25%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 25,20)} />
@@ -602,18 +694,22 @@ const closeTowerSelectMenu = () => {
               <img src='/tower1.png' className='w-16 h-16'/>
             </button>
             <h1>100$</h1>
+            <h1>Basic</h1>
           </div>
           <div>
             <button onClick={() => selectTowerType("sniper",selectedTowerID)}>
               <img src='/tower2.png' className='w-16 h-16'/>
             </button>
             <h1>200$</h1>
+            <h1>Sniper</h1>
           </div>
           <div>
             <button onClick={() => selectTowerType("rapidShooter",selectedTowerID)}>
               <img src='/rapidShooter.png' className='w-16 h-16'/>
             </button>
             <h1>500$</h1>
+            <h1>Rapid
+               Shooter</h1>
           </div>
         </div>
         <button 
