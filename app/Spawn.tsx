@@ -115,7 +115,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     else if (round === 0) {
       setEnemies([]);
     }
-    else if (enemyCount === 20 * round) {
+    else if (enemyCount === 15 * round) {
       setRound((prevRound) => prevRound + 1);
       setEnemyCount(0);
     }
