@@ -18,6 +18,7 @@ interface Enemy {
   id: string;
   position: number;
   hp: number;
+  speed: number;
   damage: number;
   src: string;
   type: string;
@@ -37,6 +38,7 @@ interface Tower {
   maxAttackSpeed: number;
   radius: number;
   attackType: string;
+  canHitStealth: boolean;
 }
 
 const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp }) => {
@@ -82,7 +84,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
        if (enemyCount % 5 !== 0) {
         setEnemies((prevEnemy) => [
           ...prevEnemy,
-          { id: uuidv4(), position: -7, src: 'enemy1.png', hp: 100, damage: 5, type: 'basic' },
+          { id: uuidv4(), position: -7, src: 'enemy1.png', hp: 100, damage: 5, type: 'basic', speed: 0.125 },
         ]);
         setEnemyCount((prevCount) => prevCount + 1);
       }
@@ -90,7 +92,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       {
         setEnemies((prevEnemy) => [
           ...prevEnemy,
-          { id: uuidv4(), position: -7, src: 'enemy2.png', hp: 50, damage: 10, type: 'stealth' },
+          { id: uuidv4(), position: -7, src: 'enemy2.png', hp: 50, damage: 10, type: 'stealth', speed: 0.125 },
         ]);
         setEnemyCount((prevCount) => prevCount + 1);
       }
@@ -99,7 +101,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       if (enemyCount % 5 !== 0) {
        setEnemies((prevEnemy) => [
          ...prevEnemy,
-         { id: uuidv4(), position: -7, src: 'enemy3.png', hp: 200, damage: 5, type: 'basic' },
+         { id: uuidv4(), position: -7, src: 'enemy3.png', hp: 200, damage: 5, type: 'basic', speed: 0.125 },
        ]);
        setEnemyCount((prevCount) => prevCount + 1);
      }
@@ -107,7 +109,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
      {
        setEnemies((prevEnemy) => [
          ...prevEnemy,
-         { id: uuidv4(), position: -7, src: 'enemy2.png', hp: 50, damage: 10, type: 'stealth' },
+         { id: uuidv4(), position: -7, src: 'enemy2.png', hp: 50, damage: 10, type: 'stealth', speed: 0.125 },
        ]);
        setEnemyCount((prevCount) => prevCount + 1);
      }
@@ -195,7 +197,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     setTower((prevTowers) =>
       prevTowers.map((tower) => ({
         ...tower,
-        furthestEnemyInRange: getFurthestEnemyInRadius(tower.position, tower.radius, tower.type, tower.attackType) ?? null
+        furthestEnemyInRange: getFurthestEnemyInRadius(tower.position, tower.radius, tower.canHitStealth, tower.attackType) ?? null
       })
       )
     );
@@ -238,7 +240,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       prevEnemies
         .map((enemy) => ({
           ...enemy,
-          position: enemy.position + 0.125,
+          position: enemy.position + enemy.speed,
         }))
         .filter((enemy) => enemy.position <= 100)
         .filter((enemy) => enemy.hp > 0)
@@ -288,10 +290,11 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
           isAttacking: false, 
           price: 100, 
           type: type,
-          maxDamage: 100,
+          maxDamage: 200,
           maxAttackSpeed: 300,
           radius: 10,
-          attackType: 'single'
+          attackType: 'single',
+          canHitStealth: false
         };
         return [...prevTower, newTower];
       });
@@ -310,10 +313,11 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
           isAttacking: false, 
           price: 200, 
           type: type,
-          maxDamage: 100,
-          maxAttackSpeed: 800,
+          maxDamage: 300,
+          maxAttackSpeed: 700,
           radius: 80,
-          attackType: 'single'
+          attackType: 'single',
+          canHitStealth: true
         };
         return [...prevTower, newTower];
       });
@@ -332,10 +336,11 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
           isAttacking: false, 
           price: 200, 
           type: type,
-          maxDamage: 50,
+          maxDamage: 75,
           maxAttackSpeed: 200,
           radius: 15,
-          attackType: 'double'
+          attackType: 'double',
+          canHitStealth: false
         };
         return [...prevTower, newTower];
       });
@@ -405,6 +410,25 @@ const closeTowerSelectMenu = () => {
                   Already have Tripple Attack
                 </div>
               ) : null}
+              {!selectedTower.canHitStealth ? (
+                <button 
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
+                  onClick={upgradeToHitStealth}
+                  disabled={money < 2000}
+                >
+                  Upgrade to hit stealth (2000$)
+                </button>
+              ) : (
+                <div className="bg-gray-500 text-white font-bold py-2 px-4 rounded w-full text-center">
+                  Already can hit stealth
+                </div>
+              )}
+              <button 
+                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-full mt-2"
+                onClick={() => sellTower(selectedTower.price)}
+              >
+                SellTower
+              </button>
               <button 
                 className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-full mt-2"
                 onClick={closeUpgradeMenu}
@@ -464,6 +488,30 @@ const closeTowerSelectMenu = () => {
       );
     }
   }
+  const upgradeToHitStealth = () => {
+    if (money >= 2000){
+      setMoney((prevMoney) => prevMoney - 2000);
+      setTower((prevTower) => 
+        prevTower.map((t) =>
+          t.id === selectedTowerID ? { ...t, canHitStealth: true} : t
+        )
+      );
+    }
+  }
+  const sellTower = (towerPrice: number) => {
+    setMoney((prevMoney) => prevMoney + towerPrice / 2); // Add money back (changed from subtract)
+    setTower((prevTower) => 
+        prevTower.filter((t) => t.id !== selectedTowerID) // Filter out the selected tower
+    );
+    
+    // Reset the building site image
+    const towerElement = document.getElementById(selectedTowerID) as HTMLImageElement;
+    if (towerElement) {
+        towerElement.src = '/buildingSite.png';
+    }
+    
+    setShowUpgradeMenu(false); // Close the upgrade menu after selling
+};
   // Component for attack animation
   const attackAnimation = () => {
     return attackEffects.map((effect) => (
@@ -485,12 +533,12 @@ const closeTowerSelectMenu = () => {
   
 
   // Get the furthest enemy within a certain radius from the tower
-  const getFurthestEnemyInRadius = (towerPosition: number, radius: number, type: string, attackType: string) => {
+  const getFurthestEnemyInRadius = (towerPosition: number, radius: number, canHitStealth: boolean, attackType: string) => {
     const enemiesInRadius = enemies.filter((enemy) => {
       const isInRange = enemy.position <= towerPosition + radius && 
                        enemy.position >= towerPosition - radius;
       
-      if (type === "sniper") {
+      if (canHitStealth) {
           return isInRange;
       } else {
           return isInRange && enemy.type !== "stealth";
