@@ -156,8 +156,8 @@ const ENEMY_TYPES = {
     hp: 400,
     damage: 50,
     type: 'speedyregentank',
-    speed: 0.5,
-    baseSpeed: 0.5,
+    speed: 0.2,
+    baseSpeed: 0.2,
     regen: 100
   }
   
