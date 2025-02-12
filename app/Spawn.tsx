@@ -156,8 +156,8 @@ const TOWER_TYPES = {
     slowAmount: 1
     
   },
-  RAPID_SHOOTER: {
-    src: '/rapidshooter.png',
+  RAPIDSHOOTER: {
+    src: '/rapidShooter.png',
     attack: 25,
     attackSpeed: 400,
     price: 500,
@@ -214,8 +214,9 @@ useEffect(() => {
     setShowUpgradeMenu(false);
     const tower1Elements = document.querySelectorAll('img[src="/tower1.png"]') as NodeListOf<HTMLImageElement>;
     const tower2Elements = document.querySelectorAll('img[src="/tower2.png"]') as NodeListOf<HTMLImageElement>;
-    const tower3Elements = document.querySelectorAll('img[src="/rapidshooter.png"]') as NodeListOf<HTMLImageElement>;
-    [...tower1Elements, ...tower2Elements, ...tower3Elements].forEach((element) => {
+    const tower3Elements = document.querySelectorAll('img[src="/rapidShooter.png"]') as NodeListOf<HTMLImageElement>;
+    const tower4Elements = document.querySelectorAll('img[src="/slower.png"]') as NodeListOf<HTMLImageElement>;
+    [...tower1Elements, ...tower2Elements, ...tower3Elements, ...tower4Elements].forEach((element) => {
       element.src = '/buildingSite.png';
     });
   }
@@ -235,11 +236,12 @@ useEffect(() => {
       setTower([]);
       setShowUpgradeMenu(false);
       const tower1Elements = document.querySelectorAll('img[src="/tower1.png"]') as NodeListOf<HTMLImageElement>;
-      const tower2Elements = document.querySelectorAll('img[src="/tower2.png"]') as NodeListOf<HTMLImageElement>;
-      const tower3Elements = document.querySelectorAll('img[src="/rapidshooter.png"]') as NodeListOf<HTMLImageElement>;
-      [...tower1Elements, ...tower2Elements, ...tower3Elements].forEach((element) => {
-        element.src = '/buildingSite.png';
-      });
+    const tower2Elements = document.querySelectorAll('img[src="/tower2.png"]') as NodeListOf<HTMLImageElement>;
+    const tower3Elements = document.querySelectorAll('img[src="/rapidShooter.png"]') as NodeListOf<HTMLImageElement>;
+    const tower4Elements = document.querySelectorAll('img[src="/slower.png"]') as NodeListOf<HTMLImageElement>;
+    [...tower1Elements, ...tower2Elements, ...tower3Elements, ...tower4Elements].forEach((element) => {
+      element.src = '/buildingSite.png';
+    });
       return;
     }
 
@@ -562,7 +564,7 @@ const closeTowerSelectMenu = () => {
       setMoney((prevMoney) => prevMoney - 250);
       setTower((prevTower) => 
         prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t, attack: Math.max(t.attack + 25, t.maxDamage) } : t
+          t.id === selectedTowerID ? { ...t, attack: Math.min(t.attack + 25, t.maxDamage) } : t
         )
       );
     }
