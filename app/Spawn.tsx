@@ -41,6 +41,7 @@ interface Tower {
   radius: number;
   attackType: string;
   canHitStealth: boolean;
+  slowAmount: number;
 }
 
 const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp }) => {
@@ -125,6 +126,73 @@ const ENEMY_TYPES = {
     speed: 1
   }
 };
+
+// Add this near ENEMY_TYPES constant
+const TOWER_TYPES = {
+  BASIC: {
+    src: '/tower1.png',
+    attack: 50,
+    attackSpeed: 1000,
+    price: 100,
+    type: 'basic',
+    maxDamage: 200,
+    maxAttackSpeed: 300,
+    radius: 10,
+    attackType: 'single',
+    canHitStealth: false,
+    slowAmount: 1
+  },
+  SNIPER: {
+    src: '/tower2.png',
+    attack: 100,
+    attackSpeed: 2000,
+    price: 200,
+    type: 'sniper',
+    maxDamage: 300,
+    maxAttackSpeed: 700,
+    radius: 80,
+    attackType: 'single',
+    canHitStealth: true,
+    slowAmount: 1
+    
+  },
+  RAPID_SHOOTER: {
+    src: '/rapidshooter.png',
+    attack: 25,
+    attackSpeed: 400,
+    price: 500,
+    type: 'rapidShooter',
+    maxDamage: 75,
+    maxAttackSpeed: 200,
+    radius: 15,
+    attackType: 'double',
+    canHitStealth: false,
+    slowAmount: 1
+  },
+  SLOWER: {
+    src: '/slower.png',
+    attack: 5,
+    attackSpeed: 1500,
+    price: 300,
+    type: 'slower',
+    maxDamage: 20,
+    maxAttackSpeed: 750,
+    radius: 15,
+    attackType: 'single',
+    canHitStealth: false,
+    slowAmount: 0.75
+  }
+};
+
+// Then create a helper function for creating new towers
+const createNewTower = (type: keyof typeof TOWER_TYPES, positionX: number, positionY: number, id: string) => ({
+  id: id,
+  positionX: positionX,
+  positionY: positionY,
+  furthestEnemyInRange: null,
+  isAttacking: false,
+  ...TOWER_TYPES[type]
+});
 
 // Then, create helper function for spawning enemies
 const createNewEnemy = (type: keyof typeof ENEMY_TYPES) => ({
@@ -272,7 +340,7 @@ useEffect(() => {
       prevEnemies.map((enemy) => {
         const isTargeted = targets.some(target => target.id === enemy.id);
         if (isTargeted) {
-          return { ...enemy, hp: enemy.hp - tower.attack };
+          return { ...enemy, hp: enemy.hp - tower.attack, speed: Math.max(enemy.speed * tower.slowAmount, enemy.speed * 0.5) };
         }
         return enemy;
       })
@@ -367,80 +435,20 @@ useEffect(() => {
       setSelectedTowerID((event.target as HTMLImageElement).id);
     }
   };
-  const selectTowerType = (type: string, newTowerId: string) => {
-    if (type === 'basic' && money >= 100) {
-      selectedTower[0].element.src = "/tower1.png";
-      setShowTowerSelectMenu(false);
-      setMoney((prevMoney) => prevMoney - 100);
-      setTower((prevTower) => {
-        const newTower = { 
-          id: newTowerId,  // Use the same ID
-          positionX: selectedTower[0].towerPositionX, 
-          positionY: selectedTower[0].towerPositionY,
-          attack: 50, 
-          attackSpeed: 1000,
-          furthestEnemyInRange: null, 
-          isAttacking: false, 
-          price: 100, 
-          type: type,
-          maxDamage: 200,
-          maxAttackSpeed: 300,
-          radius: 10,
-          attackType: 'single',
-          canHitStealth: false
-        };
-        return [...prevTower, newTower];
-      });
-    }
-    else if (type === 'sniper' && money >= 200) {
-      selectedTower[0].element.src = "/tower2.png";
-      setShowTowerSelectMenu(false);
-      setMoney((prevMoney) => prevMoney - 200);
-      setTower((prevTower) => {
-        const newTower = { 
-          id: newTowerId,  // Use the same ID
-          positionX: selectedTower[0].towerPositionX, 
-          positionY: selectedTower[0].towerPositionY,
-          attack: 100, 
-          attackSpeed: 2000,
-          furthestEnemyInRange: null, 
-          isAttacking: false, 
-          price: 200, 
-          type: type,
-          maxDamage: 300,
-          maxAttackSpeed: 700,
-          radius: 80,
-          attackType: 'single',
-          canHitStealth: true
-        };
-        return [...prevTower, newTower];
-      });
-    }
-    else if (type === 'rapidShooter' && money >= 500) {
-      selectedTower[0].element.src = "/rapidshooter.png";
-      setShowTowerSelectMenu(false);
-      setMoney((prevMoney) => prevMoney - 200);
-      setTower((prevTower) => {
-        const newTower = { 
-          id: newTowerId,  // Use the same ID
-          positionX: selectedTower[0].towerPositionX, 
-          positionY: selectedTower[0].towerPositionY,
-          attack: 25, 
-          attackSpeed: 400,
-          furthestEnemyInRange: null, 
-          isAttacking: false, 
-          price: 500, 
-          type: type,
-          maxDamage: 75,
-          maxAttackSpeed: 200,
-          radius: 15,
-          attackType: 'double',
-          canHitStealth: false
-        };
-        return [...prevTower, newTower];
-      });
-    }
-}
+  
+// Then modify the selectTowerType function to use these constants
+const selectTowerType = (type: string, newTowerId: string) => {
+  const towerType = type.toUpperCase() as keyof typeof TOWER_TYPES;
+  const towerConfig = TOWER_TYPES[towerType];
+  
+  if (!towerConfig || money < towerConfig.price) return;
+
+  selectedTower[0].element.src = towerConfig.src;
+  setShowTowerSelectMenu(false);
+  setMoney((prevMoney) => prevMoney - towerConfig.price);
+  setTower((prevTower) => [...prevTower, createNewTower(towerType, selectedTower[0].towerPositionX, selectedTower[0].towerPositionY, newTowerId)]);
+};
+
 const closeTowerSelectMenu = () => {
   setShowTowerSelectMenu(false);
 }
@@ -479,7 +487,7 @@ const closeTowerSelectMenu = () => {
                   Max Attack Speed Reached
                 </div>
               )}
-              {selectedTower.type === "basic" && selectedTower.attackType === 'single' ? (
+              {selectedTower.attackType === 'single' ? (
                 <button 
                   className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
                   onClick={upgradeDoubleAttack}
@@ -554,7 +562,7 @@ const closeTowerSelectMenu = () => {
       setMoney((prevMoney) => prevMoney - 250);
       setTower((prevTower) => 
         prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t, attack: t.attack + 25 } : t
+          t.id === selectedTowerID ? { ...t, attack: Math.max(t.attack + 25, t.maxDamage) } : t
         )
       );
     }
@@ -565,7 +573,7 @@ const closeTowerSelectMenu = () => {
       setMoney((prevMoney) => prevMoney - 500);
       setTower((prevTower) => 
         prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t, attackSpeed: t.attackSpeed - 200 } : t
+          t.id === selectedTowerID ? { ...t, attackSpeed: Math.max(t.attackSpeed - 200, t.maxAttackSpeed) } : t
         )
       );
     }
@@ -709,7 +717,14 @@ const closeTowerSelectMenu = () => {
             </button>
             <h1>500$</h1>
             <h1>Rapid
-               Shooter</h1>
+               <p>Shooter</p></h1>
+          </div>
+          <div>
+            <button onClick={() => selectTowerType("slower",selectedTowerID)}>
+              <img src='/slower.png' className='w-16 h-16'/>
+            </button>
+            <h1>300$</h1>
+            <h1>Slower</h1>
           </div>
         </div>
         <button 
