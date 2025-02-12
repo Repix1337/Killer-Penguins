@@ -20,9 +20,12 @@ interface Enemy {
   positionY: number;
   hp: number;
   speed: number;
+  baseSpeed: number;
   damage: number;
   src: string;
   type: string;
+  regen: number;
+  isTargeted: boolean;  
 }
 
 // Define the Tower interface
@@ -42,6 +45,7 @@ interface Tower {
   attackType: string;
   canHitStealth: boolean;
   slowAmount: number;
+  maxSlow:number;
 }
 
 const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp }) => {
@@ -88,43 +92,75 @@ const ENEMY_TYPES = {
     hp: 100,
     damage: 5,
     type: 'basic',
-    speed: 0.125
+    speed: 0.150,
+    baseSpeed: 0.150,
+    regen: 0
   },
   STEALTH: {
     src: 'enemy2.png',
     hp: 50,
     damage: 10,
     type: 'stealth',
-    speed: 0.125
+    speed: 0.150,
+    baseSpeed: 0.150,
+    regen: 0
   },
   TANK: {
     src: 'enemy3.png',
     hp: 350,
     damage: 5,
     type: 'basic',
-    speed: 0.100
+    speed: 0.125,
+    baseSpeed: 0.125,
+    regen: 0
   },
   SPEEDY: {
     src: 'enemy4.png',
     hp: 50,
     damage: 35,
     type: 'speedy',
-    speed: 1
+    speed: 1,
+    baseSpeed: 1,
+    regen: 0
   },
   STEALTHYTANK: {
     src: 'stealthyTank.png',
     hp: 250,
     damage: 20,
     type: 'stealthytank',
-    speed: 0.125
+    speed: 0.125,
+    baseSpeed: 0.125,
+    regen: 0
   },
   STEALTHYSPEEDY: {
     src: 'stealthySpeedy.png',
     hp: 50,
     damage: 50,
     type: 'stealthyspeedy',
-    speed: 1
+    speed: 1,
+    baseSpeed: 1,
+    regen: 0
+    
+  },
+  REGENTANK: {
+    src: 'regenTank.png',
+    hp: 300,
+    damage: 50,
+    type: 'regentank',
+    speed: 0.125,
+    baseSpeed: 0.125,
+    regen: 100
+  },
+  SPEEDYREGENTANK: {
+    src: 'regenTank.png',
+    hp: 400,
+    damage: 50,
+    type: 'speedyregentank',
+    speed: 0.5,
+    baseSpeed: 0.5,
+    regen: 100
   }
+  
 };
 
 // Add this near ENEMY_TYPES constant
@@ -135,12 +171,13 @@ const TOWER_TYPES = {
     attackSpeed: 1000,
     price: 100,
     type: 'basic',
-    maxDamage: 200,
+    maxDamage: 250,
     maxAttackSpeed: 300,
-    radius: 10,
+    radius: 15,
     attackType: 'single',
     canHitStealth: false,
-    slowAmount: 1
+    slowAmount: 1,
+    maxSlow: 1
   },
   SNIPER: {
     src: '/tower2.png',
@@ -149,11 +186,12 @@ const TOWER_TYPES = {
     price: 200,
     type: 'sniper',
     maxDamage: 300,
-    maxAttackSpeed: 700,
+    maxAttackSpeed: 1200,
     radius: 80,
     attackType: 'single',
     canHitStealth: true,
-    slowAmount: 1
+    slowAmount: 1,
+    maxSlow: 1
     
   },
   RAPIDSHOOTER: {
@@ -167,20 +205,22 @@ const TOWER_TYPES = {
     radius: 15,
     attackType: 'double',
     canHitStealth: false,
-    slowAmount: 1
+    slowAmount: 1,
+    maxSlow: 1
   },
   SLOWER: {
     src: '/slower.png',
-    attack: 5,
+    attack: 15,
     attackSpeed: 1500,
     price: 300,
     type: 'slower',
-    maxDamage: 20,
+    maxDamage: 40,
     maxAttackSpeed: 750,
     radius: 15,
     attackType: 'single',
     canHitStealth: false,
-    slowAmount: 0.75
+    slowAmount: 0.75,
+    maxSlow: 0.6
   }
 };
 
@@ -199,6 +239,7 @@ const createNewEnemy = (type: keyof typeof ENEMY_TYPES) => ({
   id: uuidv4(),
   positionX: -7,
   positionY: 50,
+  isTargeted: false,
   ...ENEMY_TYPES[type]
 });
 
@@ -246,7 +287,7 @@ useEffect(() => {
     }
 
     // Early rounds - Basic enemies
-    if ((round > 0 && round <= 4) || (round > 5 && round < 10)) {
+    if ((round > 2 && round <= 4) || (round > 5 && round < 10)) {
       if (enemyCount < 10 * round) {
         setEnemies(prev => [...prev, createNewEnemy('BASIC')]);
         setEnemyCount(prev => prev + 1);
@@ -265,16 +306,24 @@ useEffect(() => {
       setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
       setEnemyCount(prev => prev + 1);
     }
-    else if (round > 15 && round <= 22 && enemyCount < 10 * round) {
+    else if (round > 15 && round <= 19 && enemyCount < 10 * round) {
       const enemyType = enemyCount % 3 === 0 ? 'STEALTH' : 
                        enemyCount % 3 === 1 ? 'SPEEDY' : 'TANK';
       setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
       setEnemyCount(prev => prev + 1);
     }
-    else if (round > 22 && round <= 30 && enemyCount < 15 * round) {
+    else if (round === 20 && enemyCount < 10 * round) {
+      setEnemies(prev => [...prev, createNewEnemy("REGENTANK")]);
+      setEnemyCount(prev => prev + 1);
+    }
+    else if (round >= 21 && round <= 29 && enemyCount < 15 * round) {
       const enemyType = enemyCount % 3 === 0 ? 'STEALTHYTANK' : 
-                       enemyCount % 3 === 1 ? 'STEALTHYSPEEDY' : 'TANK';
+                       enemyCount % 3 === 1 ? 'STEALTHYSPEEDY' : 'REGENTANK';
       setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
+      setEnemyCount(prev => prev + 1);
+    }
+    else if (round === 30 && enemyCount < 10 * round) {
+      setEnemies(prev => [...prev, createNewEnemy("SPEEDYREGENTANK")]);
       setEnemyCount(prev => prev + 1);
     }
     // Game reset
@@ -282,7 +331,7 @@ useEffect(() => {
       setEnemies([]);
     }
     // Round completion
-    if (enemies.length === 0 && enemyCount === 10 * round ||  enemyCount === 15 * round) {
+    if (enemies.length === 0 && enemyCount === 10 * round || enemyCount === 15 * round) {
       setRound(prev => prev + 1);
       setEnemyCount(0);
     }
@@ -292,13 +341,13 @@ useEffect(() => {
     if (round > 0) {
       spawnEnemies();
     }
-  }, Math.max(1000 / round, 70));
+  }, Math.max(1000 / round, 50));
 
   // Cleanup
   return () => clearInterval(spawnInterval);
 }, [round, enemyCount, enemies.length, isPageVisible]); 
 
-  // Enemy movement - updates position every 50ms
+  // Enemy movement - updates position every 25ms
   useEffect(() => {
     if (!isPageVisible || round <= 0) return; // Stop if page is not visible
 
@@ -306,49 +355,83 @@ useEffect(() => {
     return () => clearInterval(interval);
   }, [round, isPageVisible]); // Add isPageVisible to dependencies
 
+  // Heal enemy every second if it has health regeneration
+  useEffect(() => {
+    if (!isPageVisible || round <= 0) return; // Stop if page is not visible
+
+    const interval = setInterval(() => {
+      setEnemies((prevEnemies) => 
+        prevEnemies.map(enemy => 
+          enemy.regen > 0 ? {...enemy, hp: enemy.hp + enemy.regen} : enemy
+        )
+      )
+    }, 1500);
+    return () => clearInterval(interval);
+  }, [enemies, isPageVisible]); 
+
   // Main tower attack logic
-  const towerAttack = useCallback((tower: Tower, targets: Enemy[]) => {
-    if (tower.isAttacking) return;
-   
+ const towerAttack = useCallback((tower: Tower, targets: Enemy[]) => {
+  if (tower.isAttacking) return;
+ 
+  setTower((prevTowers) =>
+    prevTowers.map((t) =>
+      t.id === tower.id ? { ...t, isAttacking: true } : t
+    )
+  );
+
+  // Mark targets as targeted
+  setEnemies((prevEnemies) =>
+    prevEnemies.map((enemy) => {
+      const isTargeted = targets.some(target => target.id === enemy.id);
+      return isTargeted ? { ...enemy, isTargeted: true } : enemy;
+    })
+  );
+
+  const newEffects = targets.map(target => ({
+    id: uuidv4(),
+    towerPositionX: tower.positionX,
+    towerPositionY: tower.positionY,
+    enemyPositionX: target.positionX,
+    enemyPositionY: target.positionY,
+    timestamp: Date.now()
+  }));
+  
+  setAttackEffects((prevEffects) => [...prevEffects, ...newEffects]);
+  setMoney((prevMoney) => prevMoney + Math.floor(tower.attack / 7.5));
+
+  setTimeout(() => {
+    setAttackEffects((prevEffects) => 
+      prevEffects.filter((effect) => !newEffects.find(e => e.id === effect.id))
+    );
     setTower((prevTowers) =>
       prevTowers.map((t) =>
-        t.id === tower.id ? { ...t, isAttacking: true } : t
+        t.id === tower.id ? { ...t, isAttacking: false } : t
       )
     );
-  
-    const newEffects = targets.map(target => ({
-      id: uuidv4(),
-      towerPositionX: tower.positionX,
-      towerPositionY: tower.positionY,
-      enemyPositionX: target.positionX,
-      enemyPositionY: target.positionY,
-      timestamp: Date.now()
-    }));
-    
-    setAttackEffects((prevEffects) => [...prevEffects, ...newEffects]);
-    setMoney((prevMoney) => prevMoney + Math.floor(tower.attack / 7.5));
-    setTimeout(() => {
-      setAttackEffects((prevEffects) => 
-        prevEffects.filter((effect) => !newEffects.find(e => e.id === effect.id))
-      );
-      setTower((prevTowers) =>
-        prevTowers.map((t) =>
-          t.id === tower.id ? { ...t, isAttacking: false } : t
-        )
-      );
-    }, tower.attackSpeed);
-  
+    // Unmark targets after attack
     setEnemies((prevEnemies) =>
       prevEnemies.map((enemy) => {
-        const isTargeted = targets.some(target => target.id === enemy.id);
-        if (isTargeted) {
-          return { ...enemy, hp: enemy.hp - tower.attack, speed: Math.max(enemy.speed * tower.slowAmount, enemy.speed * 0.5) };
-        }
-        return enemy;
+        const wasTargeted = targets.some(target => target.id === enemy.id);
+        return wasTargeted ? { ...enemy, isTargeted: false } : enemy;
       })
     );
-  
-  }, []);
+  }, tower.attackSpeed);
+
+  setEnemies((prevEnemies) =>
+    prevEnemies.map((enemy) => {
+      const isTargeted = targets.some(target => target.id === enemy.id);
+      if (isTargeted) {
+        return { 
+          ...enemy, 
+          hp: enemy.hp - tower.attack, 
+          speed: Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * 0.5)
+        };
+      }
+      return enemy;
+    })
+  );
+
+}, []);
 
   // Tower targeting system - updates target when enemies move
   useEffect(() => {
@@ -528,6 +611,19 @@ const closeTowerSelectMenu = () => {
                   Already can hit stealth
                 </div>
               )}
+              {selectedTower.type === "slower" && selectedTower.slowAmount !== selectedTower.maxSlow ? (
+                <button 
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
+                  onClick={upgradeSlow}
+                  disabled={money < 1000}
+                >
+                  Upgrade Slow (1000$)
+                </button>
+              ) : (
+                <div className="bg-gray-500 text-white font-bold py-2 px-4 rounded w-full text-center">
+                  Slow already upgraded
+                </div>
+              )}
               <button 
                 className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-full mt-2"
                 onClick={() => sellTower(selectedTower.price)}
@@ -610,6 +706,16 @@ const closeTowerSelectMenu = () => {
       );
     }
   }
+  const upgradeSlow = () => {
+    if (money >= 1000){
+      setMoney((prevMoney) => prevMoney - 1000);
+      setTower((prevTower) => 
+        prevTower.map((t) =>
+          t.id === selectedTowerID ? { ...t, slowAmount: Math.max(t.slowAmount - 0.25, t.maxSlow) } : t
+        )
+      );
+    }
+  }
   const sellTower = (towerPrice: number) => {
     setMoney((prevMoney) => prevMoney + towerPrice / 2); // Add money back (changed from subtract)
     setTower((prevTower) => 
@@ -653,9 +759,10 @@ const closeTowerSelectMenu = () => {
                        enemy.positionX >= towerPosition - radius;
       
       if (canHitStealth) {
-          return isInRange;
+        return isInRange && !enemy.isTargeted;  // Only return non-targeted enemies
       } else {
-          return isInRange && (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");
+        return isInRange && !enemy.isTargeted && 
+               (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");
       }
     });
   
@@ -670,8 +777,7 @@ const closeTowerSelectMenu = () => {
     if (attackType === 'double' && sortedEnemies.length >= 2) {
       return sortedEnemies.slice(0, 2);
     } 
-    else if (attackType === 'double' && sortedEnemies.length >= 3)
-    {
+    else if (attackType === 'triple' && sortedEnemies.length >= 3) {
       return sortedEnemies.slice(0, 3);
     } else {
       return [sortedEnemies[0]];
