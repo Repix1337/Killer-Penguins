@@ -287,7 +287,7 @@ useEffect(() => {
     }
 
     // Early rounds - Basic enemies
-    if ((round > 1 && round <= 4) || (round > 5 && round < 10)) {
+    if ((round > 0 && round <= 4) || (round > 5 && round < 10)) {
       if (enemyCount < 10 * round) {
         setEnemies(prev => [...prev, createNewEnemy('BASIC')]);
         setEnemyCount(prev => prev + 1);
