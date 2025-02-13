@@ -143,7 +143,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     },
     REGENTANK: {
       src: 'regenTank.png',
-      hp: 300,
+      hp: 400,
       damage: 50,
       type: 'regentank',
       speed: 0.1875,    // from 0.125 * 1.5
@@ -158,6 +158,16 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       speed: 0.35,    // from 0.2 * 1.5
       baseSpeed: 0.35, // from 0.2 * 1.5
       regen: 150
+    }
+    ,
+    BOSS: {
+      src: 'boss.png',
+      hp: 25000,
+      damage: 1000,
+      type: 'speedyregentank',
+      speed: 0.20,    
+      baseSpeed: 0.20, 
+      regen: 1000
     }
   };
 
@@ -318,15 +328,21 @@ useEffect(() => {
       setEnemies(prev => [...prev, createNewEnemy("REGENTANK")]);
       setEnemyCount(prev => prev + 1);
     }
-    else if (round >= 21 && round <= 29 && enemyCount < 15 * round) {
+    else if (round >= 21 && round <= 24 && enemyCount < 15 * round) {
       const enemyType = enemyCount % 3 === 0 ? 'STEALTHYTANK' : 
                        enemyCount % 3 === 1 ? 'STEALTHYSPEEDY' : 'REGENTANK';
       setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
       setEnemyCount(prev => prev + 1);
     }
-    else if (round === 30 && enemyCount < 10 * round) {
-      setEnemies(prev => [...prev, createNewEnemy("SPEEDYREGENTANK")]);
+    else if (round >= 25 && round <= 29 && enemyCount < 15 * round) {
+      const enemyType = enemyCount % 2 === 0 ? 'STEALTHYTANK' 
+                        : 'SPEEDYREGENTANK';
+      setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
       setEnemyCount(prev => prev + 1);
+    }
+    else if (round === 30 && enemyCount < 15 * round) {
+      setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
+      setEnemyCount(prev => prev + 75);
     }
     // Game reset
     else if (round === 0) {
@@ -343,7 +359,7 @@ useEffect(() => {
     if (round > 0) {
       spawnEnemies();
     }
-  }, Math.max(1000 / round, 50));
+  }, round != 30 ? Math.max(1000 / round, 50 ) : 500);
 
   // Cleanup
   return () => clearInterval(spawnInterval);
