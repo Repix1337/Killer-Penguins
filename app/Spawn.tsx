@@ -290,6 +290,10 @@ useEffect(() => {
         setEnemies(prev => [...prev, createNewEnemy('BASIC')]);
         setEnemyCount(prev => prev + 1);
       }
+      if (round === 4)
+      {
+        alert("!!!Stealth enemies incoming next round!!!")
+      }
     }
     // Boss round - Stealth enemies
     else if (round === 5 && enemyCount < 10 * round) {
@@ -667,11 +671,11 @@ const upgradeTower = () => {
             >
               Upgrade Slow (1000$)
             </button>
-          ) : (
+          ) : selectedTower.type === "slower" ? (
             <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
               Slow already upgraded
             </div>
-          )}
+          ) : null}
 
           {/* Control Buttons */}
           <div className="flex gap-2 mt-4">
