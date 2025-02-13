@@ -185,7 +185,7 @@ const TOWER_TYPES = {
     type: 'sniper',
     maxDamage: 300,
     maxAttackSpeed: 1200,
-    radius: 90,
+    radius: 120,
     attackType: 'single',
     canHitStealth: true,
     slowAmount: 1,
