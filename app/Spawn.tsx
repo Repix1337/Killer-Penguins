@@ -152,7 +152,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     },
     SPEEDYREGENTANK: {
       src: 'regenTank.png',
-      hp: 450,
+      hp: 500,
       damage: 50,
       type: 'speedyregentank',
       speed: 0.35,    // from 0.2 * 1.5
@@ -563,108 +563,184 @@ const upgradeTower = () => {
     if (!selectedTower) return null;
 
     return (
-      <div className='absolute top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-400 flex 
-        flex-col items-center justify-center p-4 rounded-lg gap-2'
-        style={{left: selectedTower.positionX < 50 ? '80%' : '20%'}}
+      <div className='absolute top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-800 
+        flex items-center justify-between p-6 rounded-lg gap-6 shadow-lg border border-blue-400'
+        style={{left: selectedTower.positionX < 50 ? '80%' : '20%', minWidth: '500px'}}
       >
-        <h1 className="text-xl font-bold mb-2">Upgrade Menu</h1>
-              {selectedTower.attack < selectedTower.maxDamage ? (
-                <button 
-                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-full"
-                  onClick={upgradeDamage}
-                  disabled={money < 250}
-                >
-                  Upgrade Damage (250$ for +25dmg)
-                </button>
-              ) : (
-                <div className="bg-gray-500 text-white font-bold py-2 px-4 rounded w-full text-center">
-                  Max Damage Reached
-                </div>
-              )}
-              {selectedTower.attackSpeed > selectedTower.maxAttackSpeed ? (
-                <button 
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
-                  onClick={upgradeAttackSpeed}
-                  disabled={money < 500}
-                >
-                  Upgrade Attack Speed (500$ for -200ms)
-                </button>
-              ) : (
-                <div className="bg-gray-500 text-white font-bold py-2 px-4 rounded w-full text-center">
-                  Max Attack Speed Reached
-                </div>
-              )}
-              {selectedTower.attackType === 'single' ? (
-                <button 
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
-                  onClick={upgradeDoubleAttack}
-                  disabled={money < 1500}
-                >
-                  Upgrade Double Attack (1500$)
-                </button>
-              ) : selectedTower.type === "basic" ?(
-                <div className="bg-gray-500 text-white font-bold py-2 px-4 rounded w-full text-center">
-                  Already have double attack
-                </div>
-              ) : null}
-              {selectedTower.type === "rapidShooter" && selectedTower.attackType === 'double' ? (
-                <button 
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
-                  onClick={upgradeToTrippleAttack}
-                  disabled={money < 2500}
-                >
-                  Upgrade Tripple Attack (2500$)
-                </button>
-              ) : selectedTower.type === "rapidShooter" ?(
-                <div className="bg-gray-500 text-white font-bold py-2 px-4 rounded w-full text-center">
-                  Already have Tripple Attack
-                </div>
-              ) : null}
-              {!selectedTower.canHitStealth ? (
-                <button 
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
-                  onClick={upgradeToHitStealth}
-                  disabled={money < 2000}
-                >
-                  Upgrade to hit stealth (2000$)
-                </button>
-              ) : (
-                <div className="bg-gray-500 text-white font-bold py-2 px-4 rounded w-full text-center">
-                  Already can hit stealth
-                </div>
-              )}
-              {selectedTower.type === "slower" && selectedTower.slowAmount !== selectedTower.maxSlow ? (
-                <button 
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full"
-                  onClick={upgradeSlow}
-                  disabled={money < 1000}
-                >
-                  Upgrade Slow (1000$)
-                </button>
-              ) : (
-                <div className="bg-gray-500 text-white font-bold py-2 px-4 rounded w-full text-center">
-                  Slow already upgraded
-                </div>
-              )}
-              <button 
-                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-full mt-2"
-                onClick={() => sellTower(selectedTower.price)}
-              >
-                Sell Tower
-              </button>
-              <button 
-                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-full mt-2"
-                onClick={closeUpgradeMenu}
-              >
-                Close
-              </button>
-              <div>
-                <h1>Stats:</h1>
-                <div>Attack: {selectedTower.attack}</div>
-                <div>Attack Speed: {selectedTower.attackSpeed}</div>
-                <div>Attack Type: {selectedTower.attackType}</div>
-                <div>Can hit stealth: {selectedTower.canHitStealth ? 'Yes' : 'No'}</div>
+        {/* Left side - Upgrade buttons */}
+        <div className='flex flex-col space-y-3 flex-1'>
+          <h1 className="text-2xl font-bold mb-4 text-white border-b border-blue-400 pb-2">Upgrade Menu</h1>
+          
+          {/* Damage Upgrade */}
+          {selectedTower.attack < selectedTower.maxDamage ? (
+            <button 
+              className="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 
+                text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
+                disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={upgradeDamage}
+              disabled={money < 250}
+            >
+              Upgrade Damage (250$ for +25dmg)
+            </button>
+          ) : (
+            <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
+              Max Damage Reached
+            </div>
+          )}
+
+          {/* Attack Speed Upgrade */}
+          {selectedTower.attackSpeed > selectedTower.maxAttackSpeed ? (
+            <button 
+              className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 
+                text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
+                disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={upgradeAttackSpeed}
+              disabled={money < 500}
+            >
+              Upgrade Attack Speed (500$ for -200ms)
+            </button>
+          ) : (
+            <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
+              Max Attack Speed Reached
+            </div>
+          )}
+
+          {/* Double Attack Upgrade */}
+          {selectedTower.attackType === 'single' ? (
+            <button 
+              className="bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 
+                text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
+                disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={upgradeDoubleAttack}
+              disabled={money < 1500}
+            >
+              Upgrade Double Attack (1500$)
+            </button>
+          ) : selectedTower.type === "basic" ? (
+            <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
+              Already have double attack
+            </div>
+          ) : null}
+
+          {/* Triple Attack Upgrade */}
+          {selectedTower.type === "rapidShooter" && selectedTower.attackType === 'double' ? (
+            <button 
+              className="bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-600 hover:to-indigo-800 
+                text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
+                disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={upgradeToTrippleAttack}
+              disabled={money < 2500}
+            >
+              Upgrade Triple Attack (2500$)
+            </button>
+          ) : selectedTower.type === "rapidShooter" ? (
+            <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
+              Already have Triple Attack
+            </div>
+          ) : null}
+
+          {/* Stealth Detection Upgrade */}
+          {!selectedTower.canHitStealth ? (
+            <button 
+              className="bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 
+                text-white font-bold py-3 px-4 text-center rounded-lg w-full transition-all duration-200 shadow-md
+                disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={upgradeToHitStealth}
+              disabled={money < 2000}
+            >
+              Stealth Enemies Detection (2000$)
+            </button>
+          ) : (
+            <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
+              Already detect stealth enemies
+            </div>
+          )}
+
+          {/* Slow Amount Upgrade */}
+          {selectedTower.type === "slower" && selectedTower.slowAmount !== selectedTower.maxSlow ? (
+            <button 
+              className="bg-gradient-to-r from-cyan-500 to-cyan-700 hover:from-cyan-600 hover:to-cyan-800 
+                text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
+                disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={upgradeSlow}
+              disabled={money < 1000}
+            >
+              Upgrade Slow (1000$)
+            </button>
+          ) : (
+            <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
+              Slow already upgraded
+            </div>
+          )}
+
+          {/* Control Buttons */}
+          <div className="flex gap-2 mt-4">
+            <button 
+              className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg flex-1 
+                transition-all duration-200 shadow-md"
+              onClick={() => sellTower(selectedTower.price)}
+            >
+              Sell Tower
+            </button>
+            <button 
+              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg flex-1 
+                transition-all duration-200 shadow-md"
+              onClick={closeUpgradeMenu}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+
+        {/* Right side - Stats */}
+        <div className='bg-slate-700 p-4 rounded-lg space-y-4 min-w-[200px]'>
+          <h2 className="text-xl font-bold text-white border-b border-blue-400 pb-2">Tower Stats</h2>
+          
+          <div className="space-y-3 text-gray-200">
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <span>Attack:</span>
+                <span>{selectedTower.attack} / {selectedTower.maxDamage}</span>
               </div>
+              <div className="w-full bg-gray-600 rounded-full h-2">
+                <div className="bg-red-500 h-2 rounded-full" 
+                  style={{width: `${(selectedTower.attack / selectedTower.maxDamage) * 100}%`}}
+                />
+              </div>
+              <span className="text-xs text-gray-400">
+                ({Math.floor((selectedTower.maxDamage - selectedTower.attack) / 25)} upgrades left)
+              </span>
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <span>Attack Speed:</span>
+                <span>{selectedTower.attackSpeed} / {selectedTower.maxAttackSpeed}</span>
+              </div>
+              <div className="w-full bg-gray-600 rounded-full h-2">
+                <div className="bg-blue-500 h-2 rounded-full" 
+                  style={{width: `${((selectedTower.attackSpeed - selectedTower.maxAttackSpeed) / (2000 - selectedTower.maxAttackSpeed)) * 100}%`}}
+                />
+              </div>
+              <span className="text-xs text-gray-400">
+                ({Math.floor((selectedTower.attackSpeed - selectedTower.maxAttackSpeed) / 200)} upgrades left)
+              </span>
+            </div>
+
+            <div className="pt-2 border-t border-gray-600">
+              <div>Attack Type: {selectedTower.attackType}</div>
+              <div>Can hit stealth: {selectedTower.canHitStealth ? 'Yes' : 'No'}</div>
+              {selectedTower.type === "slower" && (
+                <div>
+                  <div>Slow Amount: {selectedTower.slowAmount.toFixed(2)} / {selectedTower.maxSlow}</div>
+                  <span className="text-xs text-gray-400">
+                    ({Math.floor((selectedTower.slowAmount - selectedTower.maxSlow) / 0.25)} upgrades left)
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -881,24 +957,25 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
       
       {attackAnimation()}
       {showTowerSelectMenu && (
-      <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-400 flex flex-col items-center justify-center p-4 rounded-lg gap-2'>
+      <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-800 
+        flex flex-col items-center justify-between p-6 rounded-lg gap-6 shadow-lg border border-blue-400'>
         <h1 className="text-xl font-bold mb-2">Tower Select Menu</h1>
         <div className='flex gap-4'>
-          <div>
+          <div className='hover:scale-110 transition-all'>
             <button onClick={() => selectTowerType("basic",selectedTowerID)}>
               <img src='/tower1.png' className='w-16 h-16'/>
             </button>
             <h1>100$</h1>
             <h1>Basic</h1>
           </div>
-          <div>
+          <div className='hover:scale-110 transition-all'>
             <button onClick={() => selectTowerType("sniper",selectedTowerID)}>
               <img src='/tower2.png' className='w-16 h-16'/>
             </button>
             <h1>200$</h1>
             <h1>Sniper</h1>
           </div>
-          <div>
+          <div className='hover:scale-110 transition-all'>
             <button onClick={() => selectTowerType("rapidShooter",selectedTowerID)}>
               <img src='/rapidShooter.png' className='w-16 h-16'/>
             </button>
@@ -906,7 +983,7 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
             <h1>Rapid
                <p>Shooter</p></h1>
           </div>
-          <div>
+          <div className='hover:scale-110 transition-all'>
             <button onClick={() => selectTowerType("slower",selectedTowerID)}>
               <img src='/slower.png' className='w-16 h-16'/>
             </button>
@@ -915,7 +992,7 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
           </div>
         </div>
         <button 
-              className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-full mt-2"
+              className="bg-red-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-full mt-2"
               onClick={closeTowerSelectMenu}
               >
                 Close
