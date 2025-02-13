@@ -162,11 +162,11 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     ,
     BOSS: {
       src: 'boss.png',
-      hp: 25000,
+      hp: 30000,
       damage: 1000,
       type: 'speedyregentank',
-      speed: 0.20,    
-      baseSpeed: 0.20, 
+      speed: 0.15,    
+      baseSpeed: 0.15, 
       regen: 1000
     }
   };
@@ -359,7 +359,7 @@ useEffect(() => {
     if (round > 0) {
       spawnEnemies();
     }
-  }, round != 30 ? Math.max(1000 / round, 50 ) : 500);
+  }, round != 30 ? Math.max(1000 / round, 50 ) : 2500);
 
   // Cleanup
   return () => clearInterval(spawnInterval);
