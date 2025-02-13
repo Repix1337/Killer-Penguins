@@ -295,7 +295,8 @@ useEffect(() => {
     const tower2Elements = document.querySelectorAll('img[src="/tower2.png"]') as NodeListOf<HTMLImageElement>;
     const tower3Elements = document.querySelectorAll('img[src="/rapidShooter.png"]') as NodeListOf<HTMLImageElement>;
     const tower4Elements = document.querySelectorAll('img[src="/slower.png"]') as NodeListOf<HTMLImageElement>;
-    [...tower1Elements, ...tower2Elements, ...tower3Elements, ...tower4Elements].forEach((element) => {
+    const tower5Elements = document.querySelectorAll('img[src="/gasSpitter.png"]') as NodeListOf<HTMLImageElement>;
+    [...tower1Elements, ...tower2Elements, ...tower3Elements, ...tower4Elements, ...tower5Elements].forEach((element) => {
       element.src = '/buildingSite.png';
     });
   }
@@ -318,7 +319,8 @@ useEffect(() => {
     const tower2Elements = document.querySelectorAll('img[src="/tower2.png"]') as NodeListOf<HTMLImageElement>;
     const tower3Elements = document.querySelectorAll('img[src="/rapidShooter.png"]') as NodeListOf<HTMLImageElement>;
     const tower4Elements = document.querySelectorAll('img[src="/slower.png"]') as NodeListOf<HTMLImageElement>;
-    [...tower1Elements, ...tower2Elements, ...tower3Elements, ...tower4Elements].forEach((element) => {
+    const tower5Elements = document.querySelectorAll('img[src="/gasSpitter.png"]') as NodeListOf<HTMLImageElement>;
+    [...tower1Elements, ...tower2Elements, ...tower3Elements, ...tower4Elements, ...tower5Elements].forEach((element) => {
       element.src = '/buildingSite.png';
     });
       return;
