@@ -162,11 +162,11 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     ,
     BOSS: {
       src: 'boss.png',
-      hp: 30000,
+      hp: 40000,
       damage: 1000,
       type: 'speedyregentank',
-      speed: 0.15,    
-      baseSpeed: 0.15, 
+      speed: 0.175,    
+      baseSpeed: 0.175, 
       regen: 1000
     }
   };
