@@ -26,6 +26,9 @@ interface Enemy {
   type: string;
   regen: number;
   isTargeted: boolean;  
+  isPoisoned: boolean;
+  poisonSourceId?: string;
+  poisonStartTime?: number;
 }
 
 // Define the Tower interface
@@ -46,6 +49,8 @@ interface Tower {
   canHitStealth: boolean;
   slowAmount: number;
   maxSlow:number;
+  poisonDamage: number;
+  maxPoisonDamage: number;
 }
 
 const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp }) => {
@@ -185,7 +190,9 @@ const TOWER_TYPES = {
     attackType: 'single',
     canHitStealth: false,
     slowAmount: 1,
-    maxSlow: 1
+    maxSlow: 1,
+    poisonDamage: 0,
+    maxPoisonDamage: 0
   },
   SNIPER: {
     src: '/tower2.png',
@@ -199,7 +206,9 @@ const TOWER_TYPES = {
     attackType: 'single',
     canHitStealth: true,
     slowAmount: 1,
-    maxSlow: 1
+    maxSlow: 1,
+    poisonDamage: 0,
+    maxPoisonDamage: 0
     
   },
   RAPIDSHOOTER: {
@@ -214,7 +223,9 @@ const TOWER_TYPES = {
     attackType: 'double',
     canHitStealth: false,
     slowAmount: 1,
-    maxSlow: 1
+    maxSlow: 1,
+    poisonDamage: 0,
+    maxPoisonDamage: 0
   },
   SLOWER: {
     src: '/slower.png',
@@ -228,7 +239,25 @@ const TOWER_TYPES = {
     attackType: 'double',
     canHitStealth: false,
     slowAmount: 0.75,
-    maxSlow: 0.6
+    maxSlow: 0.6,
+    poisonDamage: 0,
+    maxPoisonDamage: 0
+  },
+  GASSPITTER: {
+    src: '/gasSpitter.png',
+    attack: 20,
+    attackSpeed: 1000,
+    price: 300,
+    type: 'gasspitter',
+    maxDamage: 20,
+    maxAttackSpeed: 600,
+    radius: 25,
+    attackType: 'double',
+    canHitStealth: false,
+    slowAmount: 1,
+    maxSlow: 1,
+    poisonDamage: 20,
+    maxPoisonDamage: 100 
   }
 };
 
@@ -248,6 +277,7 @@ const createNewEnemy = (type: keyof typeof ENEMY_TYPES) => ({
   positionX: -7,
   positionY: 50,
   isTargeted: false,
+  isPoisoned: false,
   ...ENEMY_TYPES[type]
 });
 
@@ -397,11 +427,31 @@ useEffect(() => {
     )
   );
 
-  // Mark targets as targeted
+  // Modify this section to properly handle poison
   setEnemies((prevEnemies) =>
     prevEnemies.map((enemy) => {
       const isTargeted = targets.some(target => target.id === enemy.id);
-      return isTargeted ? { ...enemy, isTargeted: true } : enemy;
+      if (!isTargeted) return enemy;
+
+      // Apply immediate damage and status effects
+      const updatedEnemy = {
+        ...enemy,
+        isTargeted: true,
+        hp: enemy.hp - tower.attack,
+        speed: Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * 0.5)
+      };
+
+      // Apply poison if it's a gas spitter tower
+      if (tower.type === "gasspitter") {
+        return {
+          ...updatedEnemy,
+          isPoisoned: true,
+          poisonSourceId: tower.id,
+          poisonStartTime: Date.now()
+        };
+      }
+      
+      return updatedEnemy;
     })
   );
 
@@ -434,20 +484,6 @@ useEffect(() => {
       })
     );
   }, tower.attackSpeed);
-
-  setEnemies((prevEnemies) =>
-    prevEnemies.map((enemy) => {
-      const isTargeted = targets.some(target => target.id === enemy.id);
-      if (isTargeted) {
-        return { 
-          ...enemy, 
-          hp: enemy.hp - tower.attack, 
-          speed: Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * 0.5)
-        };
-      }
-      return enemy;
-    })
-  );
 
 }, []);
 
@@ -536,13 +572,54 @@ useEffect(() => {
         setEnemies((prevEnemies) => prevEnemies.filter(e => e.id !== enemy.id)); // Remove the enemy that dealt damage
       }
     });
-  };
-
-  // Call damagePlayer whenever enemies change
+  }; 
   useEffect(() => {
     damagePlayer(enemies);
-  }, [enemies]);
+    console.log(tower)
+  }, [enemies,tower]);
 
+  useEffect(() => {
+    if (!isPageVisible) return;
+     
+    const POISON_TICK_RATE = 10; // 10ms between ticks
+    const POISON_DURATION = 3000; // 3 seconds
+    const TOTAL_TICKS = POISON_DURATION / POISON_TICK_RATE; // Total number of ticks over 3 seconds
+    
+    const poisonInterval = setInterval(() => {
+      const currentTime = Date.now();
+      
+      setEnemies(prevEnemies => 
+        prevEnemies.map(enemy => {
+          if (!enemy.isPoisoned || !enemy.poisonSourceId || !enemy.poisonStartTime) return enemy;
+  
+          // Check if poison duration has expired
+          if (currentTime - enemy.poisonStartTime >= POISON_DURATION) {
+            return {
+              ...enemy,
+              isPoisoned: false,
+              poisonSourceId: undefined,
+              poisonStartTime: undefined
+            };
+          }
+  
+          const poisonTower = tower.find(t => t.id === enemy.poisonSourceId);
+          if (!poisonTower?.poisonDamage) return enemy;
+  
+          // Calculate damage per tick: (3 * total poison damage) / number of ticks
+          const damagePerTick = (3 * poisonTower.poisonDamage) / TOTAL_TICKS;
+          setMoney((prevMoney) => prevMoney + (damagePerTick / 7.5))
+          return {
+            ...enemy,
+            hp: enemy.hp - damagePerTick
+          };
+        })
+      );
+    }, POISON_TICK_RATE);
+  
+    return () => {
+      clearInterval(poisonInterval);
+    };
+  }, [enemies, tower, isPageVisible]);
   // Buy towers and place them on the map
   const buyTowers = (event: React.MouseEvent<HTMLImageElement>, positionX: number,positionY:number) => {
     if (round > 0 && (event.target as HTMLImageElement).src.includes('buildingSite')) {
@@ -692,6 +769,21 @@ const upgradeTower = () => {
               Slow already upgraded
             </div>
           ) : null}
+           {selectedTower.type === "gasspitter" && selectedTower.poisonDamage !== selectedTower.maxPoisonDamage ? (
+            <button 
+              className="bg-gradient-to-r from-cyan-500 to-cyan-700 hover:from-cyan-600 hover:to-cyan-800 
+                text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
+                disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={upgradePoison}
+              disabled={money < 300}
+            >
+              Upgrade Poison(300$ for +20 dmg)
+            </button>
+          ) : selectedTower.type === "gasspitter" ? (
+            <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
+              Poison is maxed out
+            </div>
+          ) : null}
 
           {/* Control Buttons */}
           <div className="flex gap-2 mt-4">
@@ -746,7 +838,22 @@ const upgradeTower = () => {
                 ({Math.floor((selectedTower.attackSpeed - selectedTower.maxAttackSpeed) / 200)} upgrades left)
               </span>
             </div>
-
+            {selectedTower.type === "gasspitter" && selectedTower.maxPoisonDamage != undefined && selectedTower.poisonDamage != undefined && (
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <span>Poison Damage:</span>
+                <span>{selectedTower.poisonDamage} / {selectedTower.maxPoisonDamage}</span>
+              </div>
+              <div className="w-full bg-gray-600 rounded-full h-2">
+                <div className="bg-green-500 h-2 rounded-full" 
+                  style={{width: `${(selectedTower.poisonDamage / selectedTower.maxPoisonDamage ) * 100}%`}}
+                />
+              </div>
+              <span className="text-xs text-gray-400">
+                ({Math.floor((selectedTower.maxPoisonDamage - selectedTower.poisonDamage) / 20)} upgrades left)
+              </span>
+            </div>
+            )}
             <div className="pt-2 border-t border-gray-600">
               <div>Attack Type: {selectedTower.attackType}</div>
               <div>Can hit stealth: {selectedTower.canHitStealth ? 'Yes' : 'No'}</div>
@@ -831,6 +938,17 @@ const upgradeTower = () => {
       );
     }
   }
+  const upgradePoison = () => {
+    if (money >= 300){
+      setMoney((prevMoney) => prevMoney - 300);
+      setTower((prevTower) => 
+        prevTower.map((t) =>
+          t.id === selectedTowerID && t.poisonDamage !== undefined && t.maxPoisonDamage !== undefined ?
+          { ...t, poisonDamage: Math.min(t.poisonDamage + 20, t.maxPoisonDamage) } : t
+        )
+      );
+    }
+  }
   const sellTower = (towerPrice: number) => {
     setMoney((prevMoney) => prevMoney + towerPrice / 2); // Add money back (changed from subtract)
     setTower((prevTower) => 
@@ -879,7 +997,7 @@ const upgradeTower = () => {
       
       if (canHitStealth) {
         // Only consider enemy as targetable if it's not targeted OR if it's targeted but one more hit won't overkill it
-        return isInRange && (!enemy.isTargeted || (enemy.hp - attackDamage > 0));
+        return isInRange && (!enemy.isTargeted || (enemy.hp - attackDamage > 0) );
       } else {
         return isInRange && 
                (!enemy.isTargeted || (enemy.hp - attackDamage > 0)) && 
@@ -1010,7 +1128,16 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
             <h1>300$</h1>
             <h1>Slower</h1>
           </div>
+          <div className='hover:scale-110 transition-all'>
+            <button onClick={() => selectTowerType("gasspitter",selectedTowerID)}>
+              <img src='/gasSpitter.png' className='w-16 h-16'/>
+            </button>
+            <h1>300$</h1>
+            <h1>Gas
+               <p>Spitter</p></h1>
+          </div>
         </div>
+        
         <button 
               className="bg-red-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-full mt-2"
               onClick={closeTowerSelectMenu}

@@ -19,7 +19,7 @@ const Menu = () => {
     <div className=' bg-slate-800 p-1 text-xl rounded-lg shadow-sm hover:cursor-pointer' onClick={onClick}>Start</div>
     <div>Round: {round}/30</div>
     <div className='text-red-500 text-xl'> &hearts; {HealthPoints}</div>
-    <div className=' text-green-500'>{money}$</div>
+    <div className=' text-green-500'>{Math.floor(money)}$</div>
     </div>
     <Spawn round={round} setHealthPoints={setHealthPoints} money={money} setMoney={setMoney} setRound={setRound} hp={HealthPoints}/>
     
