@@ -290,7 +290,7 @@ useEffect(() => {
         setEnemies(prev => [...prev, createNewEnemy('BASIC')]);
         setEnemyCount(prev => prev + 1);
       }
-      if (round === 4)
+      if (round === 4 && enemyCount === 0 )
       {
         alert("!!!Stealth enemies incoming next round!!!")
       }
