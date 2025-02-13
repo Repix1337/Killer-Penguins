@@ -841,7 +841,7 @@ const upgradeTower = () => {
 
 // Add this new component near your other components
 const RangeIndicator = ({ tower }: { tower: Tower }) => {
-  return showUpgradeMenu && (
+  return showUpgradeMenu && tower.id === selectedTowerID && (
       <div
       className="absolute rounded-full border-2 border-blue-400 pointer-events-none"
       style={{
