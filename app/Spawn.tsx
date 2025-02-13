@@ -209,13 +209,13 @@ const TOWER_TYPES = {
   SLOWER: {
     src: '/slower.png',
     attack: 15,
-    attackSpeed: 1500,
+    attackSpeed: 1000,
     price: 300,
     type: 'slower',
     maxDamage: 40,
     maxAttackSpeed: 750,
     radius: 25,
-    attackType: 'single',
+    attackType: 'double',
     canHitStealth: false,
     slowAmount: 0.75,
     maxSlow: 0.6
