@@ -859,7 +859,7 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
 
   return (
     <>
-    <div className='relative h-[80%] w-[97%] border mt-10 border-white overflow-hidden' suppressHydrationWarning>
+    <div className='relative h-[77%] border mt-10 border-white overflow-hidden' suppressHydrationWarning>
       <img src='/map.png' className='object-cover w-full h-full z-0' alt='map' />
       {/* Add range indicators for all towers */}
       {tower.map((t) => (
