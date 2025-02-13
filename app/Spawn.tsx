@@ -858,7 +858,6 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
 }
 
   return (
-    <>
     <div className='relative h-[77%] border mt-10 border-white overflow-hidden' suppressHydrationWarning>
       <img src='/map.png' className='object-cover w-full h-full z-0' alt='map' />
       {/* Add range indicators for all towers */}
@@ -878,6 +877,7 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
       <img src='/buildingSite.png' className='absolute top-[70%] left-[41%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 41,70)} />
       <img src='/buildingSite.png' className='absolute top-[65%] left-[82%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 82,65)} />
       {createEnemy()}
+      {upgradeTower()}
       {attackAnimation()}
       {showTowerSelectMenu && (
       <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-400 flex flex-col items-center justify-center p-4 rounded-lg gap-2'>
@@ -923,8 +923,7 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
     )}
     
     </div>
-    {upgradeTower()}
-    </>
+    
   );
 };
 

@@ -17,7 +17,7 @@ const Menu = () => {
     <div>
     <Spawn round={round} setHealthPoints={setHealthPoints} money={money} setMoney={setMoney} setRound={setRound} hp={HealthPoints}/>
     <div className='flex flex-col justify-center items-center'>
-    <div className=' text-white hover:cursor-pointer' onClick={onClick}>Start</div>
+    <div className=' text-red hover:cursor-pointer' onClick={onClick}>Start</div>
     <div>Round: {round}/30</div>
     <div>Health Points: {HealthPoints}</div>
     <div>Money: {money}</div>
