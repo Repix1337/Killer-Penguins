@@ -152,12 +152,12 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     },
     SPEEDYREGENTANK: {
       src: 'regenTank.png',
-      hp: 400,
+      hp: 450,
       damage: 50,
       type: 'speedyregentank',
-      speed: 0.3,    // from 0.2 * 1.5
-      baseSpeed: 0.3, // from 0.2 * 1.5
-      regen: 100
+      speed: 0.35,    // from 0.2 * 1.5
+      baseSpeed: 0.35, // from 0.2 * 1.5
+      regen: 150
     }
   };
 
@@ -556,15 +556,18 @@ const selectTowerType = (type: string, newTowerId: string) => {
 const closeTowerSelectMenu = () => {
   setShowTowerSelectMenu(false);
 }
-  const upgradeTower = () => {
-    if (showUpgradeMenu) {
-      const selectedTower = tower.find(t => t.id === selectedTowerID);
-      
-      return (
-        <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-400 flex flex-col items-center justify-center p-4 rounded-lg gap-2'>
-          <h1 className="text-xl font-bold mb-2">Upgrade Menu</h1>
-          {selectedTower && (
-            <>
+const upgradeTower = () => {
+  if (showUpgradeMenu) {
+    const selectedTower = tower.find(t => t.id === selectedTowerID);
+    
+    if (!selectedTower) return null;
+
+    return (
+      <div className='absolute top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-400 flex 
+        flex-col items-center justify-center p-4 rounded-lg gap-2'
+        style={{left: selectedTower.positionX < 50 ? '80%' : '20%'}}
+      >
+        <h1 className="text-xl font-bold mb-2">Upgrade Menu</h1>
               {selectedTower.attack < selectedTower.maxDamage ? (
                 <button 
                   className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-full"
@@ -662,14 +665,11 @@ const closeTowerSelectMenu = () => {
                 <div>Attack Type: {selectedTower.attackType}</div>
                 <div>Can hit stealth: {selectedTower.canHitStealth ? 'Yes' : 'No'}</div>
               </div>
-            </>
-          )}
-        </div>
-      );
-    }
-    return null;
-  };
-
+      </div>
+    );
+  }
+  return null;
+};
   const closeUpgradeMenu = () => {
     setShowUpgradeMenu(false);
   }
@@ -841,8 +841,8 @@ const closeTowerSelectMenu = () => {
 
 // Add this new component near your other components
 const RangeIndicator = ({ tower }: { tower: Tower }) => {
-  return (
-    <div
+  return showUpgradeMenu && (
+      <div
       className="absolute rounded-full border-2 border-blue-400 pointer-events-none"
       style={{
         width: `${tower.radius * 2}%`,    // Doubled the radius for diameter
@@ -854,18 +854,19 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
         zIndex: 5,
       }}
     />
-  );
-};
+  )
+}
 
   return (
-    <div className='relative h-4/5 border border-white overflow-hidden' suppressHydrationWarning>
+    <>
+    <div className='relative h-[80%] w-[97%] border mt-10 border-white overflow-hidden' suppressHydrationWarning>
       <img src='/map.png' className='object-cover w-full h-full z-0' alt='map' />
       {/* Add range indicators for all towers */}
       {tower.map((t) => (
         <RangeIndicator key={`range-${t.id}`} tower={t} />
       ))}
-      <img src='/buildingSite.png' className='absolute top-[25%] left-[20%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 20,25)} />
-      <img src='/buildingSite.png' className='absolute top-[25%] left-[5%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 5,25)} />
+      <img src='/buildingSite.png' className='absolute top-[28%] left-[20%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 20,28)} />
+      <img src='/buildingSite.png' className='absolute top-[28%] left-[5%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 5,28)} />
       <img src='/buildingSite.png' className='absolute top-[35%] left-[41%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 41,35)} />
       <img src='/buildingSite.png' className='absolute top-[60%] left-[63%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 63,60)} />
       <img src='/buildingSite.png' className='absolute top-[20%] left-[63%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 63,20)} />
@@ -878,7 +879,6 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
       <img src='/buildingSite.png' className='absolute top-[65%] left-[82%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 82,65)} />
       {createEnemy()}
       {attackAnimation()}
-      {upgradeTower()}
       {showTowerSelectMenu && (
       <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-400 flex flex-col items-center justify-center p-4 rounded-lg gap-2'>
         <h1 className="text-xl font-bold mb-2">Tower Select Menu</h1>
@@ -921,7 +921,10 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
               </button>
       </div>
     )}
+    
     </div>
+    {upgradeTower()}
+    </>
   );
 };
 
