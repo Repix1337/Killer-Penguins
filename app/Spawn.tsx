@@ -86,82 +86,80 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   }, []);
   
   // First, extract enemy types as constants
-const ENEMY_TYPES = {
-  BASIC: {
-    src: 'enemy1.png',
-    hp: 100,
-    damage: 5,
-    type: 'basic',
-    speed: 0.150,
-    baseSpeed: 0.150,
-    regen: 0
-  },
-  STEALTH: {
-    src: 'enemy2.png',
-    hp: 50,
-    damage: 10,
-    type: 'stealth',
-    speed: 0.150,
-    baseSpeed: 0.150,
-    regen: 0
-  },
-  TANK: {
-    src: 'enemy3.png',
-    hp: 350,
-    damage: 5,
-    type: 'basic',
-    speed: 0.125,
-    baseSpeed: 0.125,
-    regen: 0
-  },
-  SPEEDY: {
-    src: 'enemy4.png',
-    hp: 50,
-    damage: 35,
-    type: 'speedy',
-    speed: 1,
-    baseSpeed: 1,
-    regen: 0
-  },
-  STEALTHYTANK: {
-    src: 'stealthyTank.png',
-    hp: 250,
-    damage: 20,
-    type: 'stealthytank',
-    speed: 0.125,
-    baseSpeed: 0.125,
-    regen: 0
-  },
-  STEALTHYSPEEDY: {
-    src: 'stealthySpeedy.png',
-    hp: 50,
-    damage: 50,
-    type: 'stealthyspeedy',
-    speed: 1,
-    baseSpeed: 1,
-    regen: 0
-    
-  },
-  REGENTANK: {
-    src: 'regenTank.png',
-    hp: 300,
-    damage: 50,
-    type: 'regentank',
-    speed: 0.125,
-    baseSpeed: 0.125,
-    regen: 100
-  },
-  SPEEDYREGENTANK: {
-    src: 'regenTank.png',
-    hp: 400,
-    damage: 50,
-    type: 'speedyregentank',
-    speed: 0.2,
-    baseSpeed: 0.2,
-    regen: 100
-  }
-  
-};
+  const ENEMY_TYPES = {
+    BASIC: {
+      src: 'enemy1.png',
+      hp: 100,
+      damage: 5,
+      type: 'basic',
+      speed: 0.225,    // from 0.150 * 1.5
+      baseSpeed: 0.225, // from 0.150 * 1.5
+      regen: 0
+    },
+    STEALTH: {
+      src: 'enemy2.png',
+      hp: 50,
+      damage: 10,
+      type: 'stealth',
+      speed: 0.225,    // from 0.150 * 1.5
+      baseSpeed: 0.225, // from 0.150 * 1.5
+      regen: 0
+    },
+    TANK: {
+      src: 'enemy3.png',
+      hp: 350,
+      damage: 5,
+      type: 'basic',
+      speed: 0.1875,    // from 0.125 * 1.5
+      baseSpeed: 0.1875, // from 0.125 * 1.5
+      regen: 0
+    },
+    SPEEDY: {
+      src: 'enemy4.png',
+      hp: 50,
+      damage: 35,
+      type: 'speedy',
+      speed: 1.5,    // from 1.0 * 1.5
+      baseSpeed: 1.5, // from 1.0 * 1.5
+      regen: 0
+    },
+    STEALTHYTANK: {
+      src: 'stealthyTank.png',
+      hp: 250,
+      damage: 20,
+      type: 'stealthytank',
+      speed: 0.1875,    // from 0.125 * 1.5
+      baseSpeed: 0.1875, // from 0.125 * 1.5
+      regen: 0
+    },
+    STEALTHYSPEEDY: {
+      src: 'stealthySpeedy.png',
+      hp: 50,
+      damage: 50,
+      type: 'stealthyspeedy',
+      speed: 1.5,    // from 1.0 * 1.5
+      baseSpeed: 1.5, // from 1.0 * 1.5
+      regen: 0
+    },
+    REGENTANK: {
+      src: 'regenTank.png',
+      hp: 300,
+      damage: 50,
+      type: 'regentank',
+      speed: 0.1875,    // from 0.125 * 1.5
+      baseSpeed: 0.1875, // from 0.125 * 1.5
+      regen: 100
+    },
+    SPEEDYREGENTANK: {
+      src: 'regenTank.png',
+      hp: 400,
+      damage: 50,
+      type: 'speedyregentank',
+      speed: 0.3,    // from 0.2 * 1.5
+      baseSpeed: 0.3, // from 0.2 * 1.5
+      regen: 100
+    }
+  };
 
 // Add this near ENEMY_TYPES constant
 const TOWER_TYPES = {
@@ -173,7 +171,7 @@ const TOWER_TYPES = {
     type: 'basic',
     maxDamage: 250,
     maxAttackSpeed: 300,
-    radius: 15,
+    radius: 25,
     attackType: 'single',
     canHitStealth: false,
     slowAmount: 1,
@@ -187,7 +185,7 @@ const TOWER_TYPES = {
     type: 'sniper',
     maxDamage: 300,
     maxAttackSpeed: 1200,
-    radius: 80,
+    radius: 90,
     attackType: 'single',
     canHitStealth: true,
     slowAmount: 1,
@@ -202,7 +200,7 @@ const TOWER_TYPES = {
     type: 'rapidShooter',
     maxDamage: 75,
     maxAttackSpeed: 200,
-    radius: 15,
+    radius: 25,
     attackType: 'double',
     canHitStealth: false,
     slowAmount: 1,
@@ -216,7 +214,7 @@ const TOWER_TYPES = {
     type: 'slower',
     maxDamage: 40,
     maxAttackSpeed: 750,
-    radius: 15,
+    radius: 25,
     attackType: 'single',
     canHitStealth: false,
     slowAmount: 0.75,
@@ -440,7 +438,7 @@ useEffect(() => {
     setTower((prevTowers) =>
       prevTowers.map((tower) => ({
         ...tower,
-        furthestEnemyInRange: getFurthestEnemyInRadius(tower.positionX, tower.radius, tower.canHitStealth, tower.attackType) ?? null
+        furthestEnemyInRange: getFurthestEnemyInRadius(tower.positionX, tower.radius, tower.canHitStealth, tower.attackType, tower.attack) ?? null
       })
       )
     );
@@ -481,11 +479,31 @@ useEffect(() => {
   const moveEnemy = () => {
     setEnemies((prevEnemies) =>
       prevEnemies
-        .map((enemy) => ({
-          ...enemy,
-          positionX: enemy.positionX + enemy.speed,
-        }))
-        .filter((enemy) => enemy.positionX <= 100)
+        .map((enemy) => {
+          // Define waypoints/checkpoints for the path
+          if (enemy.positionX < 30) {
+            // First segment - Move right until x=30
+            return { ...enemy, positionX: enemy.positionX + enemy.speed };
+          } else if (enemy.positionX >= 30 && enemy.positionX < 50 && enemy.positionY > 15) {
+            // Second segment - Move up until y=15
+            return { ...enemy, positionY: enemy.positionY - (enemy.speed * 2) };
+          } else if (enemy.positionY <= 15 && enemy.positionX < 50) {
+            // Third segment - Move right until x=50
+            return { ...enemy, positionX: enemy.positionX + enemy.speed };
+          } else if (enemy.positionX >= 50 && enemy.positionX < 75 && enemy.positionY < 82) {
+            // Fourth segment - Move down until y=75
+            return { ...enemy, positionY: enemy.positionY + enemy.speed * 2 };
+          } else if (enemy.positionY >= 82 && enemy.positionX < 75) {
+            // Fifth segment - Move right until x=70
+            return { ...enemy, positionX: enemy.positionX + enemy.speed };
+          } else if (enemy.positionX >= 70 && enemy.positionY > 50) {
+            // Sixth segment - Move up until y=50
+            return { ...enemy, positionY: enemy.positionY - (enemy.speed * 2) };
+          } else {
+            // Final segment - Move right until end
+            return { ...enemy, positionX: enemy.positionX + enemy.speed };
+          }
+        })
         .filter((enemy) => enemy.hp > 0)
     );
   };
@@ -493,8 +511,9 @@ useEffect(() => {
   // Reduce player's health points if enemies reach the end
   const damagePlayer = (enemies: Enemy[]) => {
     enemies.forEach((enemy) => {
-      if (enemy.positionX >= 100) {
+      if (enemy.positionX > 99) { // Changed from >= 100 to > 95
         setHealthPoints((prevHealthPoints) => prevHealthPoints - enemy.damage);
+        setEnemies((prevEnemies) => prevEnemies.filter(e => e.id !== enemy.id)); // Remove the enemy that dealt damage
       }
     });
   };
@@ -753,15 +772,21 @@ const closeTowerSelectMenu = () => {
   
 
   // Get the furthest enemy within a certain radius from the tower
-  const getFurthestEnemyInRadius = (towerPosition: number, radius: number, canHitStealth: boolean, attackType: string) => {
+  const getFurthestEnemyInRadius = (towerPositionX: number, radius: number, canHitStealth: boolean, attackType: string, attackDamage: number) => {
     const enemiesInRadius = enemies.filter((enemy) => {
-      const isInRange = enemy.positionX <= towerPosition + radius && 
-                       enemy.positionX >= towerPosition - radius;
+      // Calculate distance between tower and enemy
+      const dx = enemy.positionX - towerPositionX;
+      const dy = enemy.positionY - selectedTower[0].towerPositionY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      const isInRange = distance <= radius;
       
       if (canHitStealth) {
-        return isInRange && !enemy.isTargeted;  // Only return non-targeted enemies
+        // Only consider enemy as targetable if it's not targeted OR if it's targeted but one more hit won't overkill it
+        return isInRange && (!enemy.isTargeted || (enemy.hp - attackDamage > 0));
       } else {
-        return isInRange && !enemy.isTargeted && 
+        return isInRange && 
+               (!enemy.isTargeted || (enemy.hp - attackDamage > 0)) && 
                (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");
       }
     });
@@ -770,10 +795,40 @@ const closeTowerSelectMenu = () => {
       return null;
     }
   
-    // Sort all enemies by position in descending order
-    const sortedEnemies = enemiesInRadius.sort((a, b) => b.positionX - a.positionX);
+    // Calculate progress value for each enemy based on their position in the path
+    const enemiesWithProgress = enemiesInRadius.map(enemy => {
+      let progress = 0;
+      
+      if (enemy.positionX < 30) {
+        // First segment
+        progress = enemy.positionX;
+      } else if (enemy.positionX >= 30 && enemy.positionX < 50 && enemy.positionY > 15) {
+        // Second segment
+        progress = 30 + (50 - enemy.positionY);
+      } else if (enemy.positionY <= 15 && enemy.positionX < 50) {
+        // Third segment
+        progress = 65 + enemy.positionX;
+      } else if (enemy.positionX >= 50 && enemy.positionX < 75 && enemy.positionY < 82) {
+        // Fourth segment
+        progress = 115 + enemy.positionY;
+      } else if (enemy.positionY >= 82 && enemy.positionX < 75) {
+        // Fifth segment
+        progress = 197 + enemy.positionX;
+      } else if (enemy.positionX >= 70 && enemy.positionY > 50) {
+        // Sixth segment
+        progress = 272 + (82 - enemy.positionY);
+      } else {
+        // Final segment
+        progress = 304 + enemy.positionX;
+      }
+      
+      return { ...enemy, progress };
+    });
   
-    // Return array of enemies based on attackType
+    // Sort enemies by their progress value (highest progress = furthest along path)
+    const sortedEnemies = enemiesWithProgress.sort((a, b) => b.progress - a.progress);
+  
+    // Return enemies based on attack type
     if (attackType === 'double' && sortedEnemies.length >= 2) {
       return sortedEnemies.slice(0, 2);
     } 
@@ -782,22 +837,45 @@ const closeTowerSelectMenu = () => {
     } else {
       return [sortedEnemies[0]];
     }
-  }
+  };
+
+// Add this new component near your other components
+const RangeIndicator = ({ tower }: { tower: Tower }) => {
+  return (
+    <div
+      className="absolute rounded-full border-2 border-blue-400 pointer-events-none"
+      style={{
+        width: `${tower.radius * 2}%`,    // Doubled the radius for diameter
+        height: `${tower.radius * 2}%`,   // Doubled the radius for diameter
+        left: `${tower.positionX}%`,
+        top: `${tower.positionY}%`,
+        transform: 'translate(-50%, -50%)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        zIndex: 5,
+      }}
+    />
+  );
+};
+
   return (
     <div className='relative h-4/5 border border-white overflow-hidden' suppressHydrationWarning>
       <img src='/map.png' className='object-cover w-full h-full z-0' alt='map' />
-      <img src='/buildingSite.png' className='absolute top-[20%] left-[10%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 10,20)} />
-      <img src='/buildingSite.png' className='absolute top-[20%] left-[25%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 25,20)} />
-      <img src='/buildingSite.png' className='absolute top-[20%] left-[40%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 40,20)} />
-      <img src='/buildingSite.png' className='absolute top-[20%] left-[55%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 55,20)} />
-      <img src='/buildingSite.png' className='absolute top-[20%] left-[70%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 70,20)} />
-      <img src='/buildingSite.png' className='absolute top-[20%] left-[85%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 85,20)} />
-      <img src='/buildingSite.png' className='absolute top-[70%] left-[10%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 10,70)} />
-      <img src='/buildingSite.png' className='absolute top-[70%] left-[25%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 25,70)} />
-      <img src='/buildingSite.png' className='absolute top-[70%] left-[40%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 40,70)} />
-      <img src='/buildingSite.png' className='absolute top-[70%] left-[55%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 55,70)} />
-      <img src='/buildingSite.png' className='absolute top-[70%] left-[70%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 70,70)} />
-      <img src='/buildingSite.png' className='absolute top-[70%] left-[85%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 85,70)} />
+      {/* Add range indicators for all towers */}
+      {tower.map((t) => (
+        <RangeIndicator key={`range-${t.id}`} tower={t} />
+      ))}
+      <img src='/buildingSite.png' className='absolute top-[25%] left-[20%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 20,25)} />
+      <img src='/buildingSite.png' className='absolute top-[25%] left-[5%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 5,25)} />
+      <img src='/buildingSite.png' className='absolute top-[35%] left-[41%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 41,35)} />
+      <img src='/buildingSite.png' className='absolute top-[60%] left-[63%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 63,60)} />
+      <img src='/buildingSite.png' className='absolute top-[20%] left-[63%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 63,20)} />
+      <img src='/buildingSite.png' className='absolute top-[40%] left-[63%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 63,40)} />
+      <img src='/buildingSite.png' className='absolute top-[25%] left-[85%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 85,25)} />
+      <img src='/buildingSite.png' className='absolute top-[65%] left-[10%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 10,65)} />
+      <img src='/buildingSite.png' className='absolute top-[65%] left-[25%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 25,65)} />
+      <img src='/buildingSite.png' className='absolute top-[52.5%] left-[41%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 41,52.5)} />
+      <img src='/buildingSite.png' className='absolute top-[70%] left-[41%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 41,70)} />
+      <img src='/buildingSite.png' className='absolute top-[65%] left-[82%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 82,65)} />
       {createEnemy()}
       {attackAnimation()}
       {upgradeTower()}
