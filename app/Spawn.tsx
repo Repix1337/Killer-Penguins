@@ -11,6 +11,7 @@ interface SpawnProps {
   setMoney: React.Dispatch<React.SetStateAction<number>>;
   setRound: React.Dispatch<React.SetStateAction<number>>;
   hp: number;
+  isSpeedUp: boolean;  // Add this new prop
 }
 
 // Define the Enemy interface
@@ -55,7 +56,7 @@ interface Tower {
   maxPoisonDamage: number;
 }
 
-const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp }) => {
+const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp, isSpeedUp }) => {
   // Game state
   const [enemies, setEnemies] = useState<Enemy[]>([]);
   const [tower, setTower] = useState<Tower[]>([]);
@@ -380,22 +381,20 @@ useEffect(() => {
       setEnemyCount(prev => prev + 75);
     }
     // Game reset
-    else if (round === 0) {
-      setEnemies([]);
-    }
-    // Round completion
-    
+else if (round === 0) {
+setEnemies([]);
+}
   };
 
   const spawnInterval = setInterval(() => {
     if (round > 0) {
       spawnEnemies();
     }
-  }, round != 30 ? Math.max(1000 / round, 50 ) : 2500);
+  }, (round != 30 ? Math.max(1000 / round, 50) : 2500) / (isSpeedUp ? 2 : 1));
 
   // Cleanup
   return () => clearInterval(spawnInterval);
-}, [round, enemyCount, enemies.length, isPageVisible]); 
+}, [round, enemyCount, enemies.length, isPageVisible, isSpeedUp]); 
 
 
 useEffect(() => {
@@ -403,18 +402,18 @@ useEffect(() => {
     const roundTimeout = setTimeout(() => {
       setRound(prev => prev + 1);
       setEnemyCount(0);
-    }, 4000);
+    }, 4000 / (isSpeedUp ? 2 : 1));
 
     return () => clearTimeout(roundTimeout);
   }
-}, [enemies.length, enemyCount, round]);
+}, [enemies.length, enemyCount, round, isSpeedUp]);
   // Enemy movement - updates position every 25ms
   useEffect(() => {
     if (!isPageVisible || round <= 0) return; // Stop if page is not visible
 
-    const interval = setInterval(moveEnemy, 25);
+    const interval = setInterval(moveEnemy, isSpeedUp ? 12.5 : 25); // Twice as fast when speed up
     return () => clearInterval(interval);
-  }, [round, isPageVisible]); // Add isPageVisible to dependencies
+  }, [round, isPageVisible, isSpeedUp]); // Add isPageVisible to dependencies
 
   // Heal enemy every second if it has health regeneration
   useEffect(() => {
@@ -422,13 +421,13 @@ useEffect(() => {
 
     const interval = setInterval(() => {
       setEnemies((prevEnemies) => 
-        prevEnemies.map(enemy => 
+        prevEnemies.map((enemy) => 
           enemy.regen > 0 ? {...enemy, hp: enemy.hp + enemy.regen} : enemy
         )
       )
-    }, 1500);
+    }, 1500 / (isSpeedUp ? 2 : 1));
     return () => clearInterval(interval);
-  }, [enemies, isPageVisible]); 
+  }, [enemies, isPageVisible, isSpeedUp]); 
 
   // Main tower attack logic
  const towerAttack = useCallback((tower: Tower, targets: Enemy[]) => {
@@ -440,13 +439,19 @@ useEffect(() => {
     )
   );
 
-  // Modify this section to properly handle poison
+  // Calculate actual damage dealt before updating enemies
+  let totalDamageDealt = 0;
+
   setEnemies((prevEnemies) =>
     prevEnemies.map((enemy) => {
       const isTargeted = targets.some(target => target.id === enemy.id);
       if (!isTargeted) return enemy;
 
-      // Apply immediate damage and status effects
+      // Calculate actual damage dealt (can't exceed remaining HP)
+      const actualDamage = Math.min(tower.attack, enemy.hp);
+      totalDamageDealt += actualDamage;
+
+      // Apply damage and status effects
       const updatedEnemy = {
         ...enemy,
         isTargeted: true,
@@ -454,7 +459,6 @@ useEffect(() => {
         speed: Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * 0.5)
       };
 
-      // Apply poison if it's a gas spitter tower
       if (tower.type === "gasspitter") {
         return {
           ...updatedEnemy,
@@ -467,6 +471,9 @@ useEffect(() => {
       return updatedEnemy;
     })
   );
+
+  // Update money based on actual damage dealt
+  setMoney(prevMoney => prevMoney + Math.floor(totalDamageDealt / 7.5) );
 
   const newEffects = targets.map(target => ({
     id: uuidv4(),
@@ -496,9 +503,9 @@ useEffect(() => {
         return wasTargeted ? { ...enemy, isTargeted: false } : enemy;
       })
     );
-  }, tower.attackSpeed);
+  }, tower.attackSpeed / (isSpeedUp ? 2 : 1)); // Twice as fast when speed up
 
-}, []);
+}, [isSpeedUp]); // Add isSpeedUp to dependencies
 
   // Tower targeting system - updates target when enemies move
   useEffect(() => {
@@ -592,10 +599,10 @@ useEffect(() => {
 
   useEffect(() => {
     if (!isPageVisible) return;
-     
-    const POISON_TICK_RATE = 10; // 10ms between ticks
-    const POISON_DURATION = 3000; // 3 seconds
-    const TOTAL_TICKS = POISON_DURATION / POISON_TICK_RATE; // Total number of ticks over 3 seconds
+       
+    const POISON_TICK_RATE = isSpeedUp ? 5 : 10; 
+    const POISON_DURATION = isSpeedUp ? 1500 : 3000; 
+    const TOTAL_TICKS = POISON_DURATION / POISON_TICK_RATE;
     
     const poisonInterval = setInterval(() => {
       const currentTime = Date.now();
@@ -604,7 +611,6 @@ useEffect(() => {
         prevEnemies.map(enemy => {
           if (!enemy.isPoisoned || !enemy.poisonSourceId || !enemy.poisonStartTime) return enemy;
   
-          // Check if poison duration has expired
           if (currentTime - enemy.poisonStartTime >= POISON_DURATION) {
             return {
               ...enemy,
@@ -617,9 +623,15 @@ useEffect(() => {
           const poisonTower = tower.find(t => t.id === enemy.poisonSourceId);
           if (!poisonTower?.poisonDamage) return enemy;
   
-          // Calculate damage per tick: (3 * total poison damage) / number of ticks
+          // Keep total damage the same regardless of speed
           const damagePerTick = (3 * poisonTower.poisonDamage) / TOTAL_TICKS;
-          setMoney((prevMoney) => prevMoney + (damagePerTick / 7.5))
+          
+          // Calculate actual poison damage (can't exceed remaining HP)
+          const actualPoisonDamage = Math.min(damagePerTick, enemy.hp);
+          
+          // Update money based on actual poison damage
+          setMoney(prevMoney => prevMoney + (actualPoisonDamage / 7.5) );
+  
           return {
             ...enemy,
             hp: enemy.hp - damagePerTick
@@ -628,10 +640,8 @@ useEffect(() => {
       );
     }, POISON_TICK_RATE);
   
-    return () => {
-      clearInterval(poisonInterval);
-    };
-  }, [enemies, tower, isPageVisible]);
+    return () => clearInterval(poisonInterval);
+  }, [enemies, tower, isPageVisible, isSpeedUp]);
   // Buy towers and place them on the map
   const buyTowers = (event: React.MouseEvent<HTMLImageElement>, positionX: number,positionY:number) => {
     if (round > 0 && (event.target as HTMLImageElement).src.includes('buildingSite')) {
@@ -1010,7 +1020,7 @@ const upgradeTower = () => {
             '--enemy-positionX': `${effect.enemyPositionX + 2.5}%`,
             '--enemy-positionY': `${effect.enemyPositionY + 2.5}%`,
             left: `${effect.towerPositionX}%`,
-            animationDuration: `150ms`,
+            animationDuration: `${isSpeedUp ? '75ms' : '150ms'}`,
           } as React.CSSProperties}
         />
           
