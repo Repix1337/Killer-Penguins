@@ -432,30 +432,31 @@ useEffect(() => {
     )
   );
 
+  // Modify this section to properly handle poison
   setEnemies((prevEnemies) =>
     prevEnemies.map((enemy) => {
       const isTargeted = targets.some(target => target.id === enemy.id);
-      if (!isTargeted || enemies.length < 5) { // Allow multiple towers to target the same enemy if there are fewer than 5 enemies
-        // Apply immediate damage and status effects
-        const updatedEnemy = {
-          ...enemy,
-          hp: enemy.hp - tower.attack,
-          speed: Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * 0.5)
-        };
+      if (!isTargeted) return enemy;
 
-        // Apply poison if it's a gas spitter tower
-        if (tower.type === "gasspitter") {
-          return {
-            ...updatedEnemy,
-            isPoisoned: true,
-            poisonSourceId: tower.id,
-            poisonStartTime: Date.now()
-          };
-        }
-        
-        return updatedEnemy;
+      // Apply immediate damage and status effects
+      const updatedEnemy = {
+        ...enemy,
+        isTargeted: true,
+        hp: enemy.hp - tower.attack,
+        speed: Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * 0.5)
+      };
+
+      // Apply poison if it's a gas spitter tower
+      if (tower.type === "gasspitter") {
+        return {
+          ...updatedEnemy,
+          isPoisoned: true,
+          poisonSourceId: tower.id,
+          poisonStartTime: Date.now()
+        };
       }
-      return enemy;
+      
+      return updatedEnemy;
     })
   );
 
@@ -480,9 +481,16 @@ useEffect(() => {
         t.id === tower.id ? { ...t, isAttacking: false } : t
       )
     );
+    // Unmark targets after attack
+    setEnemies((prevEnemies) =>
+      prevEnemies.map((enemy) => {
+        const wasTargeted = targets.some(target => target.id === enemy.id);
+        return wasTargeted ? { ...enemy, isTargeted: false } : enemy;
+      })
+    );
   }, tower.attackSpeed);
 
-}, [enemies.length]);
+}, []);
 
   // Tower targeting system - updates target when enemies move
   useEffect(() => {
@@ -1014,9 +1022,11 @@ const upgradeTower = () => {
       const isInRange = distance <= radius;
       
       if (canHitStealth) {
-        return isInRange;
+        // Only consider enemy as targetable if it's not targeted OR if it's targeted but one more hit won't overkill it
+        return isInRange && (!enemy.isTargeted || (enemy.hp - attackDamage > 0) );
       } else {
         return isInRange && 
+               (!enemy.isTargeted || (enemy.hp - attackDamage > 0)) && 
                (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");
       }
     });
