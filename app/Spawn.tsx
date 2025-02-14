@@ -499,7 +499,7 @@ useEffect(() => {
     setTower((prevTowers) =>
       prevTowers.map((tower) => ({
         ...tower,
-        furthestEnemyInRange: getFurthestEnemyInRadius(tower.positionX, tower.radius, tower.canHitStealth, tower.attackType, tower.attack, tower.targettingType) ?? null
+        furthestEnemyInRange: getFurthestEnemyInRadius(tower.positionX, tower.positionY, tower.radius, tower.canHitStealth, tower.attackType, tower.attack, tower.targettingType) ?? null
       })
       )
     );
@@ -1012,78 +1012,76 @@ const upgradeTower = () => {
   
 
   // Get the furthest enemy within a certain radius from the tower
-  const getFurthestEnemyInRadius = (towerPositionX: number, radius: number, canHitStealth: boolean, attackType: string, attackDamage: number, targettingType: string) => {
-    const enemiesInRadius = enemies.filter((enemy) => {
-      // Calculate distance between tower and enemy
-      const dx = enemy.positionX - towerPositionX;
-      const dy = enemy.positionY - selectedTower[0].towerPositionY;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      
-      const isInRange = distance <= radius;
-      
-      if (canHitStealth) {
-        // Only consider enemy as targetable if it's not targeted OR if it's targeted but one more hit won't overkill it
-        return isInRange && (!enemy.isTargeted || (enemy.hp - attackDamage > 0) );
-      } else {
-        return isInRange && 
-               (!enemy.isTargeted || (enemy.hp - attackDamage > 0)) && 
-               (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");
-      }
-    });
-  
-    if (enemiesInRadius.length === 0) {
-      return null;
-    }
-  
-    // Calculate progress value for each enemy based on their position in the path
-    const enemiesWithProgress = enemiesInRadius.map(enemy => {
-      let progress = 0;
-      
-      if (enemy.positionX < 30) {
-        // First segment
-        progress = enemy.positionX;
-      } else if (enemy.positionX >= 30 && enemy.positionX < 50 && enemy.positionY > 15) {
-        // Second segment
-        progress = 30 + (50 - enemy.positionY);
-      } else if (enemy.positionY <= 15 && enemy.positionX < 50) {
-        // Third segment
-        progress = 65 + enemy.positionX;
-      } else if (enemy.positionX >= 50 && enemy.positionX < 75 && enemy.positionY < 82) {
-        // Fourth segment
-        progress = 115 + enemy.positionY;
-      } else if (enemy.positionY >= 82 && enemy.positionX < 75) {
-        // Fifth segment
-        progress = 197 + enemy.positionX;
-      } else if (enemy.positionX >= 70 && enemy.positionY > 50) {
-        // Sixth segment
-        progress = 272 + (82 - enemy.positionY);
-      } else {
-        // Final segment
-        progress = 304 + enemy.positionX;
-      }
-      
-      return { ...enemy, progress };
-    });
-  
-    // Sort enemies by their progress value (highest progress = furthest along path)
-    const sortedEnemies = enemiesWithProgress.sort((a, b) => b.progress - a.progress);
-  
-    // Return enemies based on attack type and targeting type
-    if (targettingType === "highestHp") {
-      sortedEnemies.sort((a, b) => b.hp - a.hp);
-    } else if (targettingType === "last") {
-      sortedEnemies.reverse();
-    }
-  
-    if (attackType === 'double' && sortedEnemies.length >= 2) {
-      return sortedEnemies.slice(0, 2);
-    } 
-    else if (attackType === 'triple' && sortedEnemies.length >= 3) {
-      return sortedEnemies.slice(0, 3);
+const getFurthestEnemyInRadius = (towerPositionX: number, towerPositionY: number, radius: number, canHitStealth: boolean, attackType: string, attackDamage: number, targettingType: string) => {
+  const enemiesInRadius = enemies.filter((enemy) => {
+    // Calculate distance between tower and enemy
+    const dx = enemy.positionX - towerPositionX;
+    const dy = enemy.positionY - towerPositionY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    const isInRange = distance <= radius;
+    
+    if (canHitStealth) {
+      return isInRange;
     } else {
-      return [sortedEnemies[0]];
+      return isInRange && 
+             (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");
     }
-  };
+  });
+
+  if (enemiesInRadius.length === 0) {
+    return null;
+  }
+
+  // Calculate progress value for each enemy based on their position in the path
+  const enemiesWithProgress = enemiesInRadius.map(enemy => {
+    let progress = 0;
+    
+    if (enemy.positionX < 30) {
+      // First segment
+      progress = enemy.positionX;
+    } else if (enemy.positionX >= 30 && enemy.positionX < 50 && enemy.positionY > 15) {
+      // Second segment
+      progress = 30 + (50 - enemy.positionY);
+    } else if (enemy.positionY <= 15 && enemy.positionX < 50) {
+      // Third segment
+      progress = 65 + enemy.positionX;
+    } else if (enemy.positionX >= 50 && enemy.positionX < 75 && enemy.positionY < 82) {
+      // Fourth segment
+      progress = 115 + enemy.positionY;
+    } else if (enemy.positionY >= 82 && enemy.positionX < 75) {
+      // Fifth segment
+      progress = 197 + enemy.positionX;
+    } else if (enemy.positionX >= 70 && enemy.positionY > 50) {
+      // Sixth segment
+      progress = 272 + (82 - enemy.positionY);
+    } else {
+      // Final segment
+      progress = 304 + enemy.positionX;
+    }
+    
+    return { ...enemy, progress };
+  });
+
+  // Sort enemies by their progress value (highest progress = furthest along path)
+  const sortedEnemies = enemiesWithProgress.sort((a, b) => b.progress - a.progress);
+
+  // Return enemies based on attack type and targeting type
+  if (targettingType === "highestHp") {
+    sortedEnemies.sort((a, b) => b.hp - a.hp);
+  } else if (targettingType === "last") {
+    sortedEnemies.reverse();
+  }
+
+  if (attackType === 'double' && sortedEnemies.length >= 2) {
+    return sortedEnemies.slice(0, 2);
+  } 
+  else if (attackType === 'triple' && sortedEnemies.length >= 3) {
+    return sortedEnemies.slice(0, 3);
+  } else {
+    return [sortedEnemies[0]];
+  }
+};
 
 // Add this new component near your other components
 const RangeIndicator = ({ tower }: { tower: Tower }) => {
