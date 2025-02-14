@@ -384,10 +384,7 @@ useEffect(() => {
       setEnemies([]);
     }
     // Round completion
-    if (enemies.length === 0 && enemyCount === 10 * round || enemyCount === 15 * round) {
-      setRound(prev => prev + 1);
-      setEnemyCount(0);
-    }
+    
   };
 
   const spawnInterval = setInterval(() => {
@@ -400,6 +397,17 @@ useEffect(() => {
   return () => clearInterval(spawnInterval);
 }, [round, enemyCount, enemies.length, isPageVisible]); 
 
+
+useEffect(() => {
+  if (enemies.length === 0 && (enemyCount === 10 * round || enemyCount === 15 * round)) {
+    const roundTimeout = setTimeout(() => {
+      setRound(prev => prev + 1);
+      setEnemyCount(0);
+    }, 4000);
+
+    return () => clearTimeout(roundTimeout);
+  }
+}, [enemies.length, enemyCount, round]);
   // Enemy movement - updates position every 25ms
   useEffect(() => {
     if (!isPageVisible || round <= 0) return; // Stop if page is not visible
