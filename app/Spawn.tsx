@@ -188,7 +188,7 @@ const TOWER_TYPES = {
     type: 'basic',
     maxDamage: 200,
     maxAttackSpeed: 450,
-    radius: 25,
+    radius: 27,
     attackType: 'single',
     canHitStealth: false,
     slowAmount: 1,
@@ -221,7 +221,7 @@ const TOWER_TYPES = {
     type: 'rapidShooter',
     maxDamage: 75,
     maxAttackSpeed: 200,
-    radius: 25,
+    radius: 27,
     attackType: 'double',
     canHitStealth: false,
     slowAmount: 1,
@@ -237,7 +237,7 @@ const TOWER_TYPES = {
     type: 'slower',
     maxDamage: 40,
     maxAttackSpeed: 750,
-    radius: 25,
+    radius: 27,
     attackType: 'double',
     canHitStealth: false,
     slowAmount: 0.75,
@@ -253,7 +253,7 @@ const TOWER_TYPES = {
     type: 'gasspitter',
     maxDamage: 20,
     maxAttackSpeed: 600,
-    radius: 25,
+    radius: 27,
     attackType: 'double',
     canHitStealth: false,
     slowAmount: 1,
@@ -1112,18 +1112,18 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
       {tower.map((t) => (
         <RangeIndicator key={`range-${t.id}`} tower={t} />
       ))}
-      <img src='/buildingSite.png' className='absolute top-[28%] left-[20%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 20,28)} />
-      <img src='/buildingSite.png' className='absolute top-[28%] left-[5%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 5,28)} />
-      <img src='/buildingSite.png' className='absolute top-[35%] left-[41%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 41,35)} />
-      <img src='/buildingSite.png' className='absolute top-[60%] left-[63%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 63,60)} />
-      <img src='/buildingSite.png' className='absolute top-[20%] left-[63%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 63,20)} />
-      <img src='/buildingSite.png' className='absolute top-[40%] left-[63%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 63,40)} />
-      <img src='/buildingSite.png' className='absolute top-[25%] left-[85%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 85,25)} />
-      <img src='/buildingSite.png' className='absolute top-[65%] left-[10%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 10,65)} />
-      <img src='/buildingSite.png' className='absolute top-[65%] left-[25%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 25,65)} />
-      <img src='/buildingSite.png' className='absolute top-[52.5%] left-[41%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 41,52.5)} />
-      <img src='/buildingSite.png' className='absolute top-[70%] left-[41%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 41,70)} />
-      <img src='/buildingSite.png' className='absolute top-[65%] left-[82%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 82,65)} />
+      <img src='/buildingSite.png' className='absolute top-[28%] left-[20%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 20,27)} />
+      <img src='/buildingSite.png' className='absolute top-[28%] left-[5%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 5,26)} />
+      <img src='/buildingSite.png' className='absolute top-[35%] left-[41%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 41,34)} />
+      <img src='/buildingSite.png' className='absolute top-[60%] left-[63%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 63,59)} />
+      <img src='/buildingSite.png' className='absolute top-[20%] left-[63%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 63,19)} />
+      <img src='/buildingSite.png' className='absolute top-[40%] left-[63%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 63,39)} />
+      <img src='/buildingSite.png' className='absolute top-[25%] left-[85%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 85,24)} />
+      <img src='/buildingSite.png' className='absolute top-[65%] left-[10%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 10,64)} />
+      <img src='/buildingSite.png' className='absolute top-[65%] left-[25%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 25,64)} />
+      <img src='/buildingSite.png' className='absolute top-[52.5%] left-[41%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 41,51.5)} />
+      <img src='/buildingSite.png' className='absolute top-[70%] left-[41%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 41,69)} />
+      <img src='/buildingSite.png' className='absolute top-[65%] left-[82%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 82,63)} />
       {createEnemy()}
       
       {attackAnimation()}
