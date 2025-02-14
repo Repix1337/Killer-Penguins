@@ -24,6 +24,7 @@ interface Enemy {
   damage: number;
   src: string;
   type: string;
+  
   regen: number;
   isTargeted: boolean;  
   isPoisoned: boolean;
@@ -42,6 +43,7 @@ interface Tower {
   isAttacking: boolean;
   price: number;
   type: string;
+  targettingType: string;
   maxDamage: number;
   maxAttackSpeed: number;
   radius: number;
@@ -268,6 +270,7 @@ const createNewTower = (type: keyof typeof TOWER_TYPES, positionX: number, posit
   positionY: positionY,
   furthestEnemyInRange: null,
   isAttacking: false,
+  targettingType: "first",
   ...TOWER_TYPES[type]
 });
 
@@ -429,31 +432,30 @@ useEffect(() => {
     )
   );
 
-  // Modify this section to properly handle poison
   setEnemies((prevEnemies) =>
     prevEnemies.map((enemy) => {
       const isTargeted = targets.some(target => target.id === enemy.id);
-      if (!isTargeted) return enemy;
-
-      // Apply immediate damage and status effects
-      const updatedEnemy = {
-        ...enemy,
-        isTargeted: true,
-        hp: enemy.hp - tower.attack,
-        speed: Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * 0.5)
-      };
-
-      // Apply poison if it's a gas spitter tower
-      if (tower.type === "gasspitter") {
-        return {
-          ...updatedEnemy,
-          isPoisoned: true,
-          poisonSourceId: tower.id,
-          poisonStartTime: Date.now()
+      if (!isTargeted || enemies.length < 5) { // Allow multiple towers to target the same enemy if there are fewer than 5 enemies
+        // Apply immediate damage and status effects
+        const updatedEnemy = {
+          ...enemy,
+          hp: enemy.hp - tower.attack,
+          speed: Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * 0.5)
         };
+
+        // Apply poison if it's a gas spitter tower
+        if (tower.type === "gasspitter") {
+          return {
+            ...updatedEnemy,
+            isPoisoned: true,
+            poisonSourceId: tower.id,
+            poisonStartTime: Date.now()
+          };
+        }
+        
+        return updatedEnemy;
       }
-      
-      return updatedEnemy;
+      return enemy;
     })
   );
 
@@ -478,16 +480,9 @@ useEffect(() => {
         t.id === tower.id ? { ...t, isAttacking: false } : t
       )
     );
-    // Unmark targets after attack
-    setEnemies((prevEnemies) =>
-      prevEnemies.map((enemy) => {
-        const wasTargeted = targets.some(target => target.id === enemy.id);
-        return wasTargeted ? { ...enemy, isTargeted: false } : enemy;
-      })
-    );
   }, tower.attackSpeed);
 
-}, []);
+}, [enemies.length]);
 
   // Tower targeting system - updates target when enemies move
   useEffect(() => {
@@ -496,7 +491,7 @@ useEffect(() => {
     setTower((prevTowers) =>
       prevTowers.map((tower) => ({
         ...tower,
-        furthestEnemyInRange: getFurthestEnemyInRadius(tower.positionX, tower.radius, tower.canHitStealth, tower.attackType, tower.attack) ?? null
+        furthestEnemyInRange: getFurthestEnemyInRadius(tower.positionX, tower.radius, tower.canHitStealth, tower.attackType, tower.attack, tower.targettingType) ?? null
       })
       )
     );
@@ -577,7 +572,6 @@ useEffect(() => {
   }; 
   useEffect(() => {
     damagePlayer(enemies);
-    console.log(tower)
   }, [enemies,tower]);
 
   useEffect(() => {
@@ -867,6 +861,16 @@ const upgradeTower = () => {
                   </span>
                 </div>
               )}
+              <div>
+                Targetting:
+              <button 
+              className="bg-blue-400 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg flex-1 
+                transition-all duration-200 shadow-md w-[100%]"
+              onClick={changeTowerTargetting}
+            >
+            {selectedTower.targettingType === "first" ? "First" : selectedTower.targettingType === "highestHp" ? "Highest HP" : "Last"}
+            </button>
+            </div>
             </div>
           </div>
         </div>
@@ -878,7 +882,19 @@ const upgradeTower = () => {
   const closeUpgradeMenu = () => {
     setShowUpgradeMenu(false);
   }
-  
+  const changeTowerTargetting = () => {
+    setTower(() => 
+      tower.map((t) =>
+        t.id === selectedTowerID ? { 
+          ...t, 
+          targettingType: t.targettingType === "first" 
+            ? "highestHp" 
+            : t.targettingType === "highestHp" 
+            ? "last" 
+            : "first" 
+        } : t
+    ))
+  }
   const upgradeDamage = () => {
     if (money >= 250){
       setMoney((prevMoney) => prevMoney - 250);
@@ -988,7 +1004,7 @@ const upgradeTower = () => {
   
 
   // Get the furthest enemy within a certain radius from the tower
-  const getFurthestEnemyInRadius = (towerPositionX: number, radius: number, canHitStealth: boolean, attackType: string, attackDamage: number) => {
+  const getFurthestEnemyInRadius = (towerPositionX: number, radius: number, canHitStealth: boolean, attackType: string, attackDamage: number, targettingType: string) => {
     const enemiesInRadius = enemies.filter((enemy) => {
       // Calculate distance between tower and enemy
       const dx = enemy.positionX - towerPositionX;
@@ -998,11 +1014,9 @@ const upgradeTower = () => {
       const isInRange = distance <= radius;
       
       if (canHitStealth) {
-        // Only consider enemy as targetable if it's not targeted OR if it's targeted but one more hit won't overkill it
-        return isInRange && (!enemy.isTargeted || (enemy.hp - attackDamage > 0) );
+        return isInRange;
       } else {
         return isInRange && 
-               (!enemy.isTargeted || (enemy.hp - attackDamage > 0)) && 
                (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");
       }
     });
@@ -1044,7 +1058,13 @@ const upgradeTower = () => {
     // Sort enemies by their progress value (highest progress = furthest along path)
     const sortedEnemies = enemiesWithProgress.sort((a, b) => b.progress - a.progress);
   
-    // Return enemies based on attack type
+    // Return enemies based on attack type and targeting type
+    if (targettingType === "highestHp") {
+      sortedEnemies.sort((a, b) => b.hp - a.hp);
+    } else if (targettingType === "last") {
+      sortedEnemies.reverse();
+    }
+  
     if (attackType === 'double' && sortedEnemies.length >= 2) {
       return sortedEnemies.slice(0, 2);
     } 
@@ -1057,12 +1077,15 @@ const upgradeTower = () => {
 
 // Add this new component near your other components
 const RangeIndicator = ({ tower }: { tower: Tower }) => {
+  const gameAreaWidth = 100; // Adjust this value based on your game area width
+  const gameAreaHeight = 100; // Adjust this value based on your game area height
+
   return showUpgradeMenu && tower.id === selectedTowerID && (
-      <div
+    <div
       className="absolute rounded-full border-2 border-blue-400 pointer-events-none"
       style={{
-        width: `${tower.radius * 2}%`,    // Doubled the radius for diameter
-        height: `${tower.radius * 2}%`,   // Doubled the radius for diameter
+        width: `${(tower.radius * 2) / gameAreaWidth * 100}%`,    // Adjusted for game area width
+        height: `${(tower.radius * 2) / gameAreaHeight * 100}%`,   // Adjusted for game area height
         left: `${tower.positionX}%`,
         top: `${tower.positionY}%`,
         transform: 'translate(-50%, -50%)',
