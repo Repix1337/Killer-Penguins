@@ -7,6 +7,8 @@ const Menu = () => {
     const [HealthPoints, setHealthPoints] = React.useState(100)
     const [money, setMoney] = React.useState(200);
     const [isSpeedUp, setIsSpeedUp] = React.useState(false);
+    const [isPaused, setIsPaused] = React.useState(false);
+    const [canPause, setCanPause] = React.useState(false);
 
     const onClick = () => {
       if (round < 1) {
@@ -15,12 +17,36 @@ const Menu = () => {
     }
 
     const handleSpeedUp = () => {
-      setIsSpeedUp(prev => !prev);
+      if (!isPaused) {
+        setIsSpeedUp(prev => !prev);
+      }
+    }
+
+    const handlePause = () => {
+      if (canPause) {
+        setIsPaused(prev => !prev);
+        if (isSpeedUp) {
+          setIsSpeedUp(false);
+        }
+      }
     }
     
     return (
-      <div>
-        <div className='flex justify-center items-center gap-3 text-xl bg-slate-700 h-12 '>
+      <div className="relative">
+        {isPaused && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+            <div className="bg-slate-800 p-8 rounded-lg shadow-lg">
+              <h2 className="text-2xl mb-4">Game Paused</h2>
+              <button 
+                className="bg-yellow-400 px-4 py-2 rounded hover:bg-yellow-500"
+                onClick={handlePause}
+              >
+                Resume Game
+              </button>
+            </div>
+          </div>
+        )}
+        <div className='flex justify-center items-center gap-3 text-xl bg-slate-700 h-12'>
           <div className=' bg-slate-800 p-1 text-xl rounded-lg shadow-sm hover:cursor-pointer' onClick={onClick}>Start</div>
           <div>Round: {round}/30</div>
           <div className='text-red-500 text-xl'> &hearts; {HealthPoints}</div>
@@ -31,6 +57,12 @@ const Menu = () => {
           >
             Speed {isSpeedUp ? '2x' : '1x'}
           </div>
+          <div 
+            className={`p-1 text-xl rounded-lg shadow-sm ${canPause ? 'hover:cursor-pointer' : 'opacity-50 cursor-not-allowed'} ${isPaused ? 'bg-yellow-600' : 'bg-yellow-400'}`} 
+            onClick={handlePause}
+          >
+            {isPaused ? 'Resume' : 'Pause'}
+          </div>
         </div>
         <Spawn 
           round={round} 
@@ -40,6 +72,8 @@ const Menu = () => {
           setRound={setRound} 
           hp={HealthPoints}
           isSpeedUp={isSpeedUp}
+          isPaused={isPaused}
+          setCanPause={setCanPause}
         />
       </div>
     )
