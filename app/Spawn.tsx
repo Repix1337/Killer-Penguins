@@ -39,14 +39,14 @@ interface Tower {
   positionX: number;
   positionY: number;
   attack: number;
-  attackSpeed: number;
+  attackInterval: number; // renamed from attackSpeed
   furthestEnemyInRange: Enemy[] | null;
   isAttacking: boolean;
   price: number;
   type: string;
   targettingType: string;
   maxDamage: number;
-  maxAttackSpeed: number;
+  maxAttackInterval: number; // renamed from maxAttackSpeed
   radius: number;
   attackType: string;
   canHitStealth: boolean;
@@ -184,11 +184,11 @@ const TOWER_TYPES = {
   BASIC: {
     src: '/tower1.png',
     attack: 50,
-    attackSpeed: 1000,
+    attackInterval: 1000, // renamed from attackSpeed
     price: 100,
     type: 'basic',
     maxDamage: 200,
-    maxAttackSpeed: 450,
+    maxAttackInterval: 450, // renamed from maxAttackSpeed
     radius: 27,
     attackType: 'single',
     canHitStealth: false,
@@ -200,11 +200,11 @@ const TOWER_TYPES = {
   SNIPER: {
     src: '/tower2.png',
     attack: 100,
-    attackSpeed: 2000,
+    attackInterval: 2000,
     price: 200,
     type: 'sniper',
     maxDamage: 300,
-    maxAttackSpeed: 1200,
+    maxAttackInterval: 1200,
     radius: 120,
     attackType: 'single',
     canHitStealth: true,
@@ -217,11 +217,11 @@ const TOWER_TYPES = {
   RAPIDSHOOTER: {
     src: '/rapidShooter.png',
     attack: 25,
-    attackSpeed: 400,
+    attackInterval: 400,
     price: 500,
     type: 'rapidShooter',
     maxDamage: 75,
-    maxAttackSpeed: 200,
+    maxAttackInterval: 200,
     radius: 27,
     attackType: 'double',
     canHitStealth: false,
@@ -233,11 +233,11 @@ const TOWER_TYPES = {
   SLOWER: {
     src: '/slower.png',
     attack: 15,
-    attackSpeed: 1000,
+    attackInterval: 1000,
     price: 300,
     type: 'slower',
     maxDamage: 40,
-    maxAttackSpeed: 750,
+    maxAttackInterval: 750,
     radius: 27,
     attackType: 'double',
     canHitStealth: false,
@@ -249,11 +249,11 @@ const TOWER_TYPES = {
   GASSPITTER: {
     src: '/gasSpitter.png',
     attack: 20,
-    attackSpeed: 1000,
+    attackInterval: 1000,
     price: 300,
     type: 'gasspitter',
     maxDamage: 20,
-    maxAttackSpeed: 600,
+    maxAttackInterval: 600,
     radius: 27,
     attackType: 'double',
     canHitStealth: false,
@@ -503,7 +503,7 @@ useEffect(() => {
         return wasTargeted ? { ...enemy, isTargeted: false } : enemy;
       })
     );
-  }, tower.attackSpeed / (isSpeedUp ? 2 : 1)); // Twice as fast when speed up
+  }, tower.attackInterval / (isSpeedUp ? 2 : 1)); // Twice as fast when speed up
 
 }, [isSpeedUp]); // Add isSpeedUp to dependencies
 
@@ -707,20 +707,20 @@ const upgradeTower = () => {
             </div>
           )}
 
-          {/* Attack Speed Upgrade */}
-          {selectedTower.attackSpeed > selectedTower.maxAttackSpeed ? (
+          {/* Attack Interval Upgrade */}
+          {selectedTower.attackInterval > selectedTower.maxAttackInterval ? (
             <button 
               className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 
                 text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
                 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={upgradeAttackSpeed}
+              onClick={upgradeAttackInterval}
               disabled={money < 500}
             >
-              Upgrade Attack Speed (500$ for -200ms)
+              Upgrade Attack Interval (500$ for -200ms)
             </button>
           ) : (
             <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
-              Max Attack Speed Reached
+              Min Attack Interval Reached
             </div>
           )}
 
@@ -848,16 +848,16 @@ const upgradeTower = () => {
 
             <div>
               <div className="flex justify-between items-center mb-1">
-                <span>Attack Speed:</span>
-                <span>{selectedTower.attackSpeed} / {selectedTower.maxAttackSpeed}</span>
+                <span>Attack Interval:</span>
+                <span>{selectedTower.attackInterval} / {selectedTower.maxAttackInterval}</span>
               </div>
               <div className="w-full bg-gray-600 rounded-full h-2">
                 <div className="bg-blue-500 h-2 rounded-full" 
-                  style={{width: `${((selectedTower.attackSpeed - selectedTower.maxAttackSpeed) / (2000 - selectedTower.maxAttackSpeed)) * 100}%`}}
+                  style={{width: `${((selectedTower.attackInterval - selectedTower.maxAttackInterval) / (2000 - selectedTower.maxAttackInterval)) * 100}%`}}
                 />
               </div>
               <span className="text-xs text-gray-400">
-                ({Math.floor((selectedTower.attackSpeed - selectedTower.maxAttackSpeed) / 200)} upgrades left)
+                ({Math.floor((selectedTower.attackInterval - selectedTower.maxAttackInterval) / 200)} upgrades left)
               </span>
             </div>
             {selectedTower.type === "gasspitter" && selectedTower.maxPoisonDamage != undefined && selectedTower.poisonDamage != undefined && (
@@ -932,12 +932,12 @@ const upgradeTower = () => {
     }
     
   }
-  const upgradeAttackSpeed = () => {
+  const upgradeAttackInterval = () => {
     if (money >= 500){
       setMoney((prevMoney) => prevMoney - 500);
       setTower((prevTower) => 
         prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t, attackSpeed: Math.max(t.attackSpeed - 200, t.maxAttackSpeed) } : t
+          t.id === selectedTowerID ? { ...t, attackInterval: Math.max(t.attackInterval - 200, t.maxAttackInterval) } : t
         )
       );
     }
