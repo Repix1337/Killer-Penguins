@@ -24,10 +24,12 @@ interface Enemy {
   hp: number;
   speed: number;
   baseSpeed: number;
+  isSlowed: boolean;
+  slowSourceId?: string;
+  slowStartTime?: number;
   damage: number;
   src: string;
   type: string;
-  
   regen: number;
   isTargeted: boolean;  
   isPoisoned: boolean;
@@ -244,7 +246,7 @@ const TOWER_TYPES = {
     attackType: 'double',
     canHitStealth: false,
     slowAmount: 0.75,
-    maxSlow: 0.6,
+    maxSlow: 0.5,
     poisonDamage: 0,
     maxPoisonDamage: 0
   },
@@ -283,6 +285,7 @@ const createNewEnemy = (type: keyof typeof ENEMY_TYPES) => ({
   positionX: -7,
   positionY: 50,
   isTargeted: false,
+  isSlowed: false,
   isPoisoned: false,
   ...ENEMY_TYPES[type]
 });
@@ -467,7 +470,7 @@ useEffect(() => {
           ...enemy,
           isTargeted: true,
           hp: enemy.hp - tower.attack,
-          speed: Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * 0.5)
+          speed: Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount)
         };
   
         if (tower.type === "gasspitter") {
@@ -476,6 +479,14 @@ useEffect(() => {
             isPoisoned: true,
             poisonSourceId: tower.id,
             poisonStartTime: Date.now()
+          };
+        }
+        if (tower.type === "slower") {
+          return {
+            ...updatedEnemy,
+            isSlowed: true,
+            slowSourceId: tower.id,
+            slowStartTime: Date.now()
           };
         }
         
@@ -522,18 +533,111 @@ useEffect(() => {
   
   }, [isSpeedUp, isPaused]); // Add isSpeedUp to dependencies
 
-  // Tower targeting system - updates target when enemies move
-  useEffect(() => {
-    if (!isPageVisible || isPaused) return; // Add isPaused check
+// Get the furthest enemy within a certain radius from the tower
+const getFurthestEnemyInRadius = (towerPositionX: number, towerPositionY: number,towerType: string, radius: number, canHitStealth: boolean, attackType: string, attackDamage: number, targettingType: string) => {
+  const enemiesInRadius = enemies.filter((enemy) => {
+    // Calculate distance between tower and enemy
+    const dx = enemy.positionX - towerPositionX;
+    const dy = enemy.positionY - towerPositionY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    const isInRange = distance <= radius;
+    
+    if (canHitStealth) {
+      return isInRange;
+    } else if (towerType === "gasspitter" && canHitStealth){
+      return isInRange && !enemy.isPoisoned;
+    }else if (towerType === "gasspitter" && !canHitStealth){
+      return isInRange && !enemy.isPoisoned&& 
+      (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");;
+    }else if (towerType === "slower" && canHitStealth){
+      return isInRange && !enemy.isSlowed;
+    }else if (towerType === "slower" && !canHitStealth){
+      return isInRange && !enemy.isSlowed&& 
+      (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");;
+    } else {
+      return isInRange && 
+             (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");
+    }
+  });
 
-    setTower((prevTowers) =>
-      prevTowers.map((tower) => ({
-        ...tower,
-        furthestEnemyInRange: getFurthestEnemyInRadius(tower.positionX, tower.positionY, tower.type, tower.radius, tower.canHitStealth, tower.attackType, tower.attack, tower.targettingType) ?? null
-      })
-      )
-    );
-  }, [enemies, isPageVisible, isPaused]); // Add isPaused to dependencies
+  if (enemiesInRadius.length === 0) {
+    return null;
+  }
+
+  // Calculate progress value for each enemy based on their position in the path
+  const enemiesWithProgress = enemiesInRadius.map(enemy => {
+    let progress = 0;
+    
+    if (enemy.positionX < 30) {
+      // First segment
+      progress = enemy.positionX;
+    } else if (enemy.positionX >= 30 && enemy.positionX < 50 && enemy.positionY > 15) {
+      // Second segment
+      progress = 30 + (50 - enemy.positionY);
+    } else if (enemy.positionY <= 15 && enemy.positionX < 50) {
+      // Third segment
+      progress = 65 + enemy.positionX;
+    } else if (enemy.positionX >= 50 && enemy.positionX < 75 && enemy.positionY < 82) {
+      // Fourth segment
+      progress = 115 + enemy.positionY;
+    } else if (enemy.positionY >= 82 && enemy.positionX < 75) {
+      // Fifth segment
+      progress = 197 + enemy.positionX;
+    } else if (enemy.positionX >= 70 && enemy.positionY > 50) {
+      // Sixth segment
+      progress = 272 + (82 - enemy.positionY);
+    } else {
+      // Final segment
+      progress = 304 + enemy.positionX;
+    }
+    
+    return { ...enemy, progress };
+  });
+
+  // Sort enemies by their progress value (highest progress = furthest along path)
+  const sortedEnemies = enemiesWithProgress.sort((a, b) => b.progress - a.progress);
+
+  // Return enemies based on attack type and targeting type
+  if (targettingType === "highestHp") {
+    sortedEnemies.sort((a, b) => b.hp - a.hp);
+  } else if (targettingType === "last") {
+    sortedEnemies.reverse();
+  }
+
+  if (attackType === 'double' && sortedEnemies.length >= 2) {
+    return sortedEnemies.slice(0, 2);
+  } 
+  else if (attackType === 'triple' && sortedEnemies.length >= 3) {
+    return sortedEnemies.slice(0, 3);
+  } else {
+    return [sortedEnemies[0]];
+  }
+};
+
+// Tower targeting system - updates target when enemies move
+useEffect(() => {
+  if (!isPageVisible || isPaused) return;
+
+  // Only update if there are enemies to target
+  if (enemies.length === 0) return;
+
+  setTower(prevTowers =>
+    prevTowers.map(tower => ({
+      ...tower,
+      furthestEnemyInRange: getFurthestEnemyInRadius(
+        tower.positionX,
+        tower.positionY,
+        tower.type,
+        tower.radius,
+        tower.canHitStealth,
+        tower.attackType,
+        tower.attack,
+        tower.targettingType
+      ) ?? null
+    }))
+  );
+}, [enemies, isPageVisible, isPaused]);
   
   // Tower attack execution - triggers attacks when targets are available
   useEffect(() => {
@@ -611,7 +715,38 @@ useEffect(() => {
   useEffect(() => {
     damagePlayer(enemies);
   }, [enemies,tower]);
-
+  useEffect(() => {
+    if (!isPageVisible || isPaused) return;
+  
+    const slowInterval = setInterval(() => {
+      const currentTime = Date.now();
+      const SLOW_DURATION = isSpeedUp ? 3000 : 6000;
+  
+      setEnemies(prevEnemies => {
+        let hasChanges = false;
+        const updatedEnemies = prevEnemies.map(enemy => {
+          if (!enemy.isSlowed || !enemy.slowSourceId || !enemy.slowStartTime) return enemy;
+          
+          if (currentTime - enemy.slowStartTime >= SLOW_DURATION) {
+            hasChanges = true;
+            return {
+              ...enemy,
+              speed: enemy.baseSpeed,
+              isSlowed: false,
+              slowSourceId: undefined,
+              slowStartTime: undefined
+            };
+          }
+          return enemy;
+        });
+  
+        // Only return new array if there were actual changes
+        return hasChanges ? updatedEnemies : prevEnemies;
+      });
+    }, 1000); // Check every second instead of every render
+  
+    return () => clearInterval(slowInterval);
+  }, [isPageVisible, isPaused, isSpeedUp]); // Only include stable dependencies
   useEffect(() => {
     if (!isPageVisible || isPaused) return; // Add isPaused check
          
@@ -1053,82 +1188,6 @@ const upgradeTower = () => {
 
   
 
-  // Get the furthest enemy within a certain radius from the tower
-const getFurthestEnemyInRadius = (towerPositionX: number, towerPositionY: number,towerType: string, radius: number, canHitStealth: boolean, attackType: string, attackDamage: number, targettingType: string) => {
-  const enemiesInRadius = enemies.filter((enemy) => {
-    // Calculate distance between tower and enemy
-    const dx = enemy.positionX - towerPositionX;
-    const dy = enemy.positionY - towerPositionY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    
-    const isInRange = distance <= radius;
-    
-    if (canHitStealth) {
-      return isInRange;
-    } else if (towerType === "gasspitter" && canHitStealth){
-      return isInRange && !enemy.isPoisoned;
-    }else if (towerType === "gasspitter" && !canHitStealth){
-      return isInRange && !enemy.isPoisoned&& 
-      (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");;
-    } else {
-      return isInRange && 
-             (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");
-    }
-  });
-
-  if (enemiesInRadius.length === 0) {
-    return null;
-  }
-
-  // Calculate progress value for each enemy based on their position in the path
-  const enemiesWithProgress = enemiesInRadius.map(enemy => {
-    let progress = 0;
-    
-    if (enemy.positionX < 30) {
-      // First segment
-      progress = enemy.positionX;
-    } else if (enemy.positionX >= 30 && enemy.positionX < 50 && enemy.positionY > 15) {
-      // Second segment
-      progress = 30 + (50 - enemy.positionY);
-    } else if (enemy.positionY <= 15 && enemy.positionX < 50) {
-      // Third segment
-      progress = 65 + enemy.positionX;
-    } else if (enemy.positionX >= 50 && enemy.positionX < 75 && enemy.positionY < 82) {
-      // Fourth segment
-      progress = 115 + enemy.positionY;
-    } else if (enemy.positionY >= 82 && enemy.positionX < 75) {
-      // Fifth segment
-      progress = 197 + enemy.positionX;
-    } else if (enemy.positionX >= 70 && enemy.positionY > 50) {
-      // Sixth segment
-      progress = 272 + (82 - enemy.positionY);
-    } else {
-      // Final segment
-      progress = 304 + enemy.positionX;
-    }
-    
-    return { ...enemy, progress };
-  });
-
-  // Sort enemies by their progress value (highest progress = furthest along path)
-  const sortedEnemies = enemiesWithProgress.sort((a, b) => b.progress - a.progress);
-
-  // Return enemies based on attack type and targeting type
-  if (targettingType === "highestHp") {
-    sortedEnemies.sort((a, b) => b.hp - a.hp);
-  } else if (targettingType === "last") {
-    sortedEnemies.reverse();
-  }
-
-  if (attackType === 'double' && sortedEnemies.length >= 2) {
-    return sortedEnemies.slice(0, 2);
-  } 
-  else if (attackType === 'triple' && sortedEnemies.length >= 3) {
-    return sortedEnemies.slice(0, 3);
-  } else {
-    return [sortedEnemies[0]];
-  }
-};
 
 // Add this new component near your other components
 const RangeIndicator = ({ tower }: { tower: Tower }) => {
