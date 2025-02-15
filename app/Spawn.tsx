@@ -42,6 +42,7 @@ interface Tower {
   id: string;
   positionX: number;
   positionY: number;
+  damageDone: number;
   attack: number;
   attackInterval: number; // renamed from attackSpeed
   furthestEnemyInRange: Enemy[] | null;
@@ -318,6 +319,7 @@ const createNewTower = (type: keyof typeof TOWER_TYPES, positionX: number, posit
   furthestEnemyInRange: null,
   isAttacking: false,
   targettingType: "first",
+  damageDone: 0,
   ...TOWER_TYPES[type]
 });
 
@@ -533,7 +535,7 @@ useEffect(() => {
         );
         setTower((prevTowers) =>
           prevTowers.map((t) =>
-            t.id === tower.id ? { ...t, isAttacking: false } : t
+            t.id === tower.id ? { ...t, isAttacking: false, damageDone: t.damageDone + t.attack } : t
           )
         );
         setEnemies((prevEnemies) =>
@@ -1088,6 +1090,7 @@ const upgradeTower = () => {
             <div className="pt-2 border-t border-gray-600">
               <div>Attack Type: {selectedTower.attackType}</div>
               <div>Can hit stealth: {selectedTower.canHitStealth ? 'Yes' : 'No'}</div>
+              <div>Damage done to enemies: {selectedTower.damageDone}</div>
               {selectedTower.type === "slower" && (
                 <div>
                   <div>Slow Amount: {selectedTower.slowAmount ? selectedTower.slowAmount.toFixed(2) : 'N/A'} / {selectedTower.maxSlow}</div>
