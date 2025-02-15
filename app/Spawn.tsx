@@ -324,8 +324,8 @@ const createNewTower = (type: keyof typeof TOWER_TYPES, positionX: number, posit
 // Then, create helper function for spawning enemies
 const createNewEnemy = (type: keyof typeof ENEMY_TYPES) => ({
   id: uuidv4(),
-  positionX: -7,
-  positionY: 50,
+  positionX: -6,
+  positionY: 52,
   isTargeted: false,
   isSlowed: false,
   isPoisoned: false,
@@ -700,6 +700,7 @@ useEffect(() => {
             transform: 'translateY(-50%)',
             zIndex: 10,
           }}
+          className='w-12 h-12'
         />
       ));
     }
@@ -714,19 +715,19 @@ useEffect(() => {
           if (enemy.positionX < 30) {
             // First segment - Move right until x=30
             return { ...enemy, positionX: enemy.positionX + enemy.speed };
-          } else if (enemy.positionX >= 30 && enemy.positionX < 50 && enemy.positionY > 15) {
+          } else if (enemy.positionX >= 30 && enemy.positionX < 52 && enemy.positionY > 15) {
             // Second segment - Move up until y=15
             return { ...enemy, positionY: enemy.positionY - (enemy.speed * 2) };
-          } else if (enemy.positionY <= 15 && enemy.positionX < 50) {
+          } else if (enemy.positionY <= 15 && enemy.positionX < 52) {
             // Third segment - Move right until x=50
             return { ...enemy, positionX: enemy.positionX + enemy.speed };
-          } else if (enemy.positionX >= 50 && enemy.positionX < 75 && enemy.positionY < 82) {
+          } else if (enemy.positionX >= 52 && enemy.positionX < 75 && enemy.positionY < 85) {
             // Fourth segment - Move down until y=75
             return { ...enemy, positionY: enemy.positionY + enemy.speed * 2 };
-          } else if (enemy.positionY >= 82 && enemy.positionX < 75) {
+          } else if (enemy.positionY >= 85 && enemy.positionX < 77) {
             // Fifth segment - Move right until x=70
             return { ...enemy, positionX: enemy.positionX + enemy.speed };
-          } else if (enemy.positionX >= 70 && enemy.positionY > 50) {
+          } else if (enemy.positionX >= 77 && enemy.positionY > 50) {
             // Sixth segment - Move up until y=50
             return { ...enemy, positionY: enemy.positionY - (enemy.speed * 2) };
           } else {
@@ -1388,18 +1389,18 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
       {tower.map((t) => (
         <RangeIndicator key={`range-${t.id}`} tower={t} />
       ))}
-      <img src='/buildingSite.png' className='absolute top-[28%] left-[20%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 20,27)} />
-      <img src='/buildingSite.png' className='absolute top-[28%] left-[5%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 5,26)} />
-      <img src='/buildingSite.png' className='absolute top-[35%] left-[41%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 41,34)} />
-      <img src='/buildingSite.png' className='absolute top-[60%] left-[63%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 63,59)} />
-      <img src='/buildingSite.png' className='absolute top-[20%] left-[63%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 63,19)} />
-      <img src='/buildingSite.png' className='absolute top-[40%] left-[63%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 63,39)} />
-      <img src='/buildingSite.png' className='absolute top-[25%] left-[85%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 85,24)} />
-      <img src='/buildingSite.png' className='absolute top-[65%] left-[10%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 10,64)} />
-      <img src='/buildingSite.png' className='absolute top-[65%] left-[25%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 25,64)} />
-      <img src='/buildingSite.png' className='absolute top-[52.5%] left-[41%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 41,51.5)} />
-      <img src='/buildingSite.png' className='absolute top-[70%] left-[41%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 41,69)} />
-      <img src='/buildingSite.png' className='absolute top-[65%] left-[82%] w-20 h-20 z-10' onClick={(event) => buyTowers(event, 82,63)} />
+      <img src='/buildingSite.png' className='absolute top-[28%] left-[20%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 20,27)} />
+      <img src='/buildingSite.png' className='absolute top-[28%] left-[10%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 5,26)} />
+      <img src='/buildingSite.png' className='absolute top-[55%] left-[63%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 63,52.5)} />
+      <img src='/buildingSite.png' className='absolute top-[30%] left-[63%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 63,32)} />
+      <img src='/buildingSite.png' className='absolute top-[42.5%] left-[63%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 63,43.5)} />
+      <img src='/buildingSite.png' className='absolute top-[30%] left-[85%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 85,24)} />
+      <img src='/buildingSite.png' className='absolute top-[65%] left-[2%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 10,64)} />
+      <img src='/buildingSite.png' className='absolute top-[65%] left-[25%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 25,64)} />
+      <img src='/buildingSite.png' className='absolute top-[40%] left-[41%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 41,34)} />
+      <img src='/buildingSite.png' className='absolute top-[52.5%] left-[41%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 41,51.5)} />
+      <img src='/buildingSite.png' className='absolute top-[65%] left-[41%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 41,69)} />
+      <img src='/buildingSite.png' className='absolute top-[65%] left-[82%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 82,63)} />
       {createEnemy()}
       
       {attackAnimation()}
