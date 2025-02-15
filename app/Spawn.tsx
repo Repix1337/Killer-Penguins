@@ -54,10 +54,12 @@ interface Tower {
   radius: number;
   attackType: string;
   canHitStealth: boolean;
-  slowAmount: number;
-  maxSlow:number;
+  slowAmount?: number; // Make slowAmount optional
+  maxSlow?:number; // Make maxSlow optional
   poisonDamage: number;
   maxPoisonDamage: number;
+  hasSpecialUpgrade: boolean;
+  specialUpgradeAvailable: boolean;
 }
 
 const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp, isSpeedUp, isPaused, setCanPause }) => {
@@ -196,10 +198,10 @@ const TOWER_TYPES = {
     radius: 27,
     attackType: 'single',
     canHitStealth: false,
-    slowAmount: 1,
-    maxSlow: 1,
     poisonDamage: 0,
-    maxPoisonDamage: 0
+    maxPoisonDamage: 0,
+    hasSpecialUpgrade: false,
+    specialUpgradeAvailable: false
   },
   SNIPER: {
     src: '/tower2.png',
@@ -212,11 +214,10 @@ const TOWER_TYPES = {
     radius: 120,
     attackType: 'single',
     canHitStealth: true,
-    slowAmount: 1,
-    maxSlow: 1,
     poisonDamage: 0,
-    maxPoisonDamage: 0
-    
+    maxPoisonDamage: 0,
+    hasSpecialUpgrade: false,
+    specialUpgradeAvailable: false
   },
   RAPIDSHOOTER: {
     src: '/rapidShooter.png',
@@ -229,10 +230,10 @@ const TOWER_TYPES = {
     radius: 27,
     attackType: 'double',
     canHitStealth: false,
-    slowAmount: 1,
-    maxSlow: 1,
     poisonDamage: 0,
-    maxPoisonDamage: 0
+    maxPoisonDamage: 0,
+    hasSpecialUpgrade: false,
+    specialUpgradeAvailable: false
   },
   SLOWER: {
     src: '/slower.png',
@@ -248,7 +249,9 @@ const TOWER_TYPES = {
     slowAmount: 0.75,
     maxSlow: 0.5,
     poisonDamage: 0,
-    maxPoisonDamage: 0
+    maxPoisonDamage: 0,
+    hasSpecialUpgrade: false,
+    specialUpgradeAvailable: false
   },
   GASSPITTER: {
     src: '/gasSpitter.png',
@@ -261,11 +264,50 @@ const TOWER_TYPES = {
     radius: 27,
     attackType: 'double',
     canHitStealth: false,
-    slowAmount: 1,
-    maxSlow: 1,
     poisonDamage: 20,
-    maxPoisonDamage: 100 
+    maxPoisonDamage: 100,
+    hasSpecialUpgrade: false,
+    specialUpgradeAvailable: false
   }
+};
+
+// Add this near the top of your file with other constants
+const SPECIAL_TOWER_IMAGES = {
+  basic: '/basicSpecial.png',
+  sniper: '/sniperSpecial.png',
+  rapidShooter: '/rapidShooterSpecial.png',
+  slower: '/slowerSpecial.png',
+  gasspitter: '/gasSpitterSpecial.png'
+} as const;
+
+// Add this helper function
+const resetGame = () => {
+  const towerTypes = [
+    '/tower1.png', 
+    '/tower2.png', 
+    '/rapidShooter.png', 
+    '/slower.png', 
+    '/gasSpitter.png',
+    ...Object.values(SPECIAL_TOWER_IMAGES)
+  ];
+  
+  // Reset all tower images in one query
+  const allTowerImages = towerTypes.flatMap(src => 
+    Array.from(document.querySelectorAll(`img[src="${src}"]`)) as HTMLImageElement[]
+  );
+  
+  allTowerImages.forEach(element => {
+    element.src = '/buildingSite.png';
+  });
+
+  // Reset game state
+  setRound(0);
+  setEnemyCount(0);
+  setHealthPoints(100);
+  setMoney(200);
+  setEnemies([]);
+  setTower([]);
+  setShowUpgradeMenu(false);
 };
 
 // Then create a helper function for creating new towers
@@ -293,21 +335,7 @@ const createNewEnemy = (type: keyof typeof ENEMY_TYPES) => ({
 useEffect(() => {
   if (hp <= 0) {
     alert('Game Over! You lost!');
-    setRound(0);
-    setEnemyCount(0);
-    setHealthPoints(100);
-    setMoney(200);
-    setEnemies([]);
-    setTower([]);
-    setShowUpgradeMenu(false);
-    const tower1Elements = document.querySelectorAll('img[src="/tower1.png"]') as NodeListOf<HTMLImageElement>;
-    const tower2Elements = document.querySelectorAll('img[src="/tower2.png"]') as NodeListOf<HTMLImageElement>;
-    const tower3Elements = document.querySelectorAll('img[src="/rapidShooter.png"]') as NodeListOf<HTMLImageElement>;
-    const tower4Elements = document.querySelectorAll('img[src="/slower.png"]') as NodeListOf<HTMLImageElement>;
-    const tower5Elements = document.querySelectorAll('img[src="/gasSpitter.png"]') as NodeListOf<HTMLImageElement>;
-    [...tower1Elements, ...tower2Elements, ...tower3Elements, ...tower4Elements, ...tower5Elements].forEach((element) => {
-      element.src = '/buildingSite.png';
-    });
+    resetGame();
   }
 }, [hp]);
 
@@ -317,21 +345,7 @@ useEffect(() => {
     // Check for game over first
     if (round > 30 && enemies.length === 0) {
       alert('Congratulations! You won!');
-      setRound(0);
-      setEnemyCount(0);
-      setHealthPoints(100);
-      setMoney(200);
-      setEnemies([]);
-      setTower([]);
-      setShowUpgradeMenu(false);
-      const tower1Elements = document.querySelectorAll('img[src="/tower1.png"]') as NodeListOf<HTMLImageElement>;
-    const tower2Elements = document.querySelectorAll('img[src="/tower2.png"]') as NodeListOf<HTMLImageElement>;
-    const tower3Elements = document.querySelectorAll('img[src="/rapidShooter.png"]') as NodeListOf<HTMLImageElement>;
-    const tower4Elements = document.querySelectorAll('img[src="/slower.png"]') as NodeListOf<HTMLImageElement>;
-    const tower5Elements = document.querySelectorAll('img[src="/gasSpitter.png"]') as NodeListOf<HTMLImageElement>;
-    [...tower1Elements, ...tower2Elements, ...tower3Elements, ...tower4Elements, ...tower5Elements].forEach((element) => {
-      element.src = '/buildingSite.png';
-    });
+      resetGame();
       return;
     }
 
@@ -470,7 +484,10 @@ useEffect(() => {
           ...enemy,
           isTargeted: true,
           hp: enemy.hp - tower.attack,
-          speed: Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount)
+          // Only apply slow if it's a slower tower
+          speed: tower.type === "slower" && tower.slowAmount ? 
+          Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount) :
+          enemy.speed
         };
   
         if (tower.type === "gasspitter") {
@@ -624,6 +641,10 @@ const getFurthestEnemyInRadius = (
     return enemiesWithProgress.slice(0, 2);
   } else if (attackType === 'triple' && enemiesWithProgress.length >= 3) {
     return enemiesWithProgress.slice(0, 3);
+  }else if (attackType === 'triple' && enemiesWithProgress.length >= 3) {
+    return enemiesWithProgress.slice(0, 3);
+  } else if (attackType === 'quadruple' && enemiesWithProgress.length >= 4) {
+    return enemiesWithProgress.slice(0, 4);
   } else {
     return [enemiesWithProgress[0]];
   }
@@ -920,7 +941,7 @@ const upgradeTower = () => {
               className="bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-600 hover:to-indigo-800 
                 text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
                 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={upgradeToTrippleAttack}
+              onClick={upgradeTotripleAttack}
               disabled={money < 2500}
             >
               Upgrade Triple Attack (2500$)
@@ -979,7 +1000,21 @@ const upgradeTower = () => {
               Poison is maxed out
             </div>
           ) : null}
-
+          {checkSpecialUpgradeAvailability(selectedTower) && !selectedTower.hasSpecialUpgrade ? (
+  <button 
+    className="bg-gradient-to-r from-yellow-500 to-yellow-700 hover:from-yellow-600 hover:to-yellow-800 
+      text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
+      disabled:opacity-50 disabled:cursor-not-allowed"
+    onClick={upgradeSpecial}
+    disabled={money < 5000}
+  >
+    {getSpecialUpgradeText(selectedTower.type)}
+  </button>
+) : selectedTower.hasSpecialUpgrade ? (
+  <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
+    Special Upgrade Active
+  </div>
+) : null}
           {/* Control Buttons */}
           <div className="flex gap-2 mt-4">
             <button 
@@ -1054,9 +1089,9 @@ const upgradeTower = () => {
               <div>Can hit stealth: {selectedTower.canHitStealth ? 'Yes' : 'No'}</div>
               {selectedTower.type === "slower" && (
                 <div>
-                  <div>Slow Amount: {selectedTower.slowAmount.toFixed(2)} / {selectedTower.maxSlow}</div>
+                  <div>Slow Amount: {selectedTower.slowAmount ? selectedTower.slowAmount.toFixed(2) : 'N/A'} / {selectedTower.maxSlow}</div>
                   <span className="text-xs text-gray-400">
-                    ({Math.floor((selectedTower.slowAmount - selectedTower.maxSlow) / 0.25)} upgrades left)
+                    ({selectedTower.slowAmount !== undefined ? Math.floor((selectedTower.slowAmount - (selectedTower.maxSlow ?? 0)) / 0.25) : 0} upgrades left)
                   </span>
                 </div>
               )}
@@ -1125,7 +1160,7 @@ const upgradeTower = () => {
       );
     }
   }
-  const upgradeToTrippleAttack = () => {
+  const upgradeTotripleAttack = () => {
     if (money >= 2000){
       setMoney((prevMoney) => prevMoney - 2500);
       setTower((prevTower) => 
@@ -1150,7 +1185,7 @@ const upgradeTower = () => {
       setMoney((prevMoney) => prevMoney - 1000);
       setTower((prevTower) => 
         prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t, slowAmount: Math.max(t.slowAmount - 0.25, t.maxSlow) } : t
+          t.id === selectedTowerID ? { ...t, slowAmount: Math.max((t.slowAmount ?? 0) - 0.25, t.maxSlow ?? 0) } : t
         )
       );
     }
@@ -1189,7 +1224,7 @@ const upgradeTower = () => {
           className='z-20 animate-slide h-6 w-6 absolute text-red-500'
           style={{
             '--tower-positionX': `${effect.towerPositionX + 1}%`,
-            '--tower-positionY': `${effect.towerPositionY}%`,
+            '--tower-positionY': `${effect.towerPositionY + 2.5}%`,
             '--enemy-positionX': `${effect.enemyPositionX + 2.5}%`,
             '--enemy-positionY': `${effect.enemyPositionY + 2.5}%`,
             left: `${effect.towerPositionX}%`,
@@ -1199,8 +1234,129 @@ const upgradeTower = () => {
           
       ));
   };
-
+  const upgradeSpecial = () => {
+    if (money >= 15000) {
+      setMoney(prev => prev - 15000);
+      setTower(prevTower => 
+        prevTower.map(t => {
+          if (t.id === selectedTowerID) {
+            switch(t.type) {
+              case 'basic':
+                return { 
+                  ...t, 
+                  hasSpecialUpgrade: true, 
+                  attack: t.attack * 1.5, 
+                  maxDamage: t.maxDamage * 1.5,
+                  radius: t.radius * 1.4, 
+                  src: '/basicSpecial.png' 
+                };
+              case 'sniper':
+                return { 
+                  ...t, 
+                  hasSpecialUpgrade: true, 
+                  attack: t.attack * 3,
+                  maxDamage: t.maxDamage *3,
+                  src: '/sniperSpecial.png'
+                };
+              case 'rapidShooter':
+                return { 
+                  ...t, 
+                  hasSpecialUpgrade: true, 
+                  attackInterval: t.attackInterval * 0.6, 
+                  maxAttackInterval: t.maxAttackInterval * 0.6,
+                  attackType: "quadruple",
+                  src: '/rapidShooterSpecial.png'
+                };
+              case 'slower':
+                return { 
+                  ...t, 
+                  hasSpecialUpgrade: true, 
+                  slowAmount: t.slowAmount ? t.slowAmount * 0.5 : t.slowAmount,
+                  maxSlow: t.maxSlow ? t.maxSlow * 0.5 : t.maxSlow,
+                  attackType: "triple",
+                  src: '/slowerSpecial.png'
+                };
+              case 'gasspitter':
+                return { 
+                  ...t, 
+                  hasSpecialUpgrade: true, 
+                  poisonDamage: t.poisonDamage * 2,
+                  maxPoisonDamage: t.maxPoisonDamage * 2,
+                  src: '/gasSpitterSpecial.png'
+                };
+              default:
+                return t;
+            }
+          }
+          return t;
+        })
+      );
   
+      // Update the tower image in the DOM
+      const towerElement = document.getElementById(selectedTowerID) as HTMLImageElement;
+      if (towerElement) {
+        const selectedTower = tower.find(t => t.id === selectedTowerID);
+        if (selectedTower) {
+          switch(selectedTower.type) {
+            case 'basic':
+              towerElement.src = '/basicSpecial.png';
+              break;
+            case 'sniper':
+              towerElement.src = '/sniperSpecial.png';
+              break;
+            case 'rapidShooter':
+              towerElement.src = '/rapidShooterSpecial.png';
+              break;
+            case 'slower':
+              towerElement.src = '/slowerSpecial.png';
+              break;
+            case 'gasspitter':
+              towerElement.src = '/gasSpitterSpecial.png';
+              break;
+          }
+        }
+      }
+    }
+  };
+  const getSpecialUpgradeText = (towerType: string) => {
+    switch(towerType) {
+      case 'basic':
+        return "Artillery(15000$)";
+      case 'sniper':
+        return "Rail Gun(15000$)";
+      case 'rapidShooter':
+        return "Gatling Gun (15000$)";
+      case 'slower':
+        return "Cryogen(15000$)";
+      case 'gasspitter':
+        return "Acid Spitter (15000$)";
+      default:
+        return "Special Upgrade (15000$)";
+    }
+  };
+  
+  // Add this function to check if all upgrades are purchased
+const checkSpecialUpgradeAvailability = (tower: Tower) => {
+  const baseConditions = 
+    tower.attack === tower.maxDamage &&
+    tower.attackInterval === tower.maxAttackInterval &&
+    tower.canHitStealth;
+
+  switch(tower.type) {
+    case 'basic':
+      return baseConditions && tower.attackType === 'double';
+    case 'sniper':
+      return baseConditions && tower.attackType === 'double';
+    case 'rapidShooter':
+      return baseConditions && tower.attackType === 'triple';
+    case 'slower':
+      return baseConditions && tower.slowAmount === tower.maxSlow;
+    case 'gasspitter':
+      return baseConditions && tower.poisonDamage === tower.maxPoisonDamage;
+    default:
+      return false;
+  }
+};
 
 
 // Add this new component near your other components
@@ -1307,3 +1463,4 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
 };
 
 export default Spawn;
+
