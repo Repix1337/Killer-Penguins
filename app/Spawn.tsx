@@ -529,7 +529,7 @@ useEffect(() => {
     setTower((prevTowers) =>
       prevTowers.map((tower) => ({
         ...tower,
-        furthestEnemyInRange: getFurthestEnemyInRadius(tower.positionX, tower.positionY, tower.radius, tower.canHitStealth, tower.attackType, tower.attack, tower.targettingType) ?? null
+        furthestEnemyInRange: getFurthestEnemyInRadius(tower.positionX, tower.positionY, tower.type, tower.radius, tower.canHitStealth, tower.attackType, tower.attack, tower.targettingType) ?? null
       })
       )
     );
@@ -614,7 +614,7 @@ useEffect(() => {
 
   useEffect(() => {
     if (!isPageVisible || isPaused) return; // Add isPaused check
-       
+         
     const POISON_TICK_RATE = isSpeedUp ? 5 : 10; 
     const POISON_DURATION = isSpeedUp ? 1500 : 3000; 
     const TOTAL_TICKS = POISON_DURATION / POISON_TICK_RATE;
@@ -622,8 +622,10 @@ useEffect(() => {
     const poisonInterval = setInterval(() => {
       const currentTime = Date.now();
       
-      setEnemies(prevEnemies => 
-        prevEnemies.map(enemy => {
+      setEnemies(prevEnemies => {
+        let totalPoisonMoneyGain = 0;
+        
+        const updatedEnemies = prevEnemies.map(enemy => {
           if (!enemy.isPoisoned || !enemy.poisonSourceId || !enemy.poisonStartTime) return enemy;
   
           if (currentTime - enemy.poisonStartTime >= POISON_DURATION) {
@@ -639,24 +641,31 @@ useEffect(() => {
           if (!poisonTower?.poisonDamage) return enemy;
   
           // Keep total damage the same regardless of speed
-          const damagePerTick = (3 * poisonTower.poisonDamage) / TOTAL_TICKS;
+          const damagePerTick = (4 * poisonTower.poisonDamage) / TOTAL_TICKS;
           
           // Calculate actual poison damage (can't exceed remaining HP)
           const actualPoisonDamage = Math.min(damagePerTick, enemy.hp);
           
-          // Update money based on actual poison damage
-          setMoney(prevMoney => prevMoney + (actualPoisonDamage / 7.5) );
+          // Add to total money gain instead of updating immediately
+          totalPoisonMoneyGain += actualPoisonDamage / 7.5;
   
           return {
             ...enemy,
             hp: enemy.hp - damagePerTick
           };
-        })
-      );
+        });
+  
+        // Update money once after all calculations
+        if (totalPoisonMoneyGain > 0) {
+          setMoney(prevMoney => prevMoney + totalPoisonMoneyGain);
+        }
+  
+        return updatedEnemies;
+      });
     }, POISON_TICK_RATE);
   
     return () => clearInterval(poisonInterval);
-  }, [enemies, tower, isPageVisible, isSpeedUp, isPaused]); // Add isPaused to dependencies
+  }, [enemies, tower, isPageVisible, isSpeedUp, isPaused]);
   // Buy towers and place them on the map
   const buyTowers = (event: React.MouseEvent<HTMLImageElement>, positionX: number,positionY:number) => {
     if (round > 0 && (event.target as HTMLImageElement).src.includes('buildingSite')) {
@@ -1045,7 +1054,7 @@ const upgradeTower = () => {
   
 
   // Get the furthest enemy within a certain radius from the tower
-const getFurthestEnemyInRadius = (towerPositionX: number, towerPositionY: number, radius: number, canHitStealth: boolean, attackType: string, attackDamage: number, targettingType: string) => {
+const getFurthestEnemyInRadius = (towerPositionX: number, towerPositionY: number,towerType: string, radius: number, canHitStealth: boolean, attackType: string, attackDamage: number, targettingType: string) => {
   const enemiesInRadius = enemies.filter((enemy) => {
     // Calculate distance between tower and enemy
     const dx = enemy.positionX - towerPositionX;
@@ -1056,6 +1065,11 @@ const getFurthestEnemyInRadius = (towerPositionX: number, towerPositionY: number
     
     if (canHitStealth) {
       return isInRange;
+    } else if (towerType === "gasspitter" && canHitStealth){
+      return isInRange && !enemy.isPoisoned;
+    }else if (towerType === "gasspitter" && !canHitStealth){
+      return isInRange && !enemy.isPoisoned&& 
+      (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");;
     } else {
       return isInRange && 
              (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");
