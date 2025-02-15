@@ -5,7 +5,7 @@ import Spawn from './Spawn'
 const Menu = () => {
     const [round, setRound] = React.useState(0)
     const [HealthPoints, setHealthPoints] = React.useState(100)
-    const [money, setMoney] = React.useState(300);
+    const [money, setMoney] = React.useState(200);
     const [isSpeedUp, setIsSpeedUp] = React.useState(false);
     const [isPaused, setIsPaused] = React.useState(false);
     const [canPause, setCanPause] = React.useState(false);
