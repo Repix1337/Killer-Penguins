@@ -534,8 +534,20 @@ useEffect(() => {
   }, [isSpeedUp, isPaused]); // Add isSpeedUp to dependencies
 
 // Get the furthest enemy within a certain radius from the tower
-const getFurthestEnemyInRadius = (towerPositionX: number, towerPositionY: number,towerType: string, radius: number, canHitStealth: boolean, attackType: string, attackDamage: number, targettingType: string) => {
+const getFurthestEnemyInRadius = (
+  towerPositionX: number, 
+  towerPositionY: number,
+  towerType: string, 
+  radius: number, 
+  canHitStealth: boolean, 
+  attackType: string, 
+  attackDamage: number, 
+  targettingType: string
+) => {
   const enemiesInRadius = enemies.filter((enemy) => {
+    // Only target enemies with positive hp
+    if (enemy.hp <= 0) return false;
+    
     // Calculate distance between tower and enemy
     const dx = enemy.positionX - towerPositionX;
     const dy = enemy.positionY - towerPositionY;
@@ -543,21 +555,22 @@ const getFurthestEnemyInRadius = (towerPositionX: number, towerPositionY: number
     
     const isInRange = distance <= radius;
     
+    // Different targeting logic based on tower type and capabilities
     if (canHitStealth) {
       return isInRange;
-    } else if (towerType === "gasspitter" && canHitStealth){
+    } else if (towerType === "gasspitter" && canHitStealth) {
       return isInRange && !enemy.isPoisoned;
-    }else if (towerType === "gasspitter" && !canHitStealth){
-      return isInRange && !enemy.isPoisoned&& 
-      (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");;
-    }else if (towerType === "slower" && canHitStealth){
+    } else if (towerType === "gasspitter" && !canHitStealth) {
+      return isInRange && !enemy.isPoisoned && 
+        (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");
+    } else if (towerType === "slower" && canHitStealth) {
       return isInRange && !enemy.isSlowed;
-    }else if (towerType === "slower" && !canHitStealth){
-      return isInRange && !enemy.isSlowed&& 
-      (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");;
+    } else if (towerType === "slower" && !canHitStealth) {
+      return isInRange && !enemy.isSlowed && 
+        (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");
     } else {
       return isInRange && 
-             (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");
+        (enemy.type !== "stealth" && enemy.type !== "stealthytank" && enemy.type !== "stealthyspeedy");
     }
   });
 
@@ -569,6 +582,7 @@ const getFurthestEnemyInRadius = (towerPositionX: number, towerPositionY: number
   const enemiesWithProgress = enemiesInRadius.map(enemy => {
     let progress = 0;
     
+    // Calculate progress based on enemy position along the path
     if (enemy.positionX < 30) {
       // First segment
       progress = enemy.positionX;
@@ -595,23 +609,23 @@ const getFurthestEnemyInRadius = (towerPositionX: number, towerPositionY: number
     return { ...enemy, progress };
   });
 
-  // Sort enemies by their progress value (highest progress = furthest along path)
-  const sortedEnemies = enemiesWithProgress.sort((a, b) => b.progress - a.progress);
-
-  // Return enemies based on attack type and targeting type
+  // Sort enemies based on targeting type
   if (targettingType === "highestHp") {
-    sortedEnemies.sort((a, b) => b.hp - a.hp);
+    enemiesWithProgress.sort((a, b) => b.hp - a.hp);
   } else if (targettingType === "last") {
-    sortedEnemies.reverse();
+    enemiesWithProgress.reverse();
+  } else {
+    // "first" targeting - already sorted by progress
+    enemiesWithProgress.sort((a, b) => b.progress - a.progress);
   }
 
-  if (attackType === 'double' && sortedEnemies.length >= 2) {
-    return sortedEnemies.slice(0, 2);
-  } 
-  else if (attackType === 'triple' && sortedEnemies.length >= 3) {
-    return sortedEnemies.slice(0, 3);
+  // Return enemies based on attack type
+  if (attackType === 'double' && enemiesWithProgress.length >= 2) {
+    return enemiesWithProgress.slice(0, 2);
+  } else if (attackType === 'triple' && enemiesWithProgress.length >= 3) {
+    return enemiesWithProgress.slice(0, 3);
   } else {
-    return [sortedEnemies[0]];
+    return [enemiesWithProgress[0]];
   }
 };
 
