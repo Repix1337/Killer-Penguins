@@ -48,6 +48,7 @@ interface Tower {
   furthestEnemyInRange: Enemy[] | null;
   isAttacking: boolean;
   price: number;
+  towerWorth: number;
   type: string;
   targettingType: string;
   maxDamage: number;
@@ -193,6 +194,7 @@ const TOWER_TYPES = {
     attack: 50,
     attackInterval: 1000, // renamed from attackSpeed
     price: 100,
+    towerWorth: 100,
     type: 'basic',
     maxDamage: 200,
     maxAttackInterval: 450, // renamed from maxAttackSpeed
@@ -209,6 +211,7 @@ const TOWER_TYPES = {
     attack: 100,
     attackInterval: 2000,
     price: 200,
+    towerWorth: 200,
     type: 'sniper',
     maxDamage: 300,
     maxAttackInterval: 1200,
@@ -225,6 +228,7 @@ const TOWER_TYPES = {
     attack: 25,
     attackInterval: 400,
     price: 500,
+    towerWorth: 500,
     type: 'rapidShooter',
     maxDamage: 75,
     maxAttackInterval: 200,
@@ -241,6 +245,7 @@ const TOWER_TYPES = {
     attack: 15,
     attackInterval: 1000,
     price: 300,
+    towerWorth: 300,
     type: 'slower',
     maxDamage: 40,
     maxAttackInterval: 750,
@@ -259,6 +264,7 @@ const TOWER_TYPES = {
     attack: 20,
     attackInterval: 1000,
     price: 300,
+    towerWorth: 300,
     type: 'gasspitter',
     maxDamage: 20,
     maxAttackInterval: 600,
@@ -602,27 +608,27 @@ const getFurthestEnemyInRadius = (
     let progress = 0;
     
     // Calculate progress based on enemy position along the path
-    if (enemy.positionX < 30) {
-      // First segment
+    if (enemy.positionX < 28) {
+      // First segment - diagonal path
       progress = enemy.positionX;
-    } else if (enemy.positionX >= 30 && enemy.positionX < 50 && enemy.positionY > 15) {
-      // Second segment
-      progress = 30 + (50 - enemy.positionY);
-    } else if (enemy.positionY <= 15 && enemy.positionX < 50) {
-      // Third segment
-      progress = 65 + enemy.positionX;
-    } else if (enemy.positionX >= 50 && enemy.positionX < 75 && enemy.positionY < 82) {
-      // Fourth segment
+    } else if (enemy.positionX >= 28 && enemy.positionX < 52 && enemy.positionY > 15) {
+      // Second segment - vertical path
+      progress = 28 + (50 - enemy.positionY);
+    } else if (enemy.positionY <= 15 && enemy.positionX < 52) {
+      // Third segment - horizontal path
+      progress = 63 + enemy.positionX;
+    } else if (enemy.positionX >= 52 && enemy.positionX < 75 && enemy.positionY < 87) {
+      // Fourth segment - vertical path down
       progress = 115 + enemy.positionY;
-    } else if (enemy.positionY >= 82 && enemy.positionX < 75) {
-      // Fifth segment
-      progress = 197 + enemy.positionX;
-    } else if (enemy.positionX >= 70 && enemy.positionY > 50) {
-      // Sixth segment
-      progress = 272 + (82 - enemy.positionY);
+    } else if (enemy.positionY >= 87 && enemy.positionX < 75) {
+      // Fifth segment - horizontal path
+      progress = 202 + enemy.positionX;
+    } else if (enemy.positionX >= 75 && enemy.positionY > 50) {
+      // Sixth segment - diagonal path up
+      progress = 277 + (87 - enemy.positionY);
     } else {
-      // Final segment
-      progress = 304 + enemy.positionX;
+      // Final segment - horizontal path to end
+      progress = 314 + enemy.positionX;
     }
     
     return { ...enemy, progress };
@@ -866,6 +872,7 @@ const selectTowerType = (type: string, newTowerId: string) => {
   selectedTower[0].element.src = towerConfig.src;
   setShowTowerSelectMenu(false);
   setMoney((prevMoney) => prevMoney - towerConfig.price);
+  
   setTower((prevTower) => [...prevTower, createNewTower(towerType, selectedTower[0].towerPositionX, selectedTower[0].towerPositionY, newTowerId)]);
 };
 
@@ -1023,9 +1030,9 @@ const upgradeTower = () => {
             <button 
               className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg flex-1 
                 transition-all duration-200 shadow-md"
-              onClick={() => sellTower(selectedTower.price)}
+              onClick={() => sellTower(selectedTower.towerWorth)}
             >
-              Sell Tower
+              Sell Tower ({Math.floor(selectedTower.towerWorth / 1.5)}$)
             </button>
             <button 
               className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg flex-1 
@@ -1138,7 +1145,7 @@ const upgradeTower = () => {
       setMoney((prevMoney) => prevMoney - 250);
       setTower((prevTower) => 
         prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t, attack: Math.min(t.attack + 25, t.maxDamage) } : t
+          t.id === selectedTowerID ? { ...t, attack: Math.min(t.attack + 25, t.maxDamage), towerWorth: t.towerWorth + 250 } : t
         )
       );
     }
@@ -1149,7 +1156,7 @@ const upgradeTower = () => {
       setMoney((prevMoney) => prevMoney - 500);
       setTower((prevTower) => 
         prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t, attackInterval: Math.max(t.attackInterval - 200, t.maxAttackInterval) } : t
+          t.id === selectedTowerID ? { ...t, attackInterval: Math.max(t.attackInterval - 200, t.maxAttackInterval), towerWorth: t.towerWorth + 500 } : t
         )
       );
     }
@@ -1159,17 +1166,17 @@ const upgradeTower = () => {
       setMoney((prevMoney) => prevMoney - 1500);
       setTower((prevTower) => 
         prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t,  attackType: 'double' } : t
+          t.id === selectedTowerID ? { ...t,  attackType: 'double', towerWorth: t.towerWorth + 1500 } : t
         )
       );
     }
   }
   const upgradeTotripleAttack = () => {
-    if (money >= 2000){
+    if (money >= 2500){
       setMoney((prevMoney) => prevMoney - 2500);
       setTower((prevTower) => 
         prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t, attackType: 'triple'} : t
+          t.id === selectedTowerID ? { ...t, attackType: 'triple', towerWorth: t.towerWorth + 2500} : t
         )
       );
     }
@@ -1179,7 +1186,7 @@ const upgradeTower = () => {
       setMoney((prevMoney) => prevMoney - 2000);
       setTower((prevTower) => 
         prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t, canHitStealth: true} : t
+          t.id === selectedTowerID ? { ...t, canHitStealth: true, towerWorth: t.towerWorth + 2000} : t
         )
       );
     }
@@ -1189,7 +1196,7 @@ const upgradeTower = () => {
       setMoney((prevMoney) => prevMoney - 1000);
       setTower((prevTower) => 
         prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t, slowAmount: Math.max((t.slowAmount ?? 0) - 0.25, t.maxSlow ?? 0) } : t
+          t.id === selectedTowerID ? { ...t, slowAmount: Math.max((t.slowAmount ?? 0) - 0.25, t.maxSlow ?? 0), towerWorth: t.towerWorth + 1000 } : t
         )
       );
     }
@@ -1200,13 +1207,13 @@ const upgradeTower = () => {
       setTower((prevTower) => 
         prevTower.map((t) =>
           t.id === selectedTowerID && t.poisonDamage !== undefined && t.maxPoisonDamage !== undefined ?
-          { ...t, poisonDamage: Math.min(t.poisonDamage + 20, t.maxPoisonDamage) } : t
+          { ...t, poisonDamage: Math.min(t.poisonDamage + 20, t.maxPoisonDamage), towerWorth: t.towerWorth + 300 } : t
         )
       );
     }
   }
   const sellTower = (towerPrice: number) => {
-    setMoney((prevMoney) => prevMoney + towerPrice / 2); // Add money back (changed from subtract)
+    setMoney((prevMoney) => prevMoney + towerPrice / 1.5); // Add money back (changed from subtract)
     setTower((prevTower) => 
         prevTower.filter((t) => t.id !== selectedTowerID) // Filter out the selected tower
     );
@@ -1244,6 +1251,7 @@ const upgradeTower = () => {
       setTower(prevTower => 
         prevTower.map(t => {
           if (t.id === selectedTowerID) {
+            t.towerWorth = t.towerWorth + 15000
             switch(t.type) {
               case 'basic':
                 return { 
