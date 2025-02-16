@@ -947,9 +947,9 @@ const upgradeTower = () => {
                 text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
                 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={upgradeAttackInterval}
-              disabled={money < 400}
+              disabled={money < 300}
             >
-              Upgrade Attack Interval (400$ for -{(selectedTower.baseAttackInterval - selectedTower.maxAttackInterval) / 5  }ms)
+              Upgrade Attack Interval (300$ for -{(selectedTower.baseAttackInterval - selectedTower.maxAttackInterval) / 5  }ms)
             </button>
           ) : (
             <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
@@ -1182,11 +1182,11 @@ const upgradeTower = () => {
     
   }
   const upgradeAttackInterval = () => {
-    if (money >= 400){
-      setMoney((prevMoney) => prevMoney - 400);
+    if (money >= 300){
+      setMoney((prevMoney) => prevMoney - 300);
       setTower((prevTower) => 
         prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t, attackInterval: Math.max(t.attackInterval - ((t.baseAttackInterval - t.maxAttackInterval) / 5), t.maxAttackInterval), towerWorth: t.towerWorth + 400 } : t
+          t.id === selectedTowerID ? { ...t, attackInterval: Math.max(t.attackInterval - ((t.baseAttackInterval - t.maxAttackInterval) / 5), t.maxAttackInterval), towerWorth: t.towerWorth + 300 } : t
         )
       );
     }
