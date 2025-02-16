@@ -180,12 +180,12 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     ,
     BOSS: {
       src: 'boss.png',
-      hp: 40000,
+      hp: 50000,
       damage: 1000,
       type: 'boss',
       speed: 0.175,    
       baseSpeed: 0.175, 
-      regen: 1000
+      regen: 1500
     },
     ULTRATANKS: {
       src: 'ultraTank.png',
@@ -418,21 +418,21 @@ useEffect(() => {
       setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
       setEnemyCount(prev => prev + 1);
     }
-    else if (round >= 26 && round <= 32 && enemyCount < 15 * round) {
+    else if (round >= 26 && round <= 31 && enemyCount < 15 * round) {
       const enemyType = enemyCount % 2 === 0 ? 'STEALTHYTANK' 
                         : 'SPEEDYREGENTANK';
       setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
       setEnemyCount(prev => prev + 1);
     }
-    else if (round === 33 && enemyCount < 15 * round) {
+    else if (round === 32 && enemyCount < 15 * round) {
       setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
       setEnemyCount(prev => prev + 75);
     }
-    else if (round > 33 && round <= 39 && enemyCount < 15 * round) {
+    else if (round > 32 && round <= 39 && enemyCount <= 15 * round) {
       setEnemies(prev => [...prev, createNewEnemy("ULTRATANKS")]);
       setEnemyCount(prev => prev + 3);
     }
-    else if (round === 40 && enemyCount < 15 * round) {
+    else if (round === 40 && enemyCount <= 15 * round) {
       setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
       setEnemyCount(prev => prev + 35);
     }
