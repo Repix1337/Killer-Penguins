@@ -426,7 +426,7 @@ useEffect(() => {
     }
     else if (round === 32 && enemyCount < 15 * round) {
       setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
-      setEnemyCount(prev => prev + 75);
+      setEnemyCount(prev => prev + 80);
     }
     else if (round > 32 && round <= 39 && enemyCount <= 15 * round) {
       setEnemies(prev => [...prev, createNewEnemy("ULTRATANKS")]);
@@ -434,7 +434,7 @@ useEffect(() => {
     }
     else if (round === 40 && enemyCount <= 15 * round) {
       setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
-      setEnemyCount(prev => prev + 35);
+      setEnemyCount(prev => prev + 40);
     }
     // Game reset
 else if (round === 0) {
