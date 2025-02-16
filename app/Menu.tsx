@@ -36,7 +36,7 @@ const Menu = () => {
        
         <div className='flex justify-center items-center gap-3 text-xl bg-slate-700 h-12'>
           <div className=' bg-slate-800 p-1 text-xl rounded-lg shadow-sm hover:cursor-pointer' onClick={onClick}>Start</div>
-          <div>Round: {round}/30</div>
+          <div>Round: {round}/37</div>
           <div className='text-red-500 text-xl'> &hearts; {HealthPoints}</div>
           <div className=' text-green-500'>{Math.floor(money)}$</div>
           <div 

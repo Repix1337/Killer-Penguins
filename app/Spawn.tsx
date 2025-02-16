@@ -43,6 +43,8 @@ interface Tower {
   positionX: number;
   positionY: number;
   damageDone: number;
+  baseAttackInterval: number;
+  baseAttack: number;
   attack: number;
   attackInterval: number; // renamed from attackSpeed
   furthestEnemyInRange: Enemy[] | null;
@@ -178,12 +180,21 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     ,
     BOSS: {
       src: 'boss.png',
-      hp: 45000,
+      hp: 40000,
       damage: 1000,
       type: 'boss',
       speed: 0.175,    
       baseSpeed: 0.175, 
       regen: 1000
+    },
+    ULTRATANKS: {
+      src: 'ultraTank.png',
+      hp: 4000,
+      damage: 1000,
+      type: 'ultratank',
+      speed: 0.15,    
+      baseSpeed: 0.15, 
+      regen: 0
     }
   };
 
@@ -191,7 +202,9 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
 const TOWER_TYPES = {
   BASIC: {
     src: '/tower1.png',
-    attack: 50,
+    baseAttack: 40,
+    attack: 40,
+    baseAttackInterval: 1000,
     attackInterval: 1000, // renamed from attackSpeed
     price: 100,
     towerWorth: 100,
@@ -208,7 +221,9 @@ const TOWER_TYPES = {
   },
   SNIPER: {
     src: '/tower2.png',
-    attack: 100,
+    baseAttack: 120,
+    attack: 120,
+    baseAttackInterval: 2000,
     attackInterval: 2000,
     price: 200,
     towerWorth: 200,
@@ -225,7 +240,9 @@ const TOWER_TYPES = {
   },
   RAPIDSHOOTER: {
     src: '/rapidShooter.png',
-    attack: 25,
+    baseAttack: 15,
+    attack: 15,
+    baseAttackInterval: 400,
     attackInterval: 400,
     price: 500,
     towerWorth: 500,
@@ -242,13 +259,15 @@ const TOWER_TYPES = {
   },
   SLOWER: {
     src: '/slower.png',
-    attack: 15,
+    baseAttack: 10,
+    attack: 10,
+    baseAttackInterval: 1000,
     attackInterval: 1000,
     price: 300,
     towerWorth: 300,
     type: 'slower',
-    maxDamage: 40,
-    maxAttackInterval: 750,
+    maxDamage: 10,
+    maxAttackInterval: 700,
     radius: 27,
     attackType: 'double',
     canHitStealth: false,
@@ -261,7 +280,9 @@ const TOWER_TYPES = {
   },
   GASSPITTER: {
     src: '/gasSpitter.png',
+    baseAttack: 20,
     attack: 20,
+    baseAttackInterval: 1000,
     attackInterval: 1000,
     price: 300,
     towerWorth: 300,
@@ -351,7 +372,7 @@ useEffect(() => {
   if (!isPageVisible || isPaused) return; // Add isPaused check
   const spawnEnemies = () => {
     // Check for game over first
-    if (round > 30 && enemies.length === 0) {
+    if (round > 35 && enemies.length === 0) {
       alert('Congratulations! You won!');
       resetGame();
       return;
@@ -406,6 +427,14 @@ useEffect(() => {
     else if (round === 30 && enemyCount < 15 * round) {
       setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
       setEnemyCount(prev => prev + 75);
+    }
+    else if (round > 30 && round <= 34 && enemyCount < 15 * round) {
+      setEnemies(prev => [...prev, createNewEnemy("ULTRATANKS")]);
+      setEnemyCount(prev => prev + 3);
+    }
+    else if (round === 35 && enemyCount < 15 * round) {
+      setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
+      setEnemyCount(prev => prev + 35);
     }
     // Game reset
 else if (round === 0) {
@@ -901,9 +930,9 @@ const upgradeTower = () => {
                 text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
                 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={upgradeDamage}
-              disabled={money < 250}
+              disabled={money < 300}
             >
-              Upgrade Damage (250$ for +25dmg)
+              Upgrade Damage (300$ for {selectedTower.maxDamage / 5}dmg)
             </button>
           ) : (
             <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
@@ -918,9 +947,9 @@ const upgradeTower = () => {
                 text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
                 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={upgradeAttackInterval}
-              disabled={money < 500}
+              disabled={money < 400}
             >
-              Upgrade Attack Interval (500$ for -200ms)
+              Upgrade Attack Interval (400$ for -{(selectedTower.baseAttackInterval - selectedTower.maxAttackInterval) / 5  }ms)
             </button>
           ) : (
             <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
@@ -1001,9 +1030,9 @@ const upgradeTower = () => {
                 text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
                 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={upgradePoison}
-              disabled={money < 300}
+              disabled={money < 500}
             >
-              Upgrade Poison(300$ for +20 dmg)
+              Upgrade Poison(500$ for +80 dmg)
             </button>
           ) : selectedTower.type === "gasspitter" ? (
             <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
@@ -1049,51 +1078,52 @@ const upgradeTower = () => {
           <h2 className="text-xl font-bold text-white border-b border-blue-400 pb-2">Tower Stats</h2>
           
           <div className="space-y-3 text-gray-200">
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <span>Attack:</span>
-                <span>{selectedTower.attack} / {selectedTower.maxDamage}</span>
-              </div>
-              <div className="w-full bg-gray-600 rounded-full h-2">
-                <div className="bg-red-500 h-2 rounded-full" 
-                  style={{width: `${(selectedTower.attack / selectedTower.maxDamage) * 100}%`}}
-                />
-              </div>
-              <span className="text-xs text-gray-400">
-                ({Math.floor((selectedTower.maxDamage - selectedTower.attack) / 25)} upgrades left)
-              </span>
-            </div>
+  <div>
+    <div className="flex justify-between items-center mb-1">
+      <span>Attack:</span>
+      <span>{selectedTower.attack} / {selectedTower.maxDamage}</span>
+    </div>
+    <div className="w-full bg-gray-600 rounded-full h-2">
+      <div className="bg-red-500 h-2 rounded-full" 
+        style={{width: `${(selectedTower.attack / selectedTower.maxDamage) * 100}%`}}
+      />
+    </div>
+    <span className="text-xs text-gray-400">
+      ({Math.floor((selectedTower.maxDamage - selectedTower.attack) / (selectedTower.maxDamage / 5))} upgrades left)
+    </span>
+  </div>
 
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <span>Attack Interval:</span>
-                <span>{selectedTower.attackInterval} / {selectedTower.maxAttackInterval}</span>
-              </div>
-              <div className="w-full bg-gray-600 rounded-full h-2">
-                <div className="bg-blue-500 h-2 rounded-full" 
-                  style={{width: `${((selectedTower.attackInterval - selectedTower.maxAttackInterval) / (2000 - selectedTower.maxAttackInterval)) * 100}%`}}
-                />
-              </div>
-              <span className="text-xs text-gray-400">
-                ({Math.floor((selectedTower.attackInterval - selectedTower.maxAttackInterval) / 200)} upgrades left)
-              </span>
-            </div>
-            {selectedTower.type === "gasspitter" && selectedTower.maxPoisonDamage != undefined && selectedTower.poisonDamage != undefined && (
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <span>Poison Damage:</span>
-                <span>{selectedTower.poisonDamage} / {selectedTower.maxPoisonDamage}</span>
-              </div>
-              <div className="w-full bg-gray-600 rounded-full h-2">
-                <div className="bg-green-500 h-2 rounded-full" 
-                  style={{width: `${(selectedTower.poisonDamage / selectedTower.maxPoisonDamage ) * 100}%`}}
-                />
-              </div>
-              <span className="text-xs text-gray-400">
-                ({Math.floor((selectedTower.maxPoisonDamage - selectedTower.poisonDamage) / 20)} upgrades left)
-              </span>
-            </div>
-            )}
+  <div>
+    <div className="flex justify-between items-center mb-1">
+      <span>Attack Interval:</span>
+      <span>{selectedTower.attackInterval} / {selectedTower.maxAttackInterval}</span>
+    </div>
+    <div className="w-full bg-gray-600 rounded-full h-2">
+      <div className="bg-blue-500 h-2 rounded-full" 
+        style={{width: `${((selectedTower.attackInterval - selectedTower.maxAttackInterval) / (selectedTower.baseAttackInterval - selectedTower.maxAttackInterval)) * 100}%`}}
+      />
+    </div>
+    <span className="text-xs text-gray-400">
+      ({Math.ceil((selectedTower.attackInterval - selectedTower.maxAttackInterval) / ((selectedTower.baseAttackInterval - selectedTower.maxAttackInterval) / 5))} upgrades left)
+    </span>
+  </div>
+  
+  {selectedTower.type === "gasspitter" && selectedTower.maxPoisonDamage != undefined && selectedTower.poisonDamage != undefined && (
+  <div>
+    <div className="flex justify-between items-center mb-1">
+      <span>Poison Damage:</span>
+      <span>{selectedTower.poisonDamage * 4} / {selectedTower.maxPoisonDamage * 4}</span>
+    </div>
+    <div className="w-full bg-gray-600 rounded-full h-2">
+      <div className="bg-green-500 h-2 rounded-full" 
+        style={{width: `${(selectedTower.poisonDamage / selectedTower.maxPoisonDamage) * 100}%`}}
+      />
+    </div>
+    <span className="text-xs text-gray-400">
+      ({Math.floor((selectedTower.maxPoisonDamage - selectedTower.poisonDamage) / 20)} upgrades left)
+    </span>
+  </div>
+  )}
             <div className="pt-2 border-t border-gray-600">
               <div>Attack Type: {selectedTower.attackType}</div>
               <div>Can hit stealth: {selectedTower.canHitStealth ? 'Yes' : 'No'}</div>
@@ -1141,22 +1171,22 @@ const upgradeTower = () => {
     ))
   }
   const upgradeDamage = () => {
-    if (money >= 250){
-      setMoney((prevMoney) => prevMoney - 250);
+    if (money >= 300){
+      setMoney((prevMoney) => prevMoney - 300);
       setTower((prevTower) => 
         prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t, attack: Math.min(t.attack + 25, t.maxDamage), towerWorth: t.towerWorth + 250 } : t
+          t.id === selectedTowerID ? { ...t, attack: Math.min(t.attack + (t.maxDamage / 5) , t.maxDamage), towerWorth: t.towerWorth + 300 } : t
         )
       );
     }
     
   }
   const upgradeAttackInterval = () => {
-    if (money >= 500){
-      setMoney((prevMoney) => prevMoney - 500);
+    if (money >= 400){
+      setMoney((prevMoney) => prevMoney - 400);
       setTower((prevTower) => 
         prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t, attackInterval: Math.max(t.attackInterval - 200, t.maxAttackInterval), towerWorth: t.towerWorth + 500 } : t
+          t.id === selectedTowerID ? { ...t, attackInterval: Math.max(t.attackInterval - ((t.baseAttackInterval - t.maxAttackInterval) / 5), t.maxAttackInterval), towerWorth: t.towerWorth + 400 } : t
         )
       );
     }
@@ -1202,12 +1232,12 @@ const upgradeTower = () => {
     }
   }
   const upgradePoison = () => {
-    if (money >= 300){
-      setMoney((prevMoney) => prevMoney - 300);
+    if (money >= 500){
+      setMoney((prevMoney) => prevMoney - 500);
       setTower((prevTower) => 
         prevTower.map((t) =>
           t.id === selectedTowerID && t.poisonDamage !== undefined && t.maxPoisonDamage !== undefined ?
-          { ...t, poisonDamage: Math.min(t.poisonDamage + 20, t.maxPoisonDamage), towerWorth: t.towerWorth + 300 } : t
+          { ...t, poisonDamage: Math.min(t.poisonDamage + 20, t.maxPoisonDamage), towerWorth: t.towerWorth + 500 } : t
         )
       );
     }
@@ -1246,19 +1276,19 @@ const upgradeTower = () => {
       ));
   };
   const upgradeSpecial = () => {
-    if (money >= 15000) {
-      setMoney(prev => prev - 15000);
+    if (money >= 20000) {
+      setMoney(prev => prev - 20000);
       setTower(prevTower => 
         prevTower.map(t => {
           if (t.id === selectedTowerID) {
-            t.towerWorth = t.towerWorth + 15000
+            t.towerWorth = t.towerWorth + 20000
             switch(t.type) {
               case 'basic':
                 return { 
                   ...t, 
                   hasSpecialUpgrade: true, 
-                  attack: t.attack * 1.5, 
-                  maxDamage: t.maxDamage * 1.5,
+                  attack: t.attack * 2.25, 
+                  maxDamage: t.maxDamage * 2.25,
                   radius: t.radius * 1.4, 
                   src: '/basicSpecial.png' 
                 };
@@ -1266,14 +1296,16 @@ const upgradeTower = () => {
                 return { 
                   ...t, 
                   hasSpecialUpgrade: true, 
-                  attack: t.attack * 3,
-                  maxDamage: t.maxDamage *3,
+                  attack: t.attack * 4,
+                  maxDamage: t.maxDamage * 4,
                   src: '/sniperSpecial.png'
                 };
               case 'rapidShooter':
                 return { 
                   ...t, 
                   hasSpecialUpgrade: true, 
+                  attack: t.attack * 1.5,
+                  maxDamage: t.maxDamage * 1.5,
                   attackInterval: t.attackInterval * 0.6, 
                   maxAttackInterval: t.maxAttackInterval * 0.6,
                   attackType: "quadruple",
@@ -1292,8 +1324,8 @@ const upgradeTower = () => {
                 return { 
                   ...t, 
                   hasSpecialUpgrade: true, 
-                  poisonDamage: t.poisonDamage * 2,
-                  maxPoisonDamage: t.maxPoisonDamage * 2,
+                  poisonDamage: t.poisonDamage * 4,
+                  maxPoisonDamage: t.maxPoisonDamage * 4,
                   src: '/gasSpitterSpecial.png'
                 };
               default:
@@ -1333,17 +1365,17 @@ const upgradeTower = () => {
   const getSpecialUpgradeText = (towerType: string) => {
     switch(towerType) {
       case 'basic':
-        return "Artillery(15000$)";
+        return "Artillery(20000$)";
       case 'sniper':
-        return "Rail Gun(15000$)";
+        return "Rail Gun(20000$)";
       case 'rapidShooter':
-        return "Gatling Gun (15000$)";
+        return "Gatling Gun (20000$)";
       case 'slower':
-        return "Cryogen(15000$)";
+        return "Cryogen(20000$)";
       case 'gasspitter':
-        return "Acid Spitter (15000$)";
+        return "Acid Spitter (20000$)";
       default:
-        return "Special Upgrade (15000$)";
+        return "Special Upgrade (20000$)";
     }
   };
   
