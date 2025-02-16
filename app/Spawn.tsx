@@ -1402,7 +1402,7 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
       ))}
       <img src='/buildingSite.png' className='absolute top-[30%] left-[20%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 21,32)} />
       <img src='/buildingSite.png' className='absolute top-[30%] left-[10%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 11,32)} />
-      <img src='/buildingSite.png' className='absolute top-[55%] left-[63%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 63,57.5)} />
+      <img src='/buildingSite.png' className='absolute top-[60%] left-[66%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 66,62.5)} />
       <img src='/buildingSite.png' className='absolute top-[30%] left-[63%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 63,32)} />
       <img src='/buildingSite.png' className='absolute top-[42.5%] left-[63%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 63,44.5)} />
       <img src='/buildingSite.png' className='absolute top-[30%] left-[85%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 85,32)} />
