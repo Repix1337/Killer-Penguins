@@ -372,7 +372,7 @@ useEffect(() => {
   if (!isPageVisible || isPaused) return; // Add isPaused check
   const spawnEnemies = () => {
     // Check for game over first
-    if (round > 37 && enemies.length === 0) {
+    if (round > 40 && enemies.length === 0) {
       alert('Congratulations! You won!');
       resetGame();
       return;
@@ -402,37 +402,37 @@ useEffect(() => {
       setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
       setEnemyCount(prev => prev + 1);
     }
-    else if (round > 15 && round <= 19 && enemyCount < 10 * round) {
+    else if (round > 15 && round <= 21 && enemyCount < 10 * round) {
       const enemyType = enemyCount % 3 === 0 ? 'STEALTH' : 
                        enemyCount % 3 === 1 ? 'SPEEDY' : 'TANK';
       setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
       setEnemyCount(prev => prev + 1);
     }
-    else if (round === 20 && enemyCount < 10 * round) {
+    else if (round === 22 && enemyCount < 10 * round) {
       setEnemies(prev => [...prev, createNewEnemy("REGENTANK")]);
       setEnemyCount(prev => prev + 1);
     }
-    else if (round >= 21 && round <= 24 && enemyCount < 15 * round) {
+    else if (round >= 23 && round <= 25 && enemyCount < 15 * round) {
       const enemyType = enemyCount % 3 === 0 ? 'STEALTHYTANK' : 
                        enemyCount % 3 === 1 ? 'STEALTHYSPEEDY' : 'REGENTANK';
       setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
       setEnemyCount(prev => prev + 1);
     }
-    else if (round >= 25 && round <= 29 && enemyCount < 15 * round) {
+    else if (round >= 26 && round <= 32 && enemyCount < 15 * round) {
       const enemyType = enemyCount % 2 === 0 ? 'STEALTHYTANK' 
                         : 'SPEEDYREGENTANK';
       setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
       setEnemyCount(prev => prev + 1);
     }
-    else if (round === 30 && enemyCount < 15 * round) {
+    else if (round === 33 && enemyCount < 15 * round) {
       setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
       setEnemyCount(prev => prev + 75);
     }
-    else if (round > 30 && round <= 36 && enemyCount < 15 * round) {
+    else if (round > 33 && round <= 39 && enemyCount < 15 * round) {
       setEnemies(prev => [...prev, createNewEnemy("ULTRATANKS")]);
       setEnemyCount(prev => prev + 3);
     }
-    else if (round === 37 && enemyCount < 15 * round) {
+    else if (round === 40 && enemyCount < 15 * round) {
       setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
       setEnemyCount(prev => prev + 35);
     }
