@@ -372,7 +372,7 @@ useEffect(() => {
   if (!isPageVisible || isPaused) return; // Add isPaused check
   const spawnEnemies = () => {
     // Check for game over first
-    if (round > 35 && enemies.length === 0) {
+    if (round > 37 && enemies.length === 0) {
       alert('Congratulations! You won!');
       resetGame();
       return;
@@ -428,11 +428,11 @@ useEffect(() => {
       setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
       setEnemyCount(prev => prev + 75);
     }
-    else if (round > 30 && round <= 34 && enemyCount < 15 * round) {
+    else if (round > 30 && round <= 36 && enemyCount < 15 * round) {
       setEnemies(prev => [...prev, createNewEnemy("ULTRATANKS")]);
       setEnemyCount(prev => prev + 3);
     }
-    else if (round === 35 && enemyCount < 15 * round) {
+    else if (round === 37 && enemyCount < 15 * round) {
       setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
       setEnemyCount(prev => prev + 35);
     }
