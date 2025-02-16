@@ -446,7 +446,7 @@ setEnemies([]);
     if (round > 0) {
       spawnEnemies();
     }
-  }, (round === 33 || round === 40 ? (isSpeedUp ? 2500 : 1250) : Math.max(1000 / round, 50)) / (isSpeedUp ? 2 : 1));
+  }, (round === 32 || round === 40 ? (isSpeedUp ? 2500 : 1250) : Math.max(1000 / round, 50)) / (isSpeedUp ? 2 : 1));
 
   // Cleanup
   return () => clearInterval(spawnInterval);
