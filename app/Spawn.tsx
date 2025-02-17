@@ -310,6 +310,26 @@ const TOWER_TYPES = {
     hasSpecialUpgrade: false,
     specialUpgradeAvailable: false,
     canStopRegen: false   
+  },
+  MORTAR: {
+    src: '/mortar.png',
+    baseAttack: 120,
+    attack: 120,
+    baseAttackInterval: 5000,
+    attackInterval: 5000,
+    price: 800,
+    towerWorth: 800,
+    type: 'mortar',
+    maxDamage: 600,
+    maxAttackInterval: 3000,
+    radius: 40,
+    attackType: 'quadruple',
+    canHitStealth: false,
+    poisonDamage: 0,
+    maxPoisonDamage: 0,
+    hasSpecialUpgrade: false,
+    specialUpgradeAvailable: false,
+    canStopRegen: false   
   }
 };
 
@@ -330,6 +350,7 @@ const resetGame = () => {
     '/rapidShooter.png', 
     '/slower.png', 
     '/gasSpitter.png',
+    '/mortar.png',
     ...Object.values(SPECIAL_TOWER_IMAGES)
   ];
   
@@ -592,7 +613,7 @@ useEffect(() => {
         );
         setTower((prevTowers) =>
           prevTowers.map((t) =>
-            t.id === tower.id ? { ...t, isAttacking: false, damageDone: t.damageDone + t.attack } : t
+            t.id === tower.id ? { ...t, isAttacking: false, damageDone: t.damageDone + totalDamageDealt } : t
           )
         );
         setEnemies((prevEnemies) =>
@@ -696,16 +717,17 @@ const getFurthestEnemyInRadius = (
   }
 
   // Return enemies based on attack type
-  if (attackType === 'double' && enemiesWithProgress.length >= 2) {
-    return enemiesWithProgress.slice(0, 2);
-  } else if (attackType === 'triple' && enemiesWithProgress.length >= 3) {
-    return enemiesWithProgress.slice(0, 3);
-  }else if (attackType === 'triple' && enemiesWithProgress.length >= 3) {
-    return enemiesWithProgress.slice(0, 3);
-  } else if (attackType === 'quadruple' && enemiesWithProgress.length >= 4) {
-    return enemiesWithProgress.slice(0, 4);
+   if (attackType === 'double') {
+    return enemiesWithProgress.slice(0, Math.min(2, enemiesWithProgress.length));
+  } else if (attackType === 'triple') {
+    return enemiesWithProgress.slice(0, Math.min(3, enemiesWithProgress.length));
+  } else if (attackType === 'quadruple') {
+    return enemiesWithProgress.slice(0, Math.min(4, enemiesWithProgress.length));
+  } else if (attackType === 'ten') {
+    return enemiesWithProgress.slice(0, Math.min(10, enemiesWithProgress.length));
   } else {
-    return [enemiesWithProgress[0]];
+    // Single target
+    return enemiesWithProgress.slice(0, 1);
   }
 };
 
@@ -844,8 +866,8 @@ useEffect(() => {
     return () => clearInterval(slowInterval);
   }, [isPageVisible, isPaused, isSpeedUp]); // Only include stable dependencies
   useEffect(() => {
-    if (!isPageVisible || isPaused) return; // Add isPaused check
-         
+    if (!isPageVisible || isPaused) return;
+           
     const POISON_TICK_RATE = isSpeedUp ? 5 : 10; 
     const POISON_DURATION = isSpeedUp ? 2000 : 4000; 
     const TOTAL_TICKS = POISON_DURATION / POISON_TICK_RATE;
@@ -854,7 +876,7 @@ useEffect(() => {
       const currentTime = Date.now();
       
       setEnemies(prevEnemies => {
-        let totalPoisonMoneyGain = 0;
+        let poisonDamageByTower: { [key: string]: number } = {};
         
         const updatedEnemies = prevEnemies.map(enemy => {
           if (!enemy.isPoisoned || !enemy.poisonSourceId || !enemy.poisonStartTime) return enemy;
@@ -872,24 +894,32 @@ useEffect(() => {
           const poisonTower = tower.find(t => t.id === enemy.poisonSourceId);
           if (!poisonTower?.poisonDamage) return enemy;
   
-          // Keep total damage the same regardless of speed
           const damagePerTick = (4 * poisonTower.poisonDamage) / TOTAL_TICKS;
-          
-          // Calculate actual poison damage (can't exceed remaining HP)
           const actualPoisonDamage = Math.min(damagePerTick, enemy.hp);
           
-          // Add to total money gain instead of updating immediately
-          totalPoisonMoneyGain += actualPoisonDamage / 7.5;
+          if (!poisonDamageByTower[poisonTower.id]) {
+            poisonDamageByTower[poisonTower.id] = 0;
+          }
+          poisonDamageByTower[poisonTower.id] += actualPoisonDamage;
   
           return {
             ...enemy,
-            hp: enemy.hp - damagePerTick
+            hp: enemy.hp - actualPoisonDamage
           };
         });
   
-        // Update money once after all calculations
-        if (totalPoisonMoneyGain > 0) {
-          setMoney(prevMoney => prevMoney + totalPoisonMoneyGain);
+        // Update tower damage counters and add money for poison damage
+        setTower(prevTowers =>
+          prevTowers.map(t => ({
+            ...t,
+            damageDone: t.damageDone + (poisonDamageByTower[t.id] || 0)
+          }))
+        );
+  
+        // Add money for poison damage
+        const totalPoisonDamage = Object.values(poisonDamageByTower).reduce((sum, damage) => sum + damage, 0);
+        if (totalPoisonDamage > 0) {
+          setMoney(prevMoney => prevMoney + totalPoisonDamage / 7.5);
         }
   
         return updatedEnemies;
@@ -897,7 +927,7 @@ useEffect(() => {
     }, POISON_TICK_RATE);
   
     return () => clearInterval(poisonInterval);
-  }, [enemies, tower, isPageVisible, isSpeedUp, isPaused]);
+  }, [enemies, tower, isPageVisible, isSpeedUp, isPaused, setMoney]);
   // Buy towers and place them on the map
   const buyTowers = (event: React.MouseEvent<HTMLImageElement>, positionX: number, positionY: number) => {
     if (round > 0 && selectedTowerType && (event.target as HTMLImageElement).src.includes('buildingSite')) {
@@ -1054,7 +1084,7 @@ const upgradeTower = () => {
       text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
       disabled:opacity-50 disabled:cursor-not-allowed"
     onClick={upgradeSpecial}
-    disabled={money < 5000}
+    disabled={money < 20000}
   >
     {getSpecialUpgradeText(selectedTower.type)}
   </button>
@@ -1136,7 +1166,7 @@ const upgradeTower = () => {
             <div className="pt-2 border-t border-gray-600">
               <div>Attack Type: {selectedTower.attackType}</div>
               <div>Can hit stealth: {selectedTower.canHitStealth ? 'Yes' : 'No'}</div>
-              <div>Damage done to enemies: {selectedTower.damageDone}</div>
+              <div>Damage done to enemies: {Math.floor(selectedTower.damageDone)}</div>
               {selectedTower.type === "slower" && (
                 <div>
                   <div>Slow Amount: {selectedTower.slowAmount ? selectedTower.slowAmount.toFixed(2) : 'N/A'} / {selectedTower.maxSlow}</div>
@@ -1338,6 +1368,16 @@ const upgradeTower = () => {
                   canStopRegen: true,
                   src: '/gasSpitterSpecial.png'
                 };
+              case 'mortar':
+                return { 
+                    ...t, 
+                    hasSpecialUpgrade: true, 
+                    attack: t.attack * 2.25, 
+                    maxDamage: t.maxDamage * 2.25,
+                    radius: t.radius * 1.5, 
+                    attackType: 'ten',
+                    src: '/mortarSpecial.png'
+                };
               default:
                 return t;
             }
@@ -1367,6 +1407,9 @@ const upgradeTower = () => {
             case 'gasspitter':
               towerElement.src = '/gasSpitterSpecial.png';
               break;
+            case 'mortar':
+              towerElement.src = '/mortarSpecial.png';
+                break;
           }
         }
       }
@@ -1384,6 +1427,8 @@ const upgradeTower = () => {
         return "Cryogen(20000$)";
       case 'gasspitter':
         return "Acid Spitter (20000$)";
+        case 'mortar':
+          return "Armageddon (20000$)";
       default:
         return "Special Upgrade (20000$)";
     }
@@ -1407,6 +1452,8 @@ const checkSpecialUpgradeAvailability = (tower: Tower) => {
       return baseConditions && tower.slowAmount === tower.maxSlow;
     case 'gasspitter':
       return baseConditions && tower.poisonDamage === tower.maxPoisonDamage;
+    case 'mortar':
+      return baseConditions;
     default:
       return false;
   }

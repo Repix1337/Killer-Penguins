@@ -113,6 +113,14 @@ const Menu = () => {
                 onClick={() => handleTowerSelect('gasspitter')}
                 label="Gas Spitter"
               />
+              <TowerButton
+                type="mortar"
+                src="/mortar.png"
+                price={800}
+                isSelected={selectedTowerType === 'mortar'}
+                onClick={() => handleTowerSelect('mortar')}
+                label="Mortar"
+              />
             </div>
           </div>
       </div>
@@ -125,6 +133,7 @@ interface TowerType {
   rapidShooter: string;
   slower: string;
   gasspitter: string;
+  mortar: string;
 }
 
 interface TowerButtonProps {
