@@ -623,7 +623,7 @@ const getFurthestEnemyInRadius = (
   attackType: string, 
   attackDamage: number, 
   targettingType: string
-) => {
+): Enemy[] | null => {
   const enemiesInRadius = enemies.filter((enemy) => {
     // Only target enemies with positive hp
     if (enemy.hp <= 0) return false;
@@ -715,7 +715,7 @@ const getFurthestEnemyInRadius = (
 
 // Tower targeting system - updates target when enemies move
 useEffect(() => {
-  if (!isPageVisible || isPaused) return;
+  if (!isPageVisible || isPaused) return; // Add missing return statement
 
   // Only update if there are enemies to target
   if (enemies.length === 0) return;
