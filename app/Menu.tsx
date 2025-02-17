@@ -32,7 +32,7 @@ const Menu = () => {
       }
     }
 
-    const handleTowerSelect = (type: string) => {
+    const handleTowerSelect = (type: keyof TowerType) => {
       setSelectedTowerType(prev => prev === type ? '' : type);
     }
     
@@ -117,6 +117,14 @@ const Menu = () => {
           </div>
       </div>
     )
+}
+
+interface TowerType {
+  basic: string;
+  sniper: string;
+  rapidShooter: string;
+  slower: string;
+  gasspitter: string;
 }
 
 interface TowerButtonProps {

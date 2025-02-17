@@ -70,26 +70,24 @@ interface Tower {
   src: string; // Add src property
 }
 
+interface AttackEffect {
+  id: string;
+  towerPositionX: number;
+  towerPositionY: number;
+  enemyPositionX: number;
+  enemyPositionY: number;
+  timestamp?: number;
+}
+
 const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp, isSpeedUp, isPaused, setCanPause, selectedTowerType }) => {
   // Game state
   const [enemies, setEnemies] = useState<Enemy[]>([]);
   const [tower, setTower] = useState<Tower[]>([]);
-  const [attackEffects, setAttackEffects] = useState<{ 
-    id: string; 
-    towerPositionX: number; 
-    towerPositionY: number; 
-    enemyPositionX: number; 
-    enemyPositionY: number; 
-    timestamp?: number 
-  }[]>([]);
+  const [attackEffects, setAttackEffects] = useState<AttackEffect[]>([]);
   const [enemyCount, setEnemyCount] = useState(0);
   const [showUpgradeMenu, setShowUpgradeMenu] = useState(false);
   const [selectedTowerID, setSelectedTowerID] = useState('');
-  const [selectedTower, setSelectedTower] = useState<{ 
-    towerPositionX: number; 
-    towerPositionY: number; 
-    element: HTMLImageElement;
-  }[]>([]);
+  
   
   // Add this new state near other state declarations
   const [isPageVisible, setIsPageVisible] = useState(true);
@@ -384,7 +382,7 @@ useEffect(() => {
     alert('Game Over! You lost!');
     resetGame();
   }
-}, [hp]);
+}, [hp, resetGame]); // Add resetGame to dependencies
 
 useEffect(() => {
   if (!isPageVisible || isPaused) return; // Add isPaused check
@@ -498,13 +496,46 @@ useEffect(() => {
   }
 }, [round]);
 
+  // Move enemies by updating their position
+  const moveEnemy = () => {
+    setEnemies((prevEnemies) =>
+      prevEnemies
+        .map((enemy) => {
+          // Define waypoints/checkpoints for the path
+          if (enemy.positionX < 28) {
+            // First segment - Move right until x=30
+            return { ...enemy, positionX: enemy.positionX + enemy.speed, positionY: enemy.positionY - enemy.speed / 10};
+          } else if (enemy.positionX >= 28 && enemy.positionX < 52 && enemy.positionY > 15) {
+            // Second segment - Move up until y=15
+            return { ...enemy, positionY: enemy.positionY - (enemy.speed * 2), positionX: enemy.positionX + enemy.speed / 3 };
+          } else if (enemy.positionY <= 15 && enemy.positionX < 52) {
+            // Third segment - Move right until x=50
+            return { ...enemy, positionX: enemy.positionX + enemy.speed };
+          } else if (enemy.positionX >= 52 && enemy.positionX < 75 && enemy.positionY < 87) {
+            // Fourth segment - Move down until y=85
+            return { ...enemy, positionY: enemy.positionY + enemy.speed * 2 };
+          } else if (enemy.positionY >= 87 && enemy.positionX < 75) {
+            // Fifth segment - Move right until x=70
+            return { ...enemy, positionX: enemy.positionX + enemy.speed };
+          } else if (enemy.positionX >= 75 && enemy.positionY > 50) {
+            // Sixth segment - Move up until y=50
+            return { ...enemy, positionY: enemy.positionY - (enemy.speed * 2), positionX: enemy.positionX + enemy.speed / 10};
+          } else {
+            // Final segment - Move right until end
+            return { ...enemy, positionX: enemy.positionX + enemy.speed };
+          }
+        })
+        .filter((enemy) => enemy.hp > 0)
+    );
+  };
+
   // Enemy movement - updates position every 25ms
   useEffect(() => {
     if (!isPageVisible || round <= 0 || isPaused) return; 
 
     const interval = setInterval(moveEnemy, isSpeedUp ? 12.5 : 25); // Twice as fast when speed up
     return () => clearInterval(interval);
-  }, [round, isPageVisible, isSpeedUp, isPaused]); // Add isPaused to dependencies
+  }, [round, isPageVisible, isSpeedUp, isPaused, moveEnemy]); // Add moveEnemy
 
   // Heal enemy every second if it has health regeneration
   useEffect(() => {
@@ -625,10 +656,9 @@ const getFurthestEnemyInRadius = (
   targettingType: string
 ): Enemy[] | null => {
   const enemiesInRadius = enemies.filter((enemy) => {
-    // Only target enemies with positive hp
+    if (!enemy) return false; // Add null check
     if (enemy.hp <= 0) return false;
     
-    // Calculate distance between tower and enemy
     const dx = enemy.positionX - towerPositionX;
     const dy = enemy.positionY - towerPositionY;
     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -748,6 +778,8 @@ useEffect(() => {
     });
   }, [tower, towerAttack, isPageVisible, isPaused]); // Add isPaused to dependencies
 
+  
+
   // Create enemy elements
   const createEnemy = () => {
     if (round > 0) {
@@ -769,39 +801,7 @@ useEffect(() => {
     }
   };
 
-  // Move enemies by updating their position
-  const moveEnemy = () => {
-    setEnemies((prevEnemies) =>
-      prevEnemies
-        .map((enemy) => {
-          // Define waypoints/checkpoints for the path
-          if (enemy.positionX < 28) {
-            // First segment - Move right until x=30
-            return { ...enemy, positionX: enemy.positionX + enemy.speed, positionY: enemy.positionY - enemy.speed / 10};
-          } else if (enemy.positionX >= 28 && enemy.positionX < 52 && enemy.positionY > 15) {
-            // Second segment - Move up until y=15
-            return { ...enemy, positionY: enemy.positionY - (enemy.speed * 2), positionX: enemy.positionX + enemy.speed / 3 };
-          } else if (enemy.positionY <= 15 && enemy.positionX < 52) {
-            // Third segment - Move right until x=50
-            return { ...enemy, positionX: enemy.positionX + enemy.speed };
-          } else if (enemy.positionX >= 52 && enemy.positionX < 75 && enemy.positionY < 87) {
-            // Fourth segment - Move down until y=85
-            return { ...enemy, positionY: enemy.positionY + enemy.speed * 2 };
-          } else if (enemy.positionY >= 87 && enemy.positionX < 75) {
-            // Fifth segment - Move right until x=70
-            return { ...enemy, positionX: enemy.positionX + enemy.speed };
-          } else if (enemy.positionX >= 75 && enemy.positionY > 50) {
-            // Sixth segment - Move up until y=50
-            return { ...enemy, positionY: enemy.positionY - (enemy.speed * 2), positionX: enemy.positionX + enemy.speed / 10};
-          } else {
-            // Final segment - Move right until end
-            return { ...enemy, positionX: enemy.positionX + enemy.speed };
-          }
-        })
-        .filter((enemy) => enemy.hp > 0)
-    );
-  };
-
+  
   // Reduce player's health points if enemies reach the end
   const damagePlayer = (enemies: Enemy[]) => {
     enemies.forEach((enemy) => {
@@ -1277,11 +1277,11 @@ const upgradeTower = () => {
           key={effect.id}
           className='z-20 animate-slide h-6 w-6 absolute text-red-500'
           style={{
-            '--tower-positionX': `${effect.towerPositionX + 1}%`,
-            '--tower-positionY': `${effect.towerPositionY + 2.5}%`,
-            '--enemy-positionX': `${effect.enemyPositionX + 1.5}%`,
-            '--enemy-positionY': `${effect.enemyPositionY}%`,
-            left: `${effect.towerPositionX}%`,
+            '--tower-positionX': `${(effect.towerPositionX || 0) + 1}%`,
+            '--tower-positionY': `${(effect.towerPositionY || 0) + 2.5}%`,
+            '--enemy-positionX': `${(effect.enemyPositionX || 0) + 1.5}%`,
+            '--enemy-positionY': `${(effect.enemyPositionY || 0)}%`,
+            left: `${effect.towerPositionX || 0}%`,
             animationDuration: `${isSpeedUp ? '50ms' : '100ms'}`,
           } as React.CSSProperties}
         />
