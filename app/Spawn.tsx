@@ -448,13 +448,13 @@ useEffect(() => {
       }
     }
     else if (round > 32 && round <= 39) {
-      if (enemyCount < 300) {  // Changed from 15 * round to fixed 45
+      if (enemyCount < 15 * round) {  // Changed from 15 * round to fixed 45
         setEnemies(prev => [...prev, createNewEnemy("ULTRATANKS")]);
         setEnemyCount(prev => prev + 3);
       }
     }
     else if (round === 40) {
-      if (enemyCount < 320) {  // Changed from 15 * round to fixed 40
+      if (enemyCount < 15 * round) {  // Changed from 15 * round to fixed 40
         setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
         setEnemyCount(prev => prev + 40);
       }
@@ -478,7 +478,7 @@ setEnemies([]);
 
 useEffect(() => {
   if (isPaused) return; // Add isPaused check
-  if (enemies.length === 0 && (enemyCount === 10 * round || enemyCount === 15 * round)) {
+  if (enemies.length === 0 && (enemyCount >= 10 * round || enemyCount >= 15 * round)) {
     setCanPause(true); // Allow pausing when round is over
     
     const roundTimeout = setTimeout(() => {
