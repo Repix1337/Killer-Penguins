@@ -441,17 +441,23 @@ useEffect(() => {
       setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
       setEnemyCount(prev => prev + 1);
     }
-    else if (round === 32 && enemyCount < 15 * round) {
-      setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
-      setEnemyCount(prev => prev + 80);
+    else if (round === 32) {
+      if (enemyCount < 80) {  // Changed from 15 * round to fixed 80
+        setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
+        setEnemyCount(prev => prev + 80);
+      }
     }
-    else if (round > 32 && round <= 39 && enemyCount <= 15 * round) {
-      setEnemies(prev => [...prev, createNewEnemy("ULTRATANKS")]);
-      setEnemyCount(prev => prev + 3);
+    else if (round > 32 && round <= 39) {
+      if (enemyCount < 45) {  // Changed from 15 * round to fixed 45
+        setEnemies(prev => [...prev, createNewEnemy("ULTRATANKS")]);
+        setEnemyCount(prev => prev + 3);
+      }
     }
-    else if (round === 40 && enemyCount <= 15 * round) {
-      setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
-      setEnemyCount(prev => prev + 40);
+    else if (round === 40) {
+      if (enemyCount < 40) {  // Changed from 15 * round to fixed 40
+        setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
+        setEnemyCount(prev => prev + 40);
+      }
     }
     // Game reset
 else if (round === 0) {
