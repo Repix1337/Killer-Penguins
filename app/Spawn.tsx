@@ -14,6 +14,7 @@ interface SpawnProps {
   isSpeedUp: boolean;  
   isPaused: boolean;
   setCanPause: React.Dispatch<React.SetStateAction<boolean>>;
+  selectedTowerType: string;
 }
 
 // Define the Enemy interface
@@ -66,9 +67,10 @@ interface Tower {
   hasSpecialUpgrade: boolean;
   specialUpgradeAvailable: boolean;
   canStopRegen: boolean;
+  src: string; // Add src property
 }
 
-const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp, isSpeedUp, isPaused, setCanPause }) => {
+const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp, isSpeedUp, isPaused, setCanPause, selectedTowerType }) => {
   // Game state
   const [enemies, setEnemies] = useState<Enemy[]>([]);
   const [tower, setTower] = useState<Tower[]>([]);
@@ -82,7 +84,6 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   }[]>([]);
   const [enemyCount, setEnemyCount] = useState(0);
   const [showUpgradeMenu, setShowUpgradeMenu] = useState(false);
-  const [showTowerSelectMenu, setShowTowerSelectMenu] = useState(false);
   const [selectedTowerID, setSelectedTowerID] = useState('');
   const [selectedTower, setSelectedTower] = useState<{ 
     towerPositionX: number; 
@@ -469,7 +470,7 @@ setEnemies([]);
     if (round > 0) {
       spawnEnemies();
     }
-  }, (round === 32 || round === 40 ? (isSpeedUp ? 2500 : 1250) : Math.max(1000 / round, 50)) / (isSpeedUp ? 2 : 1));
+  }, (round === 32  ? (isSpeedUp ? 2500 : 1250) : Math.max(1000 / round, 50)) / (isSpeedUp ? 2 : 1));
 
   // Cleanup
   return () => clearInterval(spawnInterval);
@@ -902,39 +903,24 @@ useEffect(() => {
     return () => clearInterval(poisonInterval);
   }, [enemies, tower, isPageVisible, isSpeedUp, isPaused]);
   // Buy towers and place them on the map
-  const buyTowers = (event: React.MouseEvent<HTMLImageElement>, positionX: number,positionY:number) => {
-    if (round > 0 && (event.target as HTMLImageElement).src.includes('buildingSite')) {
-      setShowUpgradeMenu(false);
-      setShowTowerSelectMenu(true);
-      const newTowerId = uuidv4();  // Generate ID first
-      (event.target as HTMLImageElement).id = newTowerId;  // Set the ID of the clicked element
-      setSelectedTowerID(newTowerId);  // Set the selected tower ID
-      setSelectedTower([{ towerPositionX: positionX, towerPositionY: positionY, element: event.target as HTMLImageElement }]);
-    }
-    else if (round > 0 && !(event.target as HTMLImageElement).src.includes('buildingSite')) {
+  const buyTowers = (event: React.MouseEvent<HTMLImageElement>, positionX: number, positionY: number) => {
+    if (round > 0 && selectedTowerType && (event.target as HTMLImageElement).src.includes('buildingSite')) {
+      const newTowerId = uuidv4();
+      (event.target as HTMLImageElement).id = newTowerId;
+      
+      // Check if we have enough money for the selected tower
+      const towerConfig = TOWER_TYPES[selectedTowerType.toUpperCase() as keyof typeof TOWER_TYPES];
+      if (towerConfig && money >= towerConfig.price) {
+        (event.target as HTMLImageElement).src = towerConfig.src;
+        setMoney((prevMoney) => prevMoney - towerConfig.price);
+        setTower((prevTower) => [...prevTower, createNewTower(selectedTowerType.toUpperCase() as keyof typeof TOWER_TYPES, positionX, positionY, newTowerId)]);
+      }
+    } else if (round > 0 && !(event.target as HTMLImageElement).src.includes('buildingSite')) {
       setShowUpgradeMenu(true);
-      setShowTowerSelectMenu(false);
       setSelectedTowerID((event.target as HTMLImageElement).id);
     }
   };
   
-// Then modify the selectTowerType function to use these constants
-const selectTowerType = (type: string, newTowerId: string) => {
-  const towerType = type.toUpperCase() as keyof typeof TOWER_TYPES;
-  const towerConfig = TOWER_TYPES[towerType];
-  
-  if (!towerConfig || money < towerConfig.price) return;
-
-  selectedTower[0].element.src = towerConfig.src;
-  setShowTowerSelectMenu(false);
-  setMoney((prevMoney) => prevMoney - towerConfig.price);
-  
-  setTower((prevTower) => [...prevTower, createNewTower(towerType, selectedTower[0].towerPositionX, selectedTower[0].towerPositionY, newTowerId)]);
-};
-
-const closeTowerSelectMenu = () => {
-  setShowTowerSelectMenu(false);
-}
 const upgradeTower = () => {
   if (showUpgradeMenu) {
     const selectedTower = tower.find(t => t.id === selectedTowerID);
@@ -1293,10 +1279,10 @@ const upgradeTower = () => {
           style={{
             '--tower-positionX': `${effect.towerPositionX + 1}%`,
             '--tower-positionY': `${effect.towerPositionY + 2.5}%`,
-            '--enemy-positionX': `${effect.enemyPositionX + 2.5}%`,
-            '--enemy-positionY': `${effect.enemyPositionY + 2.5}%`,
+            '--enemy-positionX': `${effect.enemyPositionX + 1.5}%`,
+            '--enemy-positionY': `${effect.enemyPositionY}%`,
             left: `${effect.towerPositionX}%`,
-            animationDuration: `${isSpeedUp ? '75ms' : '150ms'}`,
+            animationDuration: `${isSpeedUp ? '50ms' : '100ms'}`,
           } as React.CSSProperties}
         />
           
@@ -1454,80 +1440,51 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
 
   return (
     <>
-    <div className='relative h-[85%] border  border-white overflow-hidden' suppressHydrationWarning>
+    <div className='relative h-[70%] w-full border  border-white overflow-hidden' suppressHydrationWarning>
       <img src='/map.png' className='object-cover w-full h-full z-0' alt='map' />
       {/* Add range indicators for all towers */}
       {tower.map((t) => (
         <RangeIndicator key={`range-${t.id}`} tower={t} />
       ))}
-      <img src='/buildingSite.png' className='absolute top-[30%] left-[20%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 21,32)} />
-      <img src='/buildingSite.png' className='absolute top-[30%] left-[10%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 11,32)} />
-      <img src='/buildingSite.png' className='absolute top-[60%] left-[66%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 66,62.5)} />
-      <img src='/buildingSite.png' className='absolute top-[30%] left-[63%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 63,32)} />
-      <img src='/buildingSite.png' className='absolute top-[42.5%] left-[63%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 63,44.5)} />
-      <img src='/buildingSite.png' className='absolute top-[30%] left-[85%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 85,32)} />
-      <img src='/buildingSite.png' className='absolute top-[65%] left-[2%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 2,65)} />
-      <img src='/buildingSite.png' className='absolute top-[65%] left-[25%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 25,66)} />
-      <img src='/buildingSite.png' className='absolute top-[40%] left-[41%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 41,41)} />
-      <img src='/buildingSite.png' className='absolute top-[52.5%] left-[41%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 41,53.5)} />
-      <img src='/buildingSite.png' className='absolute top-[65%] left-[41%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 42,67)} />
-      <img src='/buildingSite.png' className='absolute top-[65%] left-[82%] w-14 h-14 z-10' onClick={(event) => buyTowers(event, 83,66)} />
+      <div>
+  {round > 0 && (
+    <>
+      {[
+        { top: '30%', left: '20%', x: 21, y: 32 },
+        { top: '30%', left: '10%', x: 11, y: 32 },
+        { top: '60%', left: '66%', x: 66, y: 62.5 },
+        { top: '30%', left: '63%', x: 63, y: 32 },
+        { top: '42.5%', left: '63%', x: 63, y: 44.5 },
+        { top: '30%', left: '85%', x: 85, y: 32 },
+        { top: '65%', left: '2%', x: 2, y: 65 },
+        { top: '65%', left: '25%', x: 25, y: 66 },
+        { top: '40%', left: '41%', x: 41, y: 41 },
+        { top: '52.5%', left: '41%', x: 41, y: 53.5 },
+        { top: '65%', left: '41%', x: 42, y: 67 },
+        { top: '65%', left: '82%', x: 83, y: 66 }
+      ].map((pos, index) => {
+        const existingTower = tower.find(t => t.positionX === pos.x && t.positionY === pos.y);
+        
+        // Only render if there's an existing tower or if a tower type is selected
+        const shouldShow = existingTower || selectedTowerType;
+        
+        return shouldShow ? (
+          <img
+            key={index}
+            id={existingTower?.id || `building-site-${index}`}
+            src={existingTower ? existingTower.src : '/buildingSite.png'}
+            className='absolute w-14 h-14 z-10 hover:opacity-75 transition-opacity'
+            style={{ top: pos.top, left: pos.left }}
+            onClick={(event) => buyTowers(event, pos.x, pos.y)}
+          />
+        ) : null;
+      })}
+    </>
+  )}
+</div>
       {createEnemy()}
       
       {attackAnimation()}
-      {showTowerSelectMenu && (
-      <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-800 
-        flex flex-col items-center justify-between p-6 rounded-lg gap-6 shadow-lg border border-blue-400'>
-        <h1 className="text-xl font-bold mb-2">Tower Select Menu</h1>
-        <div className='flex gap-4'>
-          <div className='hover:scale-110 transition-all'>
-            <button onClick={() => selectTowerType("basic",selectedTowerID)}>
-              <img src='/tower1.png' className='w-16 h-16'/>
-            </button>
-            <h1>100$</h1>
-            <h1>Basic</h1>
-          </div>
-          <div className='hover:scale-110 transition-all'>
-            <button onClick={() => selectTowerType("sniper",selectedTowerID)}>
-              <img src='/tower2.png' className='w-16 h-16'/>
-            </button>
-            <h1>200$</h1>
-            <h1>Sniper</h1>
-          </div>
-          <div className='hover:scale-110 transition-all'>
-            <button onClick={() => selectTowerType("rapidShooter",selectedTowerID)}>
-              <img src='/rapidShooter.png' className='w-16 h-16'/>
-            </button>
-            <h1>500$</h1>
-            <h1>Rapid
-               <p>Shooter</p></h1>
-          </div>
-          <div className='hover:scale-110 transition-all'>
-            <button onClick={() => selectTowerType("slower",selectedTowerID)}>
-              <img src='/slower.png' className='w-16 h-16'/>
-            </button>
-            <h1>300$</h1>
-            <h1>Slower</h1>
-          </div>
-          <div className='hover:scale-110 transition-all'>
-            <button onClick={() => selectTowerType("gasspitter",selectedTowerID)}>
-              <img src='/gasSpitter.png' className='w-16 h-16'/>
-            </button>
-            <h1>300$</h1>
-            <h1>Gas
-               <p>Spitter</p></h1>
-          </div>
-        </div>
-        
-        <button 
-              className="bg-red-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-full mt-2"
-              onClick={closeTowerSelectMenu}
-              >
-                Close
-              </button>
-      </div>
-    )}
-    
     </div>
     {upgradeTower()}
     </>
