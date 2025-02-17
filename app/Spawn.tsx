@@ -500,7 +500,7 @@ useEffect(() => {
 
   // Enemy movement - updates position every 25ms
   useEffect(() => {
-    if (!isPageVisible || round <= 0 || isPaused) return; // Add isPaused check
+    if (!isPageVisible || round <= 0 || isPaused) return; 
 
     const interval = setInterval(moveEnemy, isSpeedUp ? 12.5 : 25); // Twice as fast when speed up
     return () => clearInterval(interval);
@@ -508,7 +508,7 @@ useEffect(() => {
 
   // Heal enemy every second if it has health regeneration
   useEffect(() => {
-    if (!isPageVisible || round <= 0 || isPaused) return; // Add isPaused check
+    if (!isPageVisible || round <= 0 || isPaused) return; 
 
     const interval = setInterval(() => {
       setEnemies((prevEnemies) => 
@@ -851,7 +851,7 @@ useEffect(() => {
     if (!isPageVisible || isPaused) return; // Add isPaused check
          
     const POISON_TICK_RATE = isSpeedUp ? 5 : 10; 
-    const POISON_DURATION = isSpeedUp ? 1500 : 3000; 
+    const POISON_DURATION = isSpeedUp ? 2000 : 4000; 
     const TOTAL_TICKS = POISON_DURATION / POISON_TICK_RATE;
     
     const poisonInterval = setInterval(() => {
