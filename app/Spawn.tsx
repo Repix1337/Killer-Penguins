@@ -35,6 +35,7 @@ interface Enemy {
   isPoisoned: boolean;
   poisonSourceId?: string;
   poisonStartTime?: number;
+  canRegen: boolean;
 }
 
 // Define the Tower interface
@@ -64,6 +65,7 @@ interface Tower {
   maxPoisonDamage: number;
   hasSpecialUpgrade: boolean;
   specialUpgradeAvailable: boolean;
+  canStopRegen: boolean;
 }
 
 const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp, isSpeedUp, isPaused, setCanPause }) => {
@@ -112,7 +114,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       type: 'basic',
       speed: 0.225,    // from 0.150 * 1.5
       baseSpeed: 0.225, // from 0.150 * 1.5
-      regen: 0
+      regen: 0,
+      canRegen: false
     },
     STEALTH: {
       src: 'enemy2.png',
@@ -121,7 +124,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       type: 'stealth',
       speed: 0.225,    // from 0.150 * 1.5
       baseSpeed: 0.225, // from 0.150 * 1.5
-      regen: 0
+      regen: 0,
+      canRegen: false
     },
     TANK: {
       src: 'enemy3.png',
@@ -130,7 +134,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       type: 'basic',
       speed: 0.1875,    // from 0.125 * 1.5
       baseSpeed: 0.1875, // from 0.125 * 1.5
-      regen: 0
+      regen: 0,
+      canRegen: false
     },
     SPEEDY: {
       src: 'enemy4.png',
@@ -139,7 +144,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       type: 'speedy',
       speed: 1.5,    // from 1.0 * 1.5
       baseSpeed: 1.5, // from 1.0 * 1.5
-      regen: 0
+      regen: 0,
+      canRegen: false
     },
     STEALTHYTANK: {
       src: 'stealthyTank.png',
@@ -148,7 +154,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       type: 'stealthytank',
       speed: 0.1875,    // from 0.125 * 1.5
       baseSpeed: 0.1875, // from 0.125 * 1.5
-      regen: 0
+      regen: 0,
+      canRegen: false
     },
     STEALTHYSPEEDY: {
       src: 'stealthySpeedy.png',
@@ -157,7 +164,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       type: 'stealthyspeedy',
       speed: 1.5,    // from 1.0 * 1.5
       baseSpeed: 1.5, // from 1.0 * 1.5
-      regen: 0
+      regen: 0,
+      canRegen: false
     },
     REGENTANK: {
       src: 'regenTank.png',
@@ -166,7 +174,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       type: 'regentank',
       speed: 0.1875,    // from 0.125 * 1.5
       baseSpeed: 0.1875, // from 0.125 * 1.5
-      regen: 100
+      regen: 100,
+      canRegen: true
     },
     SPEEDYREGENTANK: {
       src: 'regenTank.png',
@@ -175,7 +184,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       type: 'speedyregentank',
       speed: 0.35,    // from 0.2 * 1.5
       baseSpeed: 0.35, // from 0.2 * 1.5
-      regen: 150
+      regen: 150,
+      canRegen: true
     }
     ,
     BOSS: {
@@ -185,7 +195,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       type: 'boss',
       speed: 0.175,    
       baseSpeed: 0.175, 
-      regen: 1200
+      regen: 1200,
+      canRegen: true
     },
     ULTRATANKS: {
       src: 'ultraTank.png',
@@ -194,7 +205,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       type: 'ultratank',
       speed: 0.15,    
       baseSpeed: 0.15, 
-      regen: 0
+      regen: 0,
+      canRegen: false,
     }
   };
 
@@ -217,7 +229,8 @@ const TOWER_TYPES = {
     poisonDamage: 0,
     maxPoisonDamage: 0,
     hasSpecialUpgrade: false,
-    specialUpgradeAvailable: false
+    specialUpgradeAvailable: false,
+    canStopRegen: false
   },
   SNIPER: {
     src: '/tower2.png',
@@ -236,7 +249,8 @@ const TOWER_TYPES = {
     poisonDamage: 0,
     maxPoisonDamage: 0,
     hasSpecialUpgrade: false,
-    specialUpgradeAvailable: false
+    specialUpgradeAvailable: false,
+    canStopRegen: false
   },
   RAPIDSHOOTER: {
     src: '/rapidShooter.png',
@@ -255,7 +269,8 @@ const TOWER_TYPES = {
     poisonDamage: 0,
     maxPoisonDamage: 0,
     hasSpecialUpgrade: false,
-    specialUpgradeAvailable: false
+    specialUpgradeAvailable: false,
+    canStopRegen: false
   },
   SLOWER: {
     src: '/slower.png',
@@ -276,7 +291,8 @@ const TOWER_TYPES = {
     poisonDamage: 0,
     maxPoisonDamage: 0,
     hasSpecialUpgrade: false,
-    specialUpgradeAvailable: false
+    specialUpgradeAvailable: false,
+    canStopRegen: false
   },
   GASSPITTER: {
     src: '/gasSpitter.png',
@@ -295,7 +311,8 @@ const TOWER_TYPES = {
     poisonDamage: 20,
     maxPoisonDamage: 100,
     hasSpecialUpgrade: false,
-    specialUpgradeAvailable: false
+    specialUpgradeAvailable: false,
+    canStopRegen: false   
   }
 };
 
@@ -489,7 +506,7 @@ useEffect(() => {
     const interval = setInterval(() => {
       setEnemies((prevEnemies) => 
         prevEnemies.map((enemy) => 
-          enemy.regen > 0 ? {...enemy, hp: enemy.hp + enemy.regen} : enemy
+          enemy.regen > 0 && enemy.canRegen ? {...enemy, hp: enemy.hp + enemy.regen} : enemy
         )
       )
     }, 1500 / (isSpeedUp ? 2 : 1));
@@ -532,7 +549,9 @@ useEffect(() => {
             ...updatedEnemy,
             isPoisoned: true,
             poisonSourceId: tower.id,
-            poisonStartTime: Date.now()
+            poisonStartTime: Date.now(),
+            canRegen: tower.canStopRegen ? false : true
+            
           };
         }
         if (tower.type === "slower") {
@@ -807,7 +826,8 @@ useEffect(() => {
               speed: enemy.baseSpeed,
               isSlowed: false,
               slowSourceId: undefined,
-              slowStartTime: undefined
+              slowStartTime: undefined,
+
             };
           }
           return enemy;
@@ -841,7 +861,8 @@ useEffect(() => {
               ...enemy,
               isPoisoned: false,
               poisonSourceId: undefined,
-              poisonStartTime: undefined
+              poisonStartTime: undefined,
+              canRegen: true
             };
           }
   
@@ -1326,6 +1347,7 @@ const upgradeTower = () => {
                   hasSpecialUpgrade: true, 
                   poisonDamage: t.poisonDamage * 4,
                   maxPoisonDamage: t.maxPoisonDamage * 4,
+                  canStopRegen: true,
                   src: '/gasSpitterSpecial.png'
                 };
               default:
