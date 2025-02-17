@@ -876,7 +876,7 @@ useEffect(() => {
       const currentTime = Date.now();
       
       setEnemies(prevEnemies => {
-        let poisonDamageByTower: { [key: string]: number } = {};
+        const poisonDamageByTower: { [key: string]: number } = {};
         
         const updatedEnemies = prevEnemies.map(enemy => {
           if (!enemy.isPoisoned || !enemy.poisonSourceId || !enemy.poisonStartTime) return enemy;
