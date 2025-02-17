@@ -189,7 +189,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     },
     ULTRATANKS: {
       src: 'ultraTank.png',
-      hp: 4000,
+      hp: 3500,
       damage: 1000,
       type: 'ultratank',
       speed: 0.15,    
