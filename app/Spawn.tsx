@@ -535,7 +535,7 @@ useEffect(() => {
   // Main tower attack logic
   const towerAttack = useCallback((tower: Tower, targets: Enemy[]) => {
     if (tower.isAttacking) return;
-       
+  
     setTower((prevTowers) =>
       prevTowers.map((t) =>
         t.id === tower.id ? { ...t, isAttacking: true } : t
@@ -545,16 +545,17 @@ useEffect(() => {
     let totalDamageDealt = 0;
   
     setEnemies((prevEnemies) => {
+      let updatedEnemies;
       if (tower.attackType === 'explosion') {
-const primaryTarget = targets[0];         // Get the main target
+        const primaryTarget = targets[0]; // Get the main target
         const enemiesInExplosionRadius = prevEnemies.filter(enemy => {
           if (enemy.hp <= 0 || enemy.id === primaryTarget.id) return false; // Skip dead enemies and primary target
-          
+  
           // Calculate distance between primary target and other enemies
-        const dx = enemy.positionX - primaryTarget.positionX;
+          const dx = enemy.positionX - primaryTarget.positionX;
           const dy = enemy.positionY - primaryTarget.positionY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-          
+          const distance = Math.sqrt(dx * dx + dy * dy);
+  
           return distance <= tower.explosionRadius;
         });
         setExplosionEffects(prev => [...prev, {
@@ -563,28 +564,28 @@ const primaryTarget = targets[0];         // Get the main target
           positionY: primaryTarget.positionY,
           timestamp: Date.now()
         }]);
-        
+  
         // Remove explosion effect after animation
         setTimeout(() => {
-          setExplosionEffects(prev => 
+          setExplosionEffects(prev =>
             prev.filter(effect => effect.positionX !== primaryTarget.positionX)
           );
         }, 300);
         let explosionDamageTotal = 0;
-        const updatedEnemies = prevEnemies.map(enemy => {
+        updatedEnemies = prevEnemies.map(enemy => {
           if (enemy.hp <= 0) return enemy;
-      
+  
           if (enemy.id === primaryTarget.id) {
             // Calculate actual damage for primary target
-            const actualDamage = Math.min(tower.attack, enemy.hp);
-            explosionDamageTotal += actualDamage; // Add to total damage
+            const actualDamage = Math.max(Math.min(tower.attack, enemy.hp), 0);
+            explosionDamageTotal += actualDamage;
             return {
               ...enemy,
               isTargeted: true,
               hp: enemy.hp - tower.attack
             };
           }
-          
+  
           if (enemiesInExplosionRadius.some(e => e.id === enemy.id)) {
             const splashDamage = tower.attack / 2;
             const actualDamage = Math.min(splashDamage, enemy.hp);
@@ -598,54 +599,50 @@ const primaryTarget = targets[0];         // Get the main target
           return enemy;
         });
         totalDamageDealt = explosionDamageTotal;
-        setMoney(prevMoney => prevMoney + Math.abs(Math.floor(explosionDamageTotal / 10)));
-
-        return updatedEnemies;
+      } else {
+        // Non-explosion attack logic
+        updatedEnemies = prevEnemies.map((enemy) => {
+          const isTargeted = targets.some(target => target.id === enemy.id);
+          if (!isTargeted) return enemy;
+      
+          const actualDamage = Math.min(tower.attack, enemy.hp);
+          totalDamageDealt += actualDamage;
+      
+          const updatedEnemy = {
+            ...enemy,
+            isTargeted: true,
+            hp: Math.max(enemy.hp - actualDamage, 0),
+            speed: tower.type === "slower" && tower.slowAmount ? 
+              Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount) :
+              enemy.speed
+          };
+      
+          if (tower.type === "gasspitter") {
+            return {
+              ...updatedEnemy,
+              isPoisoned: true,
+              poisonSourceId: tower.id,
+              poisonStartTime: Date.now(),
+              canRegen: tower.canStopRegen ? false : true
+            };
+          }
+          if (tower.type === "slower") {
+            return {
+              ...updatedEnemy,
+              isSlowed: true,
+              slowSourceId: tower.id,
+              slowStartTime: Date.now()
+            };
+          }
+          return updatedEnemy;
+        });
       }
-  
-      // Non-explosion attack logic
-      const updatedEnemies = prevEnemies.map((enemy) => {
-        const isTargeted = targets.some(target => target.id === enemy.id);
-        if (!isTargeted) return enemy;
-      
-        const actualDamage = Math.min(tower.attack, enemy.hp);
-        totalDamageDealt += actualDamage;
-      
-        const updatedEnemy = {
-          ...enemy,
-          isTargeted: true,
-          hp: enemy.hp - tower.attack,
-          speed: tower.type === "slower" && tower.slowAmount ? 
-            Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount) :
-            enemy.speed
-        };
-      
-        if (tower.type === "gasspitter") {
-          return {
-            ...updatedEnemy,
-            isPoisoned: true,
-            poisonSourceId: tower.id,
-            poisonStartTime: Date.now(),
-            canRegen: tower.canStopRegen ? false : true
-          };
-        }
-        if (tower.type === "slower") {
-          return {
-            ...updatedEnemy,
-            isSlowed: true,
-            slowSourceId: tower.id,
-            slowStartTime: Date.now()
-          };
-        }
-        return updatedEnemy;
-      });
-    
       return updatedEnemies;
     });
-    if (tower.type != "explosion") {
-      setMoney(prevMoney => prevMoney + Math.floor(tower.attack / 10));  
-    }
-    
+
+    // Update money after enemies state is updated
+    setMoney(prevMoney => prevMoney + Math.floor(Math.max(tower.attack, 0) / 10));
+  
     // Handle attack effects
     const newEffects = targets.map(target => ({
       id: uuidv4(),
@@ -655,18 +652,21 @@ const primaryTarget = targets[0];         // Get the main target
       enemyPositionY: target.positionY,
       timestamp: Date.now()
     }));
-    
+  
     setAttackEffects((prevEffects) => [...prevEffects, ...newEffects]);
     const timeoutId = setTimeout(() => {
       if (!isPaused) {
         setAttackEffects((prevEffects) => 
           prevEffects.filter((effect) => !newEffects.find(e => e.id === effect.id))
         );
-        
-
+  
         setTower((prevTowers) =>
           prevTowers.map((t) =>
-            t.id === tower.id ? { ...t, isAttacking: false, damageDone: t.damageDone + totalDamageDealt } : t
+            t.id === tower.id ? { 
+              ...t, 
+              isAttacking: false, 
+              damageDone: t.damageDone + totalDamageDealt /2 // Add damage only once
+            } : t
           )
         );
         setEnemies((prevEnemies) =>
@@ -679,7 +679,7 @@ const primaryTarget = targets[0];         // Get the main target
     }, tower.attackInterval / (isSpeedUp ? 2 : 1));
   
     return () => clearTimeout(timeoutId);
-
+  
   }, [isSpeedUp, isPaused]);
   
 // Get the furthest enemy within a certain radius from the tower
