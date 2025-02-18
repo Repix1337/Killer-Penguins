@@ -659,7 +659,7 @@ const primaryTarget = targets[0];         // Get the main target
       return updatedEnemies;
     });
   
-  
+    setMoney(prevMoney => prevMoney + Math.floor(totalDamageDealt / 7.5));  
     // Handle attack effects
     const newEffects = targets.map(target => ({
       id: uuidv4(),
@@ -671,13 +671,13 @@ const primaryTarget = targets[0];         // Get the main target
     }));
     
     setAttackEffects((prevEffects) => [...prevEffects, ...newEffects]);
-    
+    setMoney(prevMoney => prevMoney + Math.floor(totalDamageDealt / 7.5));  
     const timeoutId = setTimeout(() => {
       if (!isPaused) {
         setAttackEffects((prevEffects) => 
           prevEffects.filter((effect) => !newEffects.find(e => e.id === effect.id))
         );
-        setMoney(prevMoney => prevMoney + Math.floor(totalDamageDealt / 4));  
+        
 
         setTower((prevTowers) =>
           prevTowers.map((t) =>
