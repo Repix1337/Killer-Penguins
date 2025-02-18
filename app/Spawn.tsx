@@ -616,7 +616,6 @@ const primaryTarget = targets[0];         // Get the main target
           return enemy;
         });
         totalDamageDealt = explosionDamageTotal;
-    setMoney(prevMoney => prevMoney + Math.floor(explosionDamageTotal / 7.5));  
 
         return updatedEnemies;
       }
@@ -655,13 +654,14 @@ const primaryTarget = targets[0];         // Get the main target
             slowStartTime: Date.now()
           };
         }
-        setMoney(prevMoney => prevMoney + Math.floor(actualDamage / 7.5));  
         return updatedEnemy;
       });
     
       return updatedEnemies;
     });
   
+    setMoney(prevMoney => prevMoney + Math.floor(tower.attack / 7.5));  
+
     // Handle attack effects
     const newEffects = targets.map(target => ({
       id: uuidv4(),
