@@ -608,7 +608,7 @@ useEffect(() => {
           return enemy;
         });
         totalDamageDealt = explosionDamageTotal;
-        setMoney(prevMoney => prevMoney + Math.floor(Math.max(explosionDamageTotal, 0) / 15));
+        setMoney(prevMoney => prevMoney + Math.floor(Math.max(explosionDamageTotal, 0) / 12.5));
       } else {
         // Non-explosion attack logic
         updatedEnemies = prevEnemies.map((enemy) => {
