@@ -346,34 +346,16 @@ const TOWER_TYPES = {
   }
 };
 
-// Add this near the top of your file with other constants
-const SPECIAL_TOWER_IMAGES = {
-  basic: '/basicSpecial.png',
-  sniper: '/sniperSpecial.png',
-  rapidShooter: '/rapidShooterSpecial.png',
-  slower: '/slowerSpecial.png',
-  gasspitter: '/gasSpitterSpecial.png'
-} as const;
 
 // Add this helper function
 const resetGame = () => {
-  const towerTypes = [
-    '/tower1.png', 
-    '/tower2.png', 
-    '/rapidShooter.png', 
-    '/slower.png', 
-    '/gasSpitter.png',
-    '/mortar.png',
-    ...Object.values(SPECIAL_TOWER_IMAGES)
-  ];
+  // Only target towers on the game board, not in the selection panel
+  const buildingSites = document.querySelectorAll('img[id^="building-site-"], [id^="tower-"]');
   
-  // Reset all tower images in one query
-  const allTowerImages = towerTypes.flatMap(src => 
-    Array.from(document.querySelectorAll(`img[src="${src}"]`)) as HTMLImageElement[]
-  );
-  
-  allTowerImages.forEach(element => {
-    element.src = '/buildingSite.png';
+  buildingSites.forEach(element => {
+    if (element instanceof HTMLImageElement) {
+      element.src = '/buildingSite.png';
+    }
   });
 
   // Reset game state
@@ -999,8 +981,9 @@ useEffect(() => {
   // Buy towers and place them on the map
   const buyTowers = (event: React.MouseEvent<HTMLImageElement>, positionX: number, positionY: number) => {
     if (round > 0 && selectedTowerType && (event.target as HTMLImageElement).src.includes('buildingSite')) {
-      const newTowerId = uuidv4();
+      const newTowerId = `tower-${uuidv4()}`; // Add 'tower-' prefix
       (event.target as HTMLImageElement).id = newTowerId;
+      
       
       // Check if we have enough money for the selected tower
       const towerConfig = TOWER_TYPES[selectedTowerType.toUpperCase() as keyof typeof TOWER_TYPES];
@@ -1171,7 +1154,7 @@ const upgradeTower = () => {
                 transition-all duration-200 shadow-md"
               onClick={() => sellTower(selectedTower.towerWorth)}
             >
-              Sell Tower ({Math.floor(selectedTower.towerWorth / 1.5)}$)
+              Sell Tower ({Math.floor(selectedTower.towerWorth * 0.75)}$)
             </button>
             <button 
               className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg flex-1 

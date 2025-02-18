@@ -1,16 +1,17 @@
 import React from 'react'
 import GameInterface from './GameInterface'
+import TutorialWindow from './TutorialWindow';
 
 const Menu = () => {
     const [renderGame, setRenderGame] = React.useState(false)
-        
+    const [showTutorial, setShowTutorial] = React.useState(false);
     const renderGameOnClick = () => {
         setRenderGame(true)
     }
 
     return !renderGame ? (
         <div className='flex flex-col bg-cover min-h-screen min-w-[100vw] text-white
-        font-bold text-4xl gap-3 shadow-2xl border border-blue-400 rounded-lg
+        font-bold text-4xl gap-3 shadow-2xl 
         transition-all duration-300 hover:shadow-blue-400/50'
         style={{ 
             backgroundImage: 'url(/map.png)',
@@ -34,25 +35,21 @@ const Menu = () => {
                     >
                         Play
                     </button>
+                    
                     <button 
-                        className='w-full sm:w-72 md:w-64 py-3 md:py-4 px-6 md:px-8 text-xl md:text-2xl
-                        bg-purple-500/80 hover:bg-purple-600/80 transition-all duration-200 
-                        rounded-lg shadow-lg hover:shadow-purple-500/50
-                        hover:translate-y-[-2px] active:translate-y-[1px]'
-                    >
-                        Settings
-                    </button>
-                    <button 
+                        onClick={() => setShowTutorial(true)}
                         className='w-full sm:w-72 md:w-64 py-3 md:py-4 px-6 md:px-8 text-xl md:text-2xl
                         bg-indigo-500/80 hover:bg-indigo-600/80 transition-all duration-200 
                         rounded-lg shadow-lg hover:shadow-indigo-500/50
                         hover:translate-y-[-2px] active:translate-y-[1px]'
                     >
-                        Tutorial
+                        Game guide
                     </button>
                 </div>
             </div>
+            {showTutorial && <TutorialWindow onClose={() => setShowTutorial(false)} />}
         </div>
+        
     ) : (
         <GameInterface />
     )

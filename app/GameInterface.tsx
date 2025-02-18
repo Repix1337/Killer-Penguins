@@ -1,8 +1,10 @@
 'use client'
 import React from 'react'
 import Spawn from './Spawn'
+import Menu from './Menu'
 
 const GameInterface = () => {
+    const [renderMenu, setRenderMenu] = React.useState(false)
     const [round, setRound] = React.useState(0)
     const [HealthPoints, setHealthPoints] = React.useState(100)
     const [money, setMoney] = React.useState(200);
@@ -36,27 +38,35 @@ const GameInterface = () => {
       setSelectedTowerType(prev => prev === type ? '' : type);
     }
     
-    return (
-      <div className="flex flex-col justify-center min-h-[15vh] items-center text-white">
-       
-        <div className='flex justify-center items-center gap-3 w-[100%] text-xl bg-slate-700 min-h-[7vh] shadow-lg border border-blue-400'>
-          <div className=' bg-slate-800 p-1 text-xl rounded-lg shadow-sm hover:cursor-pointer' onClick={onClick}>Start</div>
-          <div>Round: {round}/40</div>
-          <div className='text-red-500 text-xl'> &hearts; {HealthPoints}</div>
-          <div className=' text-green-500'>{Math.floor(money)}$</div>
-          <div 
-            className={`p-1 text-xl rounded-lg shadow-sm hover:cursor-pointer ${isSpeedUp ? 'bg-blue-600' : 'bg-blue-400'}`} 
-            onClick={handleSpeedUp}
-          >
+    return !renderMenu ? (
+      <div className="flex flex-col justify-center min-h-[15vh] items-center text-white w-full">
+        {/* Top Game Controls Bar */}
+        <div className='flex flex-wrap justify-center items-center gap-2 w-full p-2 text-base md:text-xl bg-slate-700 min-h-[7vh] shadow-lg border border-blue-400'>
+          <div className='bg-slate-800 p-1 rounded-lg shadow-sm hover:cursor-pointer text-sm md:text-xl' 
+               onClick={onClick}>
+            Start
+          </div>
+          <div className='text-sm md:text-xl'>Round: {round}/40</div>
+          <div className='text-red-500 text-sm md:text-xl'> &hearts; {HealthPoints}</div>
+          <div className='text-green-500 text-sm md:text-xl'>{Math.floor(money)}$</div>
+          <div className={`p-1 rounded-lg shadow-sm hover:cursor-pointer text-sm md:text-xl
+                          ${isSpeedUp ? 'bg-blue-600' : 'bg-blue-400'}`}
+               onClick={handleSpeedUp}>
             Speed {isSpeedUp ? '2x' : '1x'}
           </div>
-          <div 
-            className={`p-1 text-xl rounded-lg shadow-sm ${canPause ? 'hover:cursor-pointer' : 'opacity-50 cursor-not-allowed'} ${isPaused ? 'bg-yellow-600' : 'bg-yellow-400'}`} 
-            onClick={handlePause}
-          >
+          <div className={`p-1 rounded-lg shadow-sm text-sm md:text-xl
+                          ${canPause ? 'hover:cursor-pointer' : 'opacity-50 cursor-not-allowed'}
+                          ${isPaused ? 'bg-yellow-600' : 'bg-yellow-400'}`}
+               onClick={handlePause}>
             {isPaused ? 'Resume' : 'Pause'}
           </div>
+          <div className='px-2 py-1 rounded-lg shadow-sm hover:cursor-pointer bg-red-500 text-sm md:text-xl'
+               onClick={() => setRenderMenu(true)}>
+            Exit
+          </div>
         </div>
+
+        {/* Game Board */}
         <Spawn 
           round={round} 
           setHealthPoints={setHealthPoints} 
@@ -70,62 +80,63 @@ const GameInterface = () => {
           selectedTowerType={selectedTowerType}
         />
         
-          <div className='bg-slate-800 flex flex-col items-center p-2 shadow-lg border border-blue-400 w-[100%]'>
-            <h1 className="text-lg font-bold mb-1">Tower Select Panel</h1>
-            <div className='flex flex-wrap justify-center gap-2'>
-              <TowerButton
-                type="basic"
-                src="/tower1.png"
-                price={100}
-                isSelected={selectedTowerType === 'basic'}
-                onClick={() => handleTowerSelect('basic')}
-                label="Basic"
-              />
-              <TowerButton
-                type="sniper"
-                src="/tower2.png"
-                price={200}
-                isSelected={selectedTowerType === 'sniper'}
-                onClick={() => handleTowerSelect('sniper')}
-                label="Sniper"
-              />
-              <TowerButton
-                type="rapidShooter"
-                src="/rapidShooter.png"
-                price={500}
-                isSelected={selectedTowerType === 'rapidShooter'}
-                onClick={() => handleTowerSelect('rapidShooter')}
-                label="Rapid Shooter"
-              />
-              <TowerButton
-                type="slower"
-                src="/slower.png"
-                price={300}
-                isSelected={selectedTowerType === 'slower'}
-                onClick={() => handleTowerSelect('slower')}
-                label="Slower"
-              />
-              <TowerButton
-                type="gasspitter"
-                src="/gasSpitter.png"
-                price={300}
-                isSelected={selectedTowerType === 'gasspitter'}
-                onClick={() => handleTowerSelect('gasspitter')}
-                label="Gas Spitter"
-              />
-              <TowerButton
-                type="mortar"
-                src="/mortar.png"
-                price={1200}
-                isSelected={selectedTowerType === 'mortar'}
-                onClick={() => handleTowerSelect('mortar')}
-                label="Mortar"
-              />
-            </div>
+        {/* Tower Selection Panel */}
+        <div className='bg-slate-800 flex flex-col items-center p-2 shadow-lg border border-blue-400 w-full'>
+  <h1 className="text-lg font-bold mb-2">Tower Select Panel</h1>
+  <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-1 w-full max-w-3xl px-1 justify-items-center'>
+            <TowerButton
+              type="basic"
+              src="/tower1.png"
+              price={100}
+              isSelected={selectedTowerType === 'basic'}
+              onClick={() => handleTowerSelect('basic')}
+              label="Basic"
+            />
+            <TowerButton
+              type="sniper"
+              src="/tower2.png"
+              price={200}
+              isSelected={selectedTowerType === 'sniper'}
+              onClick={() => handleTowerSelect('sniper')}
+              label="Sniper"
+            />
+            <TowerButton
+              type="rapidShooter"
+              src="/rapidShooter.png"
+              price={500}
+              isSelected={selectedTowerType === 'rapidShooter'}
+              onClick={() => handleTowerSelect('rapidShooter')}
+              label="Rapid Shooter"
+            />
+            <TowerButton
+              type="slower"
+              src="/slower.png"
+              price={300}
+              isSelected={selectedTowerType === 'slower'}
+              onClick={() => handleTowerSelect('slower')}
+              label="Slower"
+            />
+            <TowerButton
+              type="gasspitter"
+              src="/gasSpitter.png"
+              price={300}
+              isSelected={selectedTowerType === 'gasspitter'}
+              onClick={() => handleTowerSelect('gasspitter')}
+              label="Gas Spitter"
+            />
+            <TowerButton
+              type="mortar"
+              src="/mortar.png"
+              price={1200}
+              isSelected={selectedTowerType === 'mortar'}
+              onClick={() => handleTowerSelect('mortar')}
+              label="Mortar"
+            />
           </div>
+        </div>
       </div>
-    )
-}
+    ) : <Menu />;
+};
 
 interface TowerType {
   basic: string;
@@ -147,15 +158,14 @@ interface TowerButtonProps {
 
 const TowerButton = ({ type, src, price, isSelected, onClick, label }: TowerButtonProps) => (
   <div 
-    className={`hover:scale-105 transition-all cursor-pointer bg-slate-700 rounded-lg p-1 w-24 ${
-      isSelected ? 'ring-2 ring-blue-400' : ''
-    }`}
+    className={`hover:scale-105 transition-all cursor-pointer bg-slate-700 rounded-lg p-1 
+                w-full max-w-[96px] ${isSelected ? 'ring-2 ring-blue-400' : ''}`}
     onClick={onClick}
   >
     <div className="flex justify-center">
-      <img src={src} className='w-8 h-8' alt={type} />
+      <img src={src} className='w-6 h-6 md:w-8 md:h-8' alt={type} />
     </div>
-    <div className="text-center text-xs mt-0.5">
+    <div className="text-center text-[10px] md:text-xs mt-0.5">
       <p className="text-green-400">{price}$</p>
       <p className="whitespace-normal leading-tight">{label || type}</p>
     </div>
