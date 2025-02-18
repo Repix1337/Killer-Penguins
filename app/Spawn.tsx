@@ -68,6 +68,7 @@ interface Tower {
   specialUpgradeAvailable: boolean;
   canStopRegen: boolean;
   src: string; // Add src property
+  explosionRadius: number;
 }
 
 const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp, isSpeedUp, isPaused, setCanPause, selectedTowerType }) => {
@@ -85,6 +86,12 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   const [enemyCount, setEnemyCount] = useState(0);
   const [showUpgradeMenu, setShowUpgradeMenu] = useState(false);
   const [selectedTowerID, setSelectedTowerID] = useState('');
+  const [explosionEffects, setExplosionEffects] = useState<{
+      id: string;
+      positionX: number;
+      positionY: number;
+      timestamp: number;
+    }[]>([]);
   
   
   // Add this new state near other state declarations
@@ -227,7 +234,8 @@ const TOWER_TYPES = {
     maxPoisonDamage: 0,
     hasSpecialUpgrade: false,
     specialUpgradeAvailable: false,
-    canStopRegen: false
+    canStopRegen: false,
+    explosionRadius: 0
   },
   SNIPER: {
     src: '/tower2.png',
@@ -247,7 +255,8 @@ const TOWER_TYPES = {
     maxPoisonDamage: 0,
     hasSpecialUpgrade: false,
     specialUpgradeAvailable: false,
-    canStopRegen: false
+    canStopRegen: false,
+    explosionRadius: 0
   },
   RAPIDSHOOTER: {
     src: '/rapidShooter.png',
@@ -267,7 +276,8 @@ const TOWER_TYPES = {
     maxPoisonDamage: 0,
     hasSpecialUpgrade: false,
     specialUpgradeAvailable: false,
-    canStopRegen: false
+    canStopRegen: false,
+    explosionRadius: 0
   },
   SLOWER: {
     src: '/slower.png',
@@ -289,7 +299,8 @@ const TOWER_TYPES = {
     maxPoisonDamage: 0,
     hasSpecialUpgrade: false,
     specialUpgradeAvailable: false,
-    canStopRegen: false
+    canStopRegen: false,
+    explosionRadius: 0
   },
   GASSPITTER: {
     src: '/gasSpitter.png',
@@ -309,7 +320,8 @@ const TOWER_TYPES = {
     maxPoisonDamage: 100,
     hasSpecialUpgrade: false,
     specialUpgradeAvailable: false,
-    canStopRegen: false   
+    canStopRegen: false,
+    explosionRadius: 0
   },
   MORTAR: {
     src: '/mortar.png',
@@ -323,13 +335,14 @@ const TOWER_TYPES = {
     maxDamage: 600,
     maxAttackInterval: 3000,
     radius: 40,
-    attackType: 'quadruple',
+    attackType: 'explosion',
     canHitStealth: false,
     poisonDamage: 0,
     maxPoisonDamage: 0,
     hasSpecialUpgrade: false,
     specialUpgradeAvailable: false,
-    canStopRegen: false   
+    canStopRegen: false,
+    explosionRadius: 25
   }
 };
 
@@ -540,34 +553,89 @@ useEffect(() => {
   // Main tower attack logic
   const towerAttack = useCallback((tower: Tower, targets: Enemy[]) => {
     if (tower.isAttacking) return;
-   
+       
     setTower((prevTowers) =>
       prevTowers.map((t) =>
         t.id === tower.id ? { ...t, isAttacking: true } : t
       )
     );
   
-    // Calculate actual damage dealt before updating enemies
     let totalDamageDealt = 0;
   
-    setEnemies((prevEnemies) =>
-      prevEnemies.map((enemy) => {
+    setEnemies((prevEnemies) => {
+      if (tower.attackType === 'explosion') {
+const primaryTarget = targets[0];         // Get the main target
+        const enemiesInExplosionRadius = prevEnemies.filter(enemy => {
+          if (enemy.hp <= 0 || enemy.id === primaryTarget.id) return false; // Skip dead enemies and primary target
+          
+          // Calculate distance between primary target and other enemies
+        const dx = enemy.positionX - primaryTarget.positionX;
+          const dy = enemy.positionY - primaryTarget.positionY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          return distance <= tower.explosionRadius;
+        });
+        setExplosionEffects(prev => [...prev, {
+          id: uuidv4(),
+          positionX: primaryTarget.positionX,
+          positionY: primaryTarget.positionY,
+          timestamp: Date.now()
+        }]);
+        
+        // Remove explosion effect after animation
+        setTimeout(() => {
+          setExplosionEffects(prev => 
+            prev.filter(effect => effect.positionX !== primaryTarget.positionX)
+          );
+        }, 300);
+        let explosionDamageTotal = 0;
+        const updatedEnemies = prevEnemies.map(enemy => {
+          if (enemy.hp <= 0) return enemy;
+      
+          if (enemy.id === primaryTarget.id) {
+            // Calculate actual damage for primary target
+            const actualDamage = Math.min(tower.attack, enemy.hp);
+            explosionDamageTotal += actualDamage; // Add to total damage
+            return {
+              ...enemy,
+              isTargeted: true,
+              hp: enemy.hp - tower.attack
+            };
+          }
+          
+          if (enemiesInExplosionRadius.some(e => e.id === enemy.id)) {
+            const splashDamage = tower.attack / 2;
+            const actualDamage = Math.min(splashDamage, enemy.hp);
+            explosionDamageTotal += actualDamage; // Add to total damage
+            return {
+              ...enemy,
+              isTargeted: true,
+              hp: enemy.hp - splashDamage
+            };
+          }
+          return enemy;
+        });
+        totalDamageDealt = explosionDamageTotal;
+        return updatedEnemies;
+      }
+  
+      // Non-explosion attack logic
+      const updatedEnemies = prevEnemies.map((enemy) => {
         const isTargeted = targets.some(target => target.id === enemy.id);
         if (!isTargeted) return enemy;
-  
+      
         const actualDamage = Math.min(tower.attack, enemy.hp);
         totalDamageDealt += actualDamage;
-  
+      
         const updatedEnemy = {
           ...enemy,
           isTargeted: true,
           hp: enemy.hp - tower.attack,
-          // Only apply slow if it's a slower tower
           speed: tower.type === "slower" && tower.slowAmount ? 
-          Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount) :
-          enemy.speed
+            Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount) :
+            enemy.speed
         };
-  
+      
         if (tower.type === "gasspitter") {
           return {
             ...updatedEnemy,
@@ -575,7 +643,6 @@ useEffect(() => {
             poisonSourceId: tower.id,
             poisonStartTime: Date.now(),
             canRegen: tower.canStopRegen ? false : true
-            
           };
         }
         if (tower.type === "slower") {
@@ -588,11 +655,12 @@ useEffect(() => {
         }
         
         return updatedEnemy;
-      })
-    );
+      });
+      return updatedEnemies;
+    });
   
-    setMoney(prevMoney => prevMoney + Math.floor(totalDamageDealt / 7.5));
   
+    // Handle attack effects
     const newEffects = targets.map(target => ({
       id: uuidv4(),
       towerPositionX: tower.positionX,
@@ -603,14 +671,14 @@ useEffect(() => {
     }));
     
     setAttackEffects((prevEffects) => [...prevEffects, ...newEffects]);
-    setMoney((prevMoney) => prevMoney + Math.floor(tower.attack / 7.5));
-    // Store the timeout ID
+    
     const timeoutId = setTimeout(() => {
-      // Check if game is paused before executing the cleanup
       if (!isPaused) {
         setAttackEffects((prevEffects) => 
           prevEffects.filter((effect) => !newEffects.find(e => e.id === effect.id))
         );
+        setMoney(prevMoney => prevMoney + Math.floor(totalDamageDealt / 12));  
+
         setTower((prevTowers) =>
           prevTowers.map((t) =>
             t.id === tower.id ? { ...t, isAttacking: false, damageDone: t.damageDone + totalDamageDealt } : t
@@ -625,11 +693,10 @@ useEffect(() => {
       }
     }, tower.attackInterval / (isSpeedUp ? 2 : 1));
   
-    // Store the timeout ID in a ref or state to clear it when paused
     return () => clearTimeout(timeoutId);
-  
-  }, [isSpeedUp, isPaused]); // Add isSpeedUp to dependencies
 
+  }, [isSpeedUp, isPaused]);
+  
 // Get the furthest enemy within a certain radius from the tower
 const getFurthestEnemyInRadius = (
   towerPositionX: number, 
@@ -723,8 +790,6 @@ const getFurthestEnemyInRadius = (
     return enemiesWithProgress.slice(0, Math.min(3, enemiesWithProgress.length));
   } else if (attackType === 'quadruple') {
     return enemiesWithProgress.slice(0, Math.min(4, enemiesWithProgress.length));
-  } else if (attackType === 'ten') {
-    return enemiesWithProgress.slice(0, Math.min(10, enemiesWithProgress.length));
   } else {
     // Single target
     return enemiesWithProgress.slice(0, 1);
@@ -1375,7 +1440,7 @@ const upgradeTower = () => {
                     attack: t.attack * 2.25, 
                     maxDamage: t.maxDamage * 2.25,
                     radius: t.radius * 1.5, 
-                    attackType: 'ten',
+                    explosionRadius: t.explosionRadius * 1.5,
                     src: '/mortarSpecial.png'
                 };
               default:
@@ -1458,7 +1523,28 @@ const checkSpecialUpgradeAvailability = (tower: Tower) => {
       return false;
   }
 };
+const renderExplosions = () => {
+  return explosionEffects.map((effect) => {
+    // Find the tower that caused this explosion
+    const explosionTower = tower.find(t => t.attackType === 'explosion');
+    const explosionSize = explosionTower ? explosionTower.explosionRadius * 2 : 50; // Default to 50 if no tower found
 
+    return (
+      <div
+        key={effect.id}
+        className="absolute rounded-full animate-explosion z-30"
+        style={{
+          left: `${effect.positionX}%`,
+          top: `${effect.positionY}%`,
+          width: `${explosionSize / 1.5}%`,
+          height: `${explosionSize / 1.5}%`,
+          transform: 'translate(-50%, -50%)',
+          background: 'radial-gradient(circle, rgba(255,0,0,0.5) 0%, rgba(255,0,0,0) 70%)',
+        }}
+      />
+    );
+  });
+};
 
 // Add this new component near your other components
 const RangeIndicator = ({ tower }: { tower: Tower }) => {
@@ -1528,6 +1614,7 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
       {createEnemy()}
       
       {attackAnimation()}
+      {renderExplosions()}
     </div>
     {upgradeTower()}
     </>
