@@ -97,7 +97,7 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
                 <p className="text-gray-300">• Normal - Basic enemies</p>
                 <p className="text-gray-300">• Fast - Moves quickly but has less HP</p>
                 <p className="text-gray-300">• Tank - High HP but moves slowly</p>
-                <p className="text-gray-300">• Stealth - Invisible to basic towers</p>
+                <p className="text-gray-300">• Stealth - Invisible to towers without stealth detection</p>
                 <p className="text-gray-300">• Regenerating - Recovers HP over time</p>
                 <p className="text-yellow-300">• Boss - Very high HP and it regenerates (appear in round 32 and 40)</p>
             </div>
