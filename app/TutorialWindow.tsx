@@ -26,6 +26,7 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
                     <h3 className="text-xl text-white">Sniper Tower (200$)</h3>
                 </div>
                 <p className="text-gray-300">High single-target damage with long range but slow attack speed.</p>
+                <p className="text-red-500">Have base stealth detection.</p>
                 <p className="text-yellow-400 mt-2">Special: Rail Gun (20000$) - Extreme damage and penetration.</p>
             </div>
     
