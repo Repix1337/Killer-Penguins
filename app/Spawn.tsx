@@ -659,9 +659,12 @@ const primaryTarget = targets[0];         // Get the main target
     
       return updatedEnemies;
     });
-  
-    setMoney(prevMoney => prevMoney + Math.floor(tower.attack / 7.5));  
-
+    if (tower.type != "explosion") {
+      setMoney(prevMoney => prevMoney + Math.floor(tower.attack / 7.5));  
+    }
+    else {
+      setMoney(prevMoney => prevMoney + Math.abs(Math.floor(totalDamageDealt / 7.5)));
+    }
     // Handle attack effects
     const newEffects = targets.map(target => ({
       id: uuidv4(),
