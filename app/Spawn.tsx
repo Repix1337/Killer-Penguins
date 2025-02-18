@@ -1024,7 +1024,7 @@ const upgradeTower = () => {
     return (
       <div className='absolute top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-800 
         flex items-center justify-between p-6 rounded-lg gap-6 shadow-lg border border-blue-400'
-        style={{left: selectedTower.positionX < 50 ? '80%' : '20%', minWidth: '500px'}}
+        style={{left: selectedTower.positionX < 50 ? '85%' : '25%', minWidth: '500px'}}
       >
         {/* Left side - Upgrade buttons */}
         <div className='flex flex-col space-y-3 flex-1'>
