@@ -1022,12 +1022,15 @@ const upgradeTower = () => {
     if (!selectedTower) return null;
 
     return (
-      <div className='absolute top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-800 
-        flex items-center justify-between p-6 rounded-lg gap-6 shadow-lg border border-blue-400'
-        style={{left: selectedTower.positionX < 50 ? '70%' : '30%', minWidth: '500px'}}
+      <div 
+        data-upgrade-menu
+        className='absolute top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-800 
+          flex items-start justify-between p-6 rounded-lg gap-6 shadow-lg border border-blue-400'
+        style={{left: selectedTower.positionX < 50 ? '70%' : '30%', width: '700px'}}
+        onClick={(e) => e.stopPropagation()} // Prevent clicks inside menu from bubbling up
       >
         {/* Left side - Upgrade buttons */}
-        <div className='flex flex-col space-y-3 flex-1'>
+        <div className='flex flex-col space-y-3 w-1/2'>
           <h1 className="text-2xl font-bold mb-4 text-white border-b border-blue-400 pb-2">Upgrade Menu</h1>
           
           {/* Damage Upgrade */}
@@ -1181,7 +1184,7 @@ const upgradeTower = () => {
         </div>
 
         {/* Right side - Stats */}
-        <div className='bg-slate-700 p-4 rounded-lg space-y-4 min-w-[200px]'>
+        <div className='bg-slate-700 p-4 rounded-lg space-y-4 w-1/2'>
           <h2 className="text-xl font-bold text-white border-b border-blue-400 pb-2">Tower Stats</h2>
           
           <div className="space-y-3 text-gray-200">
@@ -1570,10 +1573,27 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
   )
 }
 
+// Add this function near your other event handlers
+const handleOutsideClick = (event: React.MouseEvent) => {
+  // Check if the click was outside the upgrade menu
+  const upgradeMenu = document.querySelector('[data-upgrade-menu]');
+  if (upgradeMenu && !upgradeMenu.contains(event.target as Node)) {
+    setShowUpgradeMenu(false);
+  }
+};
+
   return (
     <>
-    <div className='relative h-[70%] w-full border  border-white overflow-hidden' suppressHydrationWarning>
-      <img src='/map.png' className='object-cover w-full h-full z-0' alt='map' />
+   <div 
+      className='relative min-h-[75vh] w-full border border-white overflow-hidden' 
+      suppressHydrationWarning
+      onClick={handleOutsideClick}
+    >
+  <img 
+    src='/map.png' 
+    className=' w-full h-full object-fill top-0 left-0 z-0' 
+    alt='map' 
+  />
       {/* Add range indicators for all towers */}
       {tower.map((t) => (
         <RangeIndicator key={`range-${t.id}`} tower={t} />
