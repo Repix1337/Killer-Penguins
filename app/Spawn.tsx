@@ -616,7 +616,7 @@ const primaryTarget = targets[0];         // Get the main target
           return enemy;
         });
         totalDamageDealt = explosionDamageTotal;
-        setMoney(prevMoney => prevMoney + Math.abs(Math.floor(explosionDamageTotal / 12.5)));
+        setMoney(prevMoney => prevMoney + Math.abs(Math.floor(explosionDamageTotal / 15)));
 
         return updatedEnemies;
       }
