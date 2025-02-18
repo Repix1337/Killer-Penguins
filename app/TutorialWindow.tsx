@@ -93,14 +93,34 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
 
             {/* Enemy Types */}
             <div className="bg-slate-700 p-4 rounded-lg">
-                <h3 className="text-xl text-white mb-2">Enemy Types</h3>
-                <p className="text-gray-300">• Normal - Basic enemies</p>
-                <p className="text-gray-300">• Fast - Moves quickly but has less HP</p>
-                <p className="text-gray-300">• Tank - High HP but moves slowly</p>
-                <p className="text-gray-300">• Stealth - Invisible to towers without stealth detection</p>
-                <p className="text-gray-300">• Regenerating - Recovers HP over time</p>
-                <p className="text-yellow-300">• Boss - Very high HP and it regenerates (appear in round 32 and 40)</p>
-            </div>
+    <h3 className="text-xl text-white mb-2">Enemy Types</h3>
+    <div className="space-y-2">
+        <div className="flex items-center gap-4">
+            <img src="/enemy1.png" alt="Normal Enemy" className="w-8 h-8"/>
+            <p className="text-gray-300">• Normal - Basic enemies</p>
+        </div>
+        <div className="flex items-center gap-4">
+            <img src="/enemy4.png" alt="Fast Enemy" className="w-8 h-8"/>
+            <p className="text-gray-300">• Fast - Moves quickly but has less HP</p>
+        </div>
+        <div className="flex items-center gap-4">
+            <img src="/enemy3.png" alt="Tank Enemy" className="w-8 h-8"/>
+            <p className="text-gray-300">• Tank - High HP but moves slowly</p>
+        </div>
+        <div className="flex items-center gap-4">
+            <img src="/enemy2.png" alt="Stealth Enemy" className="w-8 h-8"/>
+            <p className="text-gray-300">• Stealth - Invisible to towers without stealth detection</p>
+        </div>
+        <div className="flex items-center gap-4">
+            <img src="/regenTank.png" alt="Regenerating Enemy" className="w-8 h-8"/>
+            <p className="text-gray-300">• Regenerating - Recovers HP over time</p>
+        </div>
+        <div className="flex items-center gap-4">
+            <img src="/boss.png" alt="Boss Enemy" className="w-8 h-8"/>
+            <p className="text-yellow-300">• Boss - Very high HP and it regenerates (appear in round 32 and 40)</p>
+        </div>
+    </div>
+</div>
 
             {/* Game Controls */}
             <div className="bg-slate-700 p-4 rounded-lg">
