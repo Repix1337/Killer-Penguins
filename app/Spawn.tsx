@@ -260,10 +260,10 @@ const TOWER_TYPES = {
   },
   RAPIDSHOOTER: {
     src: '/rapidShooter.png',
-    baseAttack: 15,
-    attack: 15,
-    baseAttackInterval: 400,
-    attackInterval: 400,
+    baseAttack: 20,
+    attack: 20,
+    baseAttackInterval: 350,
+    attackInterval: 350,
     price: 500,
     towerWorth: 500,
     type: 'rapidShooter',
@@ -326,13 +326,13 @@ const TOWER_TYPES = {
   MORTAR: {
     src: '/mortar.png',
     baseAttack: 50,
-    attack: 200,
+    attack: 50,
     baseAttackInterval: 7000,
     attackInterval: 7000,
     price: 1200,
     towerWorth: 1200,
     type: 'mortar',
-    maxDamage: 600,
+    maxDamage: 250,
     maxAttackInterval: 4500,
     radius: 40,
     attackType: 'explosion',
@@ -661,7 +661,7 @@ const primaryTarget = targets[0];         // Get the main target
       return updatedEnemies;
     });
     if (tower.type != "explosion") {
-      setMoney(prevMoney => prevMoney + Math.floor(tower.attack / 7.5));  
+      setMoney(prevMoney => prevMoney + Math.floor(tower.attack / 10));  
     }
     
     // Handle attack effects
