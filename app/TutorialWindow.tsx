@@ -87,7 +87,7 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
                 <p className="text-gray-300">• Place towers on building sites marked on the map that appear after
                     you select your tower in the tower select panel.</p>
                 <p className="text-gray-300">• Click a tower to open upgrade menu</p>
-                <p className="text-gray-300">• Blue circle shows tower's range</p>
+                <p className="text-gray-300">• Blue circle shows tower&apos;s range</p>
             </div>
 
             {/* Enemy Types */}
