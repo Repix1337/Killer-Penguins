@@ -68,6 +68,7 @@ interface Tower {
   specialUpgradeAvailable: boolean;
   canStopRegen: boolean;
   src: string; // Add src property
+  effectSrc: string; // Add effectSrc property
   explosionRadius: number;
 }
 
@@ -80,7 +81,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     towerPositionX: number; 
     towerPositionY: number; 
     enemyPositionX: number; 
-    enemyPositionY: number; 
+    enemyPositionY: number;
+    effectSrc: string; 
     timestamp?: number 
   }[]>([]);
   const [enemyCount, setEnemyCount] = useState(0);
@@ -91,6 +93,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       positionX: number;
       positionY: number;
       timestamp: number;
+      
     }[]>([]);
   
   
@@ -235,7 +238,8 @@ const TOWER_TYPES = {
     hasSpecialUpgrade: false,
     specialUpgradeAvailable: false,
     canStopRegen: false,
-    explosionRadius: 0
+    explosionRadius: 0,
+    effectSrc: '/basicAttack.png'
   },
   SNIPER: {
     src: '/tower2.png',
@@ -256,7 +260,8 @@ const TOWER_TYPES = {
     hasSpecialUpgrade: false,
     specialUpgradeAvailable: false,
     canStopRegen: false,
-    explosionRadius: 0
+    explosionRadius: 0,
+    effectSrc: '/sniperAttack.png'
   },
   RAPIDSHOOTER: {
     src: '/rapidShooter.png',
@@ -277,7 +282,8 @@ const TOWER_TYPES = {
     hasSpecialUpgrade: false,
     specialUpgradeAvailable: false,
     canStopRegen: false,
-    explosionRadius: 0
+    explosionRadius: 0,
+    effectSrc: '/rapidAttack.png'
   },
   SLOWER: {
     src: '/slower.png',
@@ -300,7 +306,8 @@ const TOWER_TYPES = {
     hasSpecialUpgrade: false,
     specialUpgradeAvailable: false,
     canStopRegen: false,
-    explosionRadius: 0
+    explosionRadius: 0,
+    effectSrc: '/slowerAttack.png'
   },
   GASSPITTER: {
     src: '/gasSpitter.png',
@@ -321,7 +328,8 @@ const TOWER_TYPES = {
     hasSpecialUpgrade: false,
     specialUpgradeAvailable: false,
     canStopRegen: false,
-    explosionRadius: 0
+    explosionRadius: 0,
+    effectSrc: '/poisonAttack.png'
   },
   MORTAR: {
     src: '/mortar.png',
@@ -342,7 +350,8 @@ const TOWER_TYPES = {
     hasSpecialUpgrade: false,
     specialUpgradeAvailable: false,
     canStopRegen: false,
-    explosionRadius: 20
+    explosionRadius: 20,
+    effectSrc: '/sniperAttack.png'
   }
 };
 
@@ -599,6 +608,7 @@ useEffect(() => {
           return enemy;
         });
         totalDamageDealt = explosionDamageTotal;
+        setMoney(prevMoney => prevMoney + Math.floor(Math.max(explosionDamageTotal, 0) / 15));
       } else {
         // Non-explosion attack logic
         updatedEnemies = prevEnemies.map((enemy) => {
@@ -641,8 +651,11 @@ useEffect(() => {
     });
 
     // Update money after enemies state is updated
-    setMoney(prevMoney => prevMoney + Math.floor(Math.max(tower.attack, 0) / 10));
-  
+    if (tower.type !== "explosion"){
+      setMoney(prevMoney => prevMoney + Math.floor(Math.max(tower.attack, 0) / 10));
+    }
+    
+
     // Handle attack effects
     const newEffects = targets.map(target => ({
       id: uuidv4(),
@@ -650,7 +663,8 @@ useEffect(() => {
       towerPositionY: tower.positionY,
       enemyPositionX: target.positionX,
       enemyPositionY: target.positionY,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      effectSrc: tower.effectSrc
     }));
   
     setAttackEffects((prevEffects) => [...prevEffects, ...newEffects]);
@@ -1353,7 +1367,7 @@ const upgradeTower = () => {
   const attackAnimation = () => {
     return attackEffects.map((effect) => (
         <img
-          src='/attack.png'
+          src={effect.effectSrc}
           key={effect.id}
           className='z-20 animate-slide h-6 w-6 absolute text-red-500'
           style={{
