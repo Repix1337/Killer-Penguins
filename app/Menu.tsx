@@ -116,7 +116,7 @@ const Menu = () => {
               <TowerButton
                 type="mortar"
                 src="/mortar.png"
-                price={800}
+                price={1200}
                 isSelected={selectedTowerType === 'mortar'}
                 onClick={() => handleTowerSelect('mortar')}
                 label="Mortar"
