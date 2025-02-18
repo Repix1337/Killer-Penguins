@@ -325,15 +325,15 @@ const TOWER_TYPES = {
   },
   MORTAR: {
     src: '/mortar.png',
-    baseAttack: 120,
-    attack: 120,
-    baseAttackInterval: 5000,
-    attackInterval: 5000,
-    price: 800,
-    towerWorth: 800,
+    baseAttack: 50,
+    attack: 200,
+    baseAttackInterval: 7000,
+    attackInterval: 7000,
+    price: 1200,
+    towerWorth: 1200,
     type: 'mortar',
     maxDamage: 600,
-    maxAttackInterval: 3000,
+    maxAttackInterval: 4500,
     radius: 40,
     attackType: 'explosion',
     canHitStealth: false,
@@ -1440,10 +1440,10 @@ const upgradeTower = () => {
                 return { 
                     ...t, 
                     hasSpecialUpgrade: true, 
-                    attack: t.attack * 2.25, 
-                    maxDamage: t.maxDamage * 2.25,
+                    attack: t.attack * 2, 
+                    maxDamage: t.maxDamage * 2,
                     radius: t.radius * 1.5, 
-                    explosionRadius: t.explosionRadius * 1.5,
+                    explosionRadius: t.explosionRadius * 1.25,
                     src: '/mortarSpecial.png'
                 };
               default:
