@@ -23,6 +23,7 @@ interface Enemy {
   positionX: number;
   positionY: number;
   hp: number;
+  maxHp: number;
   speed: number;
   baseSpeed: number;
   isSlowed: boolean;
@@ -37,6 +38,7 @@ interface Enemy {
   poisonSourceId?: string;
   poisonStartTime?: number;
   canRegen: boolean;
+  isArmored: boolean;
 }
 
 // Define the Tower interface
@@ -115,44 +117,48 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   // First, extract enemy types as constants
   const ENEMY_TYPES = {
     BASIC: {
-      src: 'enemy1.png',
+      src: 'basic.png',
       hp: 100,
       damage: 5,
       type: 'basic',
       speed: 0.225,    // from 0.150 * 1.5
       baseSpeed: 0.225, // from 0.150 * 1.5
       regen: 0,
-      canRegen: false
+      canRegen: false,
+      isArmored: false,
     },
     STEALTH: {
-      src: 'enemy2.png',
+      src: 'stealth.png',
       hp: 50,
       damage: 10,
       type: 'stealth',
       speed: 0.225,    // from 0.150 * 1.5
       baseSpeed: 0.225, // from 0.150 * 1.5
       regen: 0,
-      canRegen: false
+      canRegen: false,
+      isArmored: false,
     },
     TANK: {
-      src: 'enemy3.png',
+      src: 'tank.png',
       hp: 350,
       damage: 5,
       type: 'basic',
       speed: 0.1875,    // from 0.125 * 1.5
       baseSpeed: 0.1875, // from 0.125 * 1.5
       regen: 0,
-      canRegen: false
+      canRegen: false,
+      isArmored: false,
     },
     SPEEDY: {
-      src: 'enemy4.png',
+      src: 'speedy.png',
       hp: 50,
       damage: 35,
       type: 'speedy',
       speed: 1.5,    // from 1.0 * 1.5
       baseSpeed: 1.5, // from 1.0 * 1.5
       regen: 0,
-      canRegen: false
+      canRegen: false,
+      isArmored: false,
     },
     STEALTHYTANK: {
       src: 'stealthyTank.png',
@@ -162,7 +168,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       speed: 0.1875,    // from 0.125 * 1.5
       baseSpeed: 0.1875, // from 0.125 * 1.5
       regen: 0,
-      canRegen: false
+      canRegen: false,
+      isArmored: false,
     },
     STEALTHYSPEEDY: {
       src: 'stealthySpeedy.png',
@@ -172,7 +179,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       speed: 1.5,    // from 1.0 * 1.5
       baseSpeed: 1.5, // from 1.0 * 1.5
       regen: 0,
-      canRegen: false
+      canRegen: false,
+      isArmored: false,
     },
     REGENTANK: {
       src: 'regenTank.png',
@@ -182,7 +190,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       speed: 0.1875,    // from 0.125 * 1.5
       baseSpeed: 0.1875, // from 0.125 * 1.5
       regen: 100,
-      canRegen: true
+      canRegen: true,
+      isArmored: false,
     },
     SPEEDYREGENTANK: {
       src: 'regenTank.png',
@@ -192,7 +201,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       speed: 0.35,    // from 0.2 * 1.5
       baseSpeed: 0.35, // from 0.2 * 1.5
       regen: 150,
-      canRegen: true
+      canRegen: true,
+      isArmored: false,
     }
     ,
     BOSS: {
@@ -203,7 +213,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       speed: 0.175,    
       baseSpeed: 0.175, 
       regen: 1200,
-      canRegen: true
+      canRegen: true,
+      isArmored: false,
     },
     ULTRATANKS: {
       src: 'ultraTank.png',
@@ -214,6 +225,40 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       baseSpeed: 0.15, 
       regen: 0,
       canRegen: false,
+      isArmored: false,
+    },
+    ARMOREDBASIC: {
+      src: 'armoredbasic.png',
+      hp: 150,
+      damage: 30,
+      type: 'armoredbasic',
+      speed: 0.2,    
+      baseSpeed: 0.2, 
+      regen: 0,
+      canRegen: false,
+      isArmored: true,
+    },
+    ARMOREDTANK: {
+      src: 'armoredtank.png',
+      hp: 400,
+      damage: 400,
+      type: 'armoredtank',
+      speed: 0.175,    
+      baseSpeed: 0.175, 
+      regen: 0,
+      canRegen: false,
+      isArmored: true,
+    },
+    ARMOREDULTRATANK: {
+      src: 'armoredultraTank.png',
+      hp: 1750,
+      damage: 1000,
+      type: 'armoredultratank',
+      speed: 0.15,    
+      baseSpeed: 0.15, 
+      regen: 0,
+      canRegen: false,
+      isArmored: true,
     }
   };
 
@@ -390,15 +435,19 @@ const createNewTower = (type: keyof typeof TOWER_TYPES, positionX: number, posit
 });
 
 // Then, create helper function for spawning enemies
-const createNewEnemy = (type: keyof typeof ENEMY_TYPES) => ({
-  id: uuidv4(),
-  positionX: -6,
-  positionY: 54,
-  isTargeted: false,
-  isSlowed: false,
-  isPoisoned: false,
-  ...ENEMY_TYPES[type]
-});
+const createNewEnemy = (type: keyof typeof ENEMY_TYPES) => {
+  const enemyStats = ENEMY_TYPES[type];
+  return {
+    id: uuidv4(),
+    positionX: -6,
+    positionY: 54,
+    isTargeted: false,
+    isSlowed: false,
+    isPoisoned: false,
+    maxHp: enemyStats.hp, // Add this line
+    ...enemyStats
+  };
+};
 
 useEffect(() => {
   if (hp <= 0) {
@@ -437,7 +486,7 @@ useEffect(() => {
     // Later rounds - Mixed enemies
     else if (round >= 10 && round <= 15 && enemyCount < 10 * round) {
       const enemyType = enemyCount % 3 === 0 ? 'STEALTH' : 
-                       enemyCount % 3 === 1 ? 'SPEEDY' : 'BASIC';
+                       enemyCount % 3 === 1 ? 'SPEEDY' : 'ARMOREDBASIC';
       setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
       setEnemyCount(prev => prev + 1);
     }
@@ -453,7 +502,7 @@ useEffect(() => {
     }
     else if (round >= 23 && round <= 25 && enemyCount < 15 * round) {
       const enemyType = enemyCount % 3 === 0 ? 'STEALTHYTANK' : 
-                       enemyCount % 3 === 1 ? 'STEALTHYSPEEDY' : 'REGENTANK';
+                       enemyCount % 3 === 1 ? 'STEALTHYSPEEDY' : 'ARMOREDTANK';
       setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
       setEnemyCount(prev => prev + 1);
     }
@@ -471,7 +520,9 @@ useEffect(() => {
     }
     else if (round > 32 && round <= 39) {
       if (enemyCount < 15 * round) {  // Changed from 15 * round to fixed 45
-        setEnemies(prev => [...prev, createNewEnemy("ULTRATANKS")]);
+        const enemyType = enemyCount % 2 === 0 ? 'ARMOREDULTRATANK' 
+                        : 'ULTRATANKS';
+      setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
         setEnemyCount(prev => prev + 3);
       }
     }
@@ -588,10 +639,17 @@ useEffect(() => {
             // Calculate actual damage for primary target
             const actualDamage = Math.max(Math.min(tower.attack, enemy.hp), 0);
             explosionDamageTotal += actualDamage;
+            const newHp = enemy.hp - tower.attack;
+            // Grant money if enemy dies
+            if (newHp <= 0) {
+              setMoney(prev => prev + Math.floor(enemy.maxHp / 12.5));
+            }
             return {
               ...enemy,
+              src: enemy.isArmored ? enemy.src.replace('armored', '') : enemy.src,
               isTargeted: true,
-              hp: enemy.hp - tower.attack
+              hp: newHp,
+              isArmored: false
             };
           }
   
@@ -599,61 +657,84 @@ useEffect(() => {
             const splashDamage = tower.attack / 2;
             const actualDamage = Math.min(splashDamage, enemy.hp);
             explosionDamageTotal += actualDamage; // Add to total damage
+            const newHp = enemy.hp - splashDamage;
+            // Grant money if enemy dies from splash
+            if (newHp <= 0) {
+              setMoney(prev => prev + Math.floor(enemy.maxHp / 12.5));
+            }
             return {
               ...enemy,
+              src: enemy.isArmored ? enemy.src.replace('armored', '') : enemy.src,
               isTargeted: true,
-              hp: enemy.hp - splashDamage
+              hp: newHp,
+              isArmored: false
             };
           }
           return enemy;
         });
         totalDamageDealt = explosionDamageTotal;
-        setMoney(prevMoney => prevMoney + Math.floor(Math.max(explosionDamageTotal, 0) / 12.5));
       } else {
         // Non-explosion attack logic
         updatedEnemies = prevEnemies.map((enemy) => {
           const isTargeted = targets.some(target => target.id === enemy.id);
           if (!isTargeted) return enemy;
-      
+        
           const actualDamage = Math.min(tower.attack, enemy.hp);
           totalDamageDealt += actualDamage;
-      
-          const updatedEnemy = {
-            ...enemy,
-            isTargeted: true,
-            hp: Math.max(enemy.hp - actualDamage, 0),
-            speed: tower.type === "slower" && tower.slowAmount ? 
-              Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount) :
-              enemy.speed
-          };
-      
-          if (tower.type === "gasspitter") {
+        
+          let newHp = enemy.hp;
+          if (tower.type === "sniper") {
+                        newHp = Math.max(enemy.hp - actualDamage, 0);
+// Grant money when enemy dies
+            if (newHp <= 0 && enemy.hp > 0) {
+              setMoney(prev => prev + Math.floor(enemy.maxHp / 12.5));
+            }
             return {
-              ...updatedEnemy,
+              ...enemy,
+              hp: newHp,
+              isTargeted: true
+            };
+          } else if (tower.type === "gasspitter") {
+            return {
+              ...enemy,
               isPoisoned: true,
               poisonSourceId: tower.id,
               poisonStartTime: Date.now(),
-              canRegen: tower.canStopRegen ? false : true
+              canRegen: tower.canStopRegen ? false : true,
+              hp: enemy.isArmored ? enemy.hp : Math.max(enemy.hp - actualDamage, 0),
+              isTargeted: true
             };
-          }
-          if (tower.type === "slower") {
+          } else if (tower.type === "slower") {
             return {
-              ...updatedEnemy,
+              ...enemy,
               isSlowed: true,
               slowSourceId: tower.id,
-              slowStartTime: Date.now()
+              slowStartTime: Date.now(),
+              speed: tower.slowAmount ? 
+                Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount) :
+                enemy.speed,
+              hp: enemy.isArmored ? enemy.hp : Math.max(enemy.hp - actualDamage, 0),
+              isTargeted: true
+            };
+          } else {
+            // Regular towers can't damage armored enemies
+            newHp = enemy.isArmored ? enemy.hp : Math.max(enemy.hp - actualDamage, 0);
+            // Add money reward when basic tower kills an enemy
+            if (newHp <= 0 && enemy.hp > 0) {
+              setMoney(prev => prev + Math.floor(enemy.maxHp / 12.5));
+            }
+            return {
+              ...enemy,
+              hp: newHp,
+              isTargeted: true
             };
           }
-          return updatedEnemy;
         });
       }
       return updatedEnemies;
     });
 
-    // Update money after enemies state is updated
-    if (tower.type !== "explosion"){
-      setMoney(prevMoney => prevMoney + Math.floor(Math.max(tower.attack, 0) / 10));
-    }
+   
     
 
     // Handle attack effects
@@ -931,7 +1012,7 @@ useEffect(() => {
   }, [isPageVisible, isPaused, isSpeedUp]); // Only include stable dependencies
   useEffect(() => {
     if (!isPageVisible || isPaused) return;
-           
+             
     const POISON_TICK_RATE = isSpeedUp ? 5 : 10; 
     const POISON_DURATION = isSpeedUp ? 2000 : 4000; 
     const TOTAL_TICKS = POISON_DURATION / POISON_TICK_RATE;
@@ -966,25 +1047,25 @@ useEffect(() => {
           }
           poisonDamageByTower[poisonTower.id] += actualPoisonDamage;
   
+          const newHp = enemy.hp - actualPoisonDamage;
+          // Only grant money if the poison damage kills the enemy
+          if (newHp <= 0 && enemy.hp > 0) {
+            setMoney(prev => prev + Math.floor(enemy.maxHp / 12.5));
+          }
+  
           return {
             ...enemy,
-            hp: enemy.hp - actualPoisonDamage
+            hp: newHp
           };
         });
   
-        // Update tower damage counters and add money for poison damage
+        // Update tower damage counters
         setTower(prevTowers =>
           prevTowers.map(t => ({
             ...t,
             damageDone: t.damageDone + (poisonDamageByTower[t.id] || 0)
           }))
         );
-  
-        // Add money for poison damage
-        const totalPoisonDamage = Object.values(poisonDamageByTower).reduce((sum, damage) => sum + damage, 0);
-        if (totalPoisonDamage > 0) {
-          setMoney(prevMoney => prevMoney + totalPoisonDamage / 7.5);
-        }
   
         return updatedEnemies;
       });
@@ -1394,9 +1475,11 @@ const upgradeTower = () => {
                 return { 
                   ...t, 
                   hasSpecialUpgrade: true, 
-                  attack: t.attack * 2.25, 
-                  maxDamage: t.maxDamage * 2.25,
+                  attack: t.attack * 2, 
+                  maxDamage: t.maxDamage * 2,
                   radius: t.radius * 1.4, 
+                  type: "explosion",
+                  explosionRadius: 10,
                   src: '/basicSpecial.png' 
                 };
               case 'sniper':
