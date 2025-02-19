@@ -642,7 +642,7 @@ useEffect(() => {
             const newHp = enemy.hp - tower.attack;
             // Grant money if enemy dies
             if (newHp <= 0) {
-              setMoney(prev => prev + Math.floor(enemy.maxHp / 12.5));
+              setMoney(prev => prev + Math.floor((enemy.maxHp / 15) * (round > 20 ? 0.5 : 1)));
             }
             return {
               ...enemy,
@@ -660,7 +660,7 @@ useEffect(() => {
             const newHp = enemy.hp - splashDamage;
             // Grant money if enemy dies from splash
             if (newHp <= 0) {
-              setMoney(prev => prev + Math.floor(enemy.maxHp / 12.5));
+              setMoney(prev => prev + Math.floor((enemy.maxHp / 15) * (round > 20 ? 0.5 : 1)));
             }
             return {
               ...enemy,
@@ -687,7 +687,7 @@ useEffect(() => {
                         newHp = Math.max(enemy.hp - actualDamage, 0);
 // Grant money when enemy dies
             if (newHp <= 0 && enemy.hp > 0) {
-              setMoney(prev => prev + Math.floor(enemy.maxHp / 12.5));
+              setMoney(prev => prev + Math.floor((enemy.maxHp / 15) * (round > 20 ? 0.5 : 1)));
             }
             return {
               ...enemy,
@@ -721,7 +721,7 @@ useEffect(() => {
             newHp = enemy.isArmored ? enemy.hp : Math.max(enemy.hp - actualDamage, 0);
             // Add money reward when basic tower kills an enemy
             if (newHp <= 0 && enemy.hp > 0) {
-              setMoney(prev => prev + Math.floor(enemy.maxHp / 12.5));
+              setMoney(prev => prev + Math.floor((enemy.maxHp / 15) * (round > 20 ? 0.5 : 1)));
             }
             return {
               ...enemy,
@@ -1050,7 +1050,7 @@ useEffect(() => {
           const newHp = enemy.hp - actualPoisonDamage;
           // Only grant money if the poison damage kills the enemy
           if (newHp <= 0 && enemy.hp > 0) {
-            setMoney(prev => prev + Math.floor(enemy.maxHp / 12.5));
+            setMoney(prev => prev + Math.floor((enemy.maxHp / 15) * (round > 20 ? 0.5 : 1)));
           }
   
           return {
