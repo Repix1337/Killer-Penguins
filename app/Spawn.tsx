@@ -127,6 +127,9 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     };
   }, []);
   
+  // Add this state to track which enemies have granted money
+  const [processedEnemies] = useState(() => new Set<string>());
+
   // First, extract enemy types as constants
   const ENEMY_TYPES = {
     BASIC: {
@@ -685,8 +688,13 @@ useEffect(() => {
             explosionDamageTotal += actualDamage;
             const newHp = enemy.hp - tower.attack;
             // Grant money if enemy dies
-            if (newHp <= 0) {
-              setMoney(prev => prev + Math.floor((enemy.maxHp / 10) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1)));            }
+            if (newHp <= 0 && !processedEnemies.has(enemy.id)) {
+              processedEnemies.add(enemy.id);
+              setMoney(prev => {
+                const reward = Math.floor((enemy.maxHp / 10) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1));
+                return prev + reward;
+              });
+            }
             return {
               ...enemy,
               src: enemy.isArmored ? enemy.src.replace('armored', '') : enemy.src,
@@ -702,8 +710,12 @@ useEffect(() => {
             explosionDamageTotal += actualDamage; // Add to total damage
             const newHp = enemy.hp - splashDamage;
             // Grant money if enemy dies from splash
-            if (newHp <= 0) {
-              setMoney(prev => prev + Math.floor((enemy.maxHp / 10) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1)));
+            if (newHp <= 0 && !processedEnemies.has(enemy.id)) {
+              processedEnemies.add(enemy.id);
+              setMoney(prev => {
+                const reward = Math.floor((enemy.maxHp / 10) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1));
+                return prev + reward;
+              });
             }
             return {
               ...enemy,
@@ -752,8 +764,13 @@ useEffect(() => {
             // Regular towers can't damage armored enemies
             newHp = enemy.isArmored ? enemy.hp : Math.max(enemy.hp - actualDamage, 0);
             // Add money reward when basic tower kills an enemy
-            if (newHp <= 0 && enemy.hp > 0) {
-              setMoney(prev => prev + Math.floor((enemy.maxHp / 10) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1)));            }
+            if (newHp <= 0 && enemy.hp > 0 && !processedEnemies.has(enemy.id)) {
+              processedEnemies.add(enemy.id);
+              setMoney(prev => {
+                const reward = Math.floor((enemy.maxHp / 10) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1));
+                return prev + reward;
+              });
+            }
             return {
               ...enemy,
               hp: newHp,
@@ -1085,8 +1102,13 @@ useEffect(() => {
   
           const newHp = enemy.hp - actualPoisonDamage;
           // Only grant money if the poison damage kills the enemy
-          if (newHp <= 0 && enemy.hp > 0) {
-            setMoney(prev => prev + Math.floor((enemy.maxHp / 10) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1)));          }
+          if (newHp <= 0 && enemy.hp > 0 && !processedEnemies.has(enemy.id)) {
+            processedEnemies.add(enemy.id);
+            setMoney(prev => {
+              const reward = Math.floor((enemy.maxHp / 10) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1));
+              return prev + reward;
+            });
+          }
   
           return {
             ...enemy,
@@ -1929,6 +1951,12 @@ const handleOutsideClick = (event: React.MouseEvent) => {
     setShowUpgradeMenu(false);
   }
 };
+
+useEffect(() => {
+  if (round === 0) {
+    processedEnemies.clear();
+  }
+}, [round]);
 
   return (
     <>
