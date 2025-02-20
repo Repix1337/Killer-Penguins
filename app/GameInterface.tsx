@@ -87,7 +87,7 @@ const GameInterface = () => {
   <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-1 w-full max-w-3xl px-1 justify-items-center'>
             <TowerButton
               type="basic"
-              src="/tower1.png"
+              src="/basic.png"
               price={100}
               isSelected={selectedTowerType === 'basic'}
               onClick={() => handleTowerSelect('basic')}
@@ -95,7 +95,7 @@ const GameInterface = () => {
             />
             <TowerButton
               type="sniper"
-              src="/tower2.png"
+              src="/sniper.png"
               price={200}
               isSelected={selectedTowerType === 'sniper'}
               onClick={() => handleTowerSelect('sniper')}
