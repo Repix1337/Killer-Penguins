@@ -281,7 +281,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
 // Add this near ENEMY_TYPES constant
 const TOWER_TYPES = {
   BASIC: {
-    src: '/tower1.png',
+    src: '/basic.png',
     baseAttack: 50,
     attack: 50,
     baseAttackInterval: 1000,
@@ -303,7 +303,7 @@ const TOWER_TYPES = {
     effectSrc: '/basicAttack.png'
   },
   SNIPER: {
-    src: '/tower2.png',
+    src: '/sniper.png',
     baseAttack: 120,
     attack: 120,
     baseAttackInterval: 2000,
