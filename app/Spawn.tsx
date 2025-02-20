@@ -16,6 +16,13 @@ interface SpawnProps {
   setCanPause: React.Dispatch<React.SetStateAction<boolean>>;
   selectedTowerType: string;
 }
+interface TowerUpgrade {
+  name: string;
+  cost: number;
+  description: string;
+  effect: (tower: Tower) => Partial<Tower>;
+  requires?: number; // Previous upgrade level required
+}
 
 // Define the Enemy interface
 interface Enemy {
@@ -64,6 +71,7 @@ interface Tower {
   canHitStealth: boolean;
   slowAmount?: number; // Make slowAmount optional
   maxSlow?:number; // Make maxSlow optional
+  slowDuration?: number; // Make slowAmount optional
   poisonDamage: number;
   maxPoisonDamage: number;
   hasSpecialUpgrade: boolean;
@@ -72,6 +80,11 @@ interface Tower {
   src: string; // Add src property
   effectSrc: string; // Add effectSrc property
   explosionRadius: number;
+  upgradeLevel: number;
+  hasCritical?: boolean;
+  criticalChance?: number;
+  criticalMultiplier?: number;
+  canHitArmored?: boolean;
 }
 
 const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp, isSpeedUp, isPaused, setCanPause, selectedTowerType }) => {
@@ -266,14 +279,14 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
 const TOWER_TYPES = {
   BASIC: {
     src: '/tower1.png',
-    baseAttack: 40,
-    attack: 40,
+    baseAttack: 50,
+    attack: 50,
     baseAttackInterval: 1000,
     attackInterval: 1000, // renamed from attackSpeed
     price: 100,
     towerWorth: 100,
     type: 'basic',
-    maxDamage: 200,
+    maxDamage: 300,
     maxAttackInterval: 450, // renamed from maxAttackSpeed
     radius: 27,
     attackType: 'single',
@@ -295,7 +308,7 @@ const TOWER_TYPES = {
     price: 200,
     towerWorth: 200,
     type: 'sniper',
-    maxDamage: 500,
+    maxDamage: 1500,
     maxAttackInterval: 1000,
     radius: 120,
     attackType: 'single',
@@ -317,7 +330,7 @@ const TOWER_TYPES = {
     price: 500,
     towerWorth: 500,
     type: 'rapidShooter',
-    maxDamage: 75,
+    maxDamage: 68,
     maxAttackInterval: 200,
     radius: 27,
     attackType: 'double',
@@ -339,13 +352,14 @@ const TOWER_TYPES = {
     price: 300,
     towerWorth: 300,
     type: 'slower',
-    maxDamage: 10,
+    maxDamage: 15,
     maxAttackInterval: 700,
     radius: 27,
     attackType: 'double',
     canHitStealth: false,
     slowAmount: 0.75,
     maxSlow: 0.5,
+    slowDuration: 2000,
     poisonDamage: 0,
     maxPoisonDamage: 0,
     hasSpecialUpgrade: false,
@@ -369,7 +383,7 @@ const TOWER_TYPES = {
     attackType: 'double',
     canHitStealth: false,
     poisonDamage: 20,
-    maxPoisonDamage: 100,
+    maxPoisonDamage: 360,
     hasSpecialUpgrade: false,
     specialUpgradeAvailable: false,
     canStopRegen: false,
@@ -385,7 +399,7 @@ const TOWER_TYPES = {
     price: 1200,
     towerWorth: 1200,
     type: 'mortar',
-    maxDamage: 250,
+    maxDamage: 550,
     maxAttackInterval: 4500,
     radius: 40,
     attackType: 'explosion',
@@ -408,7 +422,7 @@ const TOWER_TYPES = {
     price: 500,
     towerWorth: 500,
     type: 'cannon',
-    maxDamage: 300,
+    maxDamage: 380,
     maxAttackInterval: 1000,
     radius: 27,
     attackType: 'explosion',
@@ -454,6 +468,7 @@ const createNewTower = (type: keyof typeof TOWER_TYPES, positionX: number, posit
   isAttacking: false,
   targettingType: "first",
   damageDone: 0,
+  upgradeLevel: 0,
   ...TOWER_TYPES[type]
 });
 
@@ -629,6 +644,12 @@ useEffect(() => {
   
     setEnemies((prevEnemies) => {
       let updatedEnemies;
+      // Calculate critical hit if tower has that ability
+      const isCriticalHit = tower.hasCritical && 
+                           tower.criticalChance && 
+                           Math.random() < tower.criticalChance;
+      const damageMultiplier = isCriticalHit ? (tower.criticalMultiplier || 1) : 1;
+  
       if (tower.attackType === 'explosion') {
         const primaryTarget = targets[0]; // Get the main target
         const enemiesInExplosionRadius = prevEnemies.filter(enemy => {
@@ -660,13 +681,12 @@ useEffect(() => {
   
           if (enemy.id === primaryTarget.id) {
             // Calculate actual damage for primary target
-            const actualDamage = Math.max(Math.min(tower.attack, enemy.hp), 0);
+            const actualDamage = Math.max(Math.min(tower.attack * damageMultiplier, enemy.hp), 0);
             explosionDamageTotal += actualDamage;
             const newHp = enemy.hp - tower.attack;
             // Grant money if enemy dies
             if (newHp <= 0) {
-              setMoney(prev => prev + Math.floor((enemy.maxHp / 15) * (round > 20 ? 0.5 : 1)));
-            }
+              setMoney(prev => prev + Math.floor((enemy.maxHp / 15) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1)));            }
             return {
               ...enemy,
               src: enemy.isArmored ? enemy.src.replace('armored', '') : enemy.src,
@@ -683,7 +703,7 @@ useEffect(() => {
             const newHp = enemy.hp - splashDamage;
             // Grant money if enemy dies from splash
             if (newHp <= 0) {
-              setMoney(prev => prev + Math.floor((enemy.maxHp / 15) * (round > 20 ? 0.5 : 1)));
+              setMoney(prev => prev + Math.floor((enemy.maxHp / 15) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1)));
             }
             return {
               ...enemy,
@@ -702,22 +722,11 @@ useEffect(() => {
           const isTargeted = targets.some(target => target.id === enemy.id);
           if (!isTargeted) return enemy;
         
-          const actualDamage = Math.min(tower.attack, enemy.hp);
+          // Update damage calculation to include critical hits
+          const actualDamage = Math.min(tower.attack * damageMultiplier, enemy.hp);
           totalDamageDealt += actualDamage;
-        
           let newHp = enemy.hp;
-          if (tower.type === "sniper") {
-                        newHp = Math.max(enemy.hp - actualDamage, 0);
-// Grant money when enemy dies
-            if (newHp <= 0 && enemy.hp > 0) {
-              setMoney(prev => prev + Math.floor((enemy.maxHp / 15) * (round > 20 ? 0.5 : 1)));
-            }
-            return {
-              ...enemy,
-              hp: newHp,
-              isTargeted: true
-            };
-          } else if (tower.type === "gasspitter") {
+           if (tower.type === "gasspitter") {
             return {
               ...enemy,
               isPoisoned: true,
@@ -744,8 +753,7 @@ useEffect(() => {
             newHp = enemy.isArmored ? enemy.hp : Math.max(enemy.hp - actualDamage, 0);
             // Add money reward when basic tower kills an enemy
             if (newHp <= 0 && enemy.hp > 0) {
-              setMoney(prev => prev + Math.floor((enemy.maxHp / 15) * (round > 20 ? 0.5 : 1)));
-            }
+              setMoney(prev => prev + Math.floor((enemy.maxHp / 15) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1)));            }
             return {
               ...enemy,
               hp: newHp,
@@ -1002,25 +1010,30 @@ useEffect(() => {
   }, [enemies,tower]);
   useEffect(() => {
     if (!isPageVisible || isPaused) return;
-  
+    
     const slowInterval = setInterval(() => {
       const currentTime = Date.now();
-      const SLOW_DURATION = isSpeedUp ? 3000 : 6000;
   
       setEnemies(prevEnemies => {
         let hasChanges = false;
         const updatedEnemies = prevEnemies.map(enemy => {
           if (!enemy.isSlowed || !enemy.slowSourceId || !enemy.slowStartTime) return enemy;
           
-          if (currentTime - enemy.slowStartTime >= SLOW_DURATION) {
+          // Find the tower that applied the slow effect
+          const slowTower = tower.find(t => t.id === enemy.slowSourceId);
+          if (!slowTower) return enemy;
+
+          // Use the tower's slowDuration property, or fall back to default values
+          const slowDuration = isSpeedUp ? slowTower.slowDuration ?? 0 / 2 : slowTower.slowDuration; 
+          
+          if (currentTime - enemy.slowStartTime >= (slowDuration ?? 0)) {
             hasChanges = true;
             return {
               ...enemy,
               speed: enemy.baseSpeed,
               isSlowed: false,
               slowSourceId: undefined,
-              slowStartTime: undefined,
-
+              slowStartTime: undefined
             };
           }
           return enemy;
@@ -1029,10 +1042,10 @@ useEffect(() => {
         // Only return new array if there were actual changes
         return hasChanges ? updatedEnemies : prevEnemies;
       });
-    }, 1000); // Check every second instead of every render
+    }, 1000); // Check every second
   
     return () => clearInterval(slowInterval);
-  }, [isPageVisible, isPaused, isSpeedUp]); // Only include stable dependencies
+}, [isPageVisible, isPaused, isSpeedUp, tower]); // Added tower to dependencies
   useEffect(() => {
     if (!isPageVisible || isPaused) return;
              
@@ -1073,8 +1086,7 @@ useEffect(() => {
           const newHp = enemy.hp - actualPoisonDamage;
           // Only grant money if the poison damage kills the enemy
           if (newHp <= 0 && enemy.hp > 0) {
-            setMoney(prev => prev + Math.floor((enemy.maxHp / 15) * (round > 20 ? 0.5 : 1)));
-          }
+            setMoney(prev => prev + Math.floor((enemy.maxHp / 15) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1)));          }
   
           return {
             ...enemy,
@@ -1119,8 +1131,12 @@ useEffect(() => {
 const upgradeTower = () => {
   if (showUpgradeMenu) {
     const selectedTower = tower.find(t => t.id === selectedTowerID);
-    
     if (!selectedTower) return null;
+
+    const availableUpgrades = TOWER_UPGRADES[selectedTower.type]?.filter(upgrade => 
+      upgrade.requires === selectedTower.upgradeLevel) || [];
+
+    const currentUpgrade = availableUpgrades[0]; // Get the next available upgrade
 
     return (
       <div 
@@ -1128,144 +1144,37 @@ const upgradeTower = () => {
         className='absolute top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-800 
           flex items-start justify-between p-6 rounded-lg gap-6 shadow-lg border border-blue-400'
         style={{left: selectedTower.positionX < 50 ? '70%' : '30%', width: '700px'}}
-        onClick={(e) => e.stopPropagation()} // Prevent clicks inside menu from bubbling up
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Left side - Upgrade buttons */}
         <div className='flex flex-col space-y-3 w-1/2'>
           <h1 className="text-2xl font-bold mb-4 text-white border-b border-blue-400 pb-2">Upgrade Menu</h1>
           
-          {/* Damage Upgrade */}
-          {selectedTower.attack < selectedTower.maxDamage ? (
-            <button 
-              className="bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 
-                text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
-                disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={upgradeDamage}
-              disabled={money < 300}
-            >
-              Upgrade Damage (300$ for {selectedTower.maxDamage / 5}dmg)
-            </button>
-          ) : (
-            <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
-              Max Damage Reached
-            </div>
-          )}
-
-          {/* Attack Interval Upgrade */}
-          {selectedTower.attackInterval > selectedTower.maxAttackInterval ? (
+          {currentUpgrade && (
             <button 
               className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 
                 text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
                 disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={upgradeAttackInterval}
-              disabled={money < 300}
+              onClick={() => performUpgrade(selectedTower, currentUpgrade)}
+              disabled={money < currentUpgrade.cost}
             >
-              Upgrade Attack Interval (300$ for -{(selectedTower.baseAttackInterval - selectedTower.maxAttackInterval) / 5  }ms)
+              {currentUpgrade.name} (${currentUpgrade.cost})
+              <div className="text-sm text-gray-200">{currentUpgrade.description}</div>
             </button>
-          ) : (
-            <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
-              Min Attack Interval Reached
-            </div>
           )}
 
-          {/* Double Attack Upgrade */}
-          {selectedTower.attackType === 'single' ? (
+          {/* Tower targeting type button */}
+          <div className="pt-4">
             <button 
-              className="bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 
-                text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
-                disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={upgradeDoubleAttack}
-              disabled={money < 1500}
+              className="bg-blue-400 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg w-full
+                transition-all duration-200 shadow-md"
+              onClick={changeTowerTargetting}
             >
-              Upgrade Double Attack (1500$)
+              Targeting: {selectedTower.targettingType === "first" ? "First" : 
+                         selectedTower.targettingType === "highestHp" ? "Highest HP" : "Last"}
             </button>
-          ) : selectedTower.type === "basic" ? (
-            <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
-              Already have double attack
-            </div>
-          ) : null}
+          </div>
 
-          {/* Triple Attack Upgrade */}
-          {selectedTower.type === "rapidShooter" && selectedTower.attackType === 'double' ? (
-            <button 
-              className="bg-gradient-to-r from-indigo-500 to-indigo-700 hover:from-indigo-600 hover:to-indigo-800 
-                text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
-                disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={upgradeTotripleAttack}
-              disabled={money < 2500}
-            >
-              Upgrade Triple Attack (2500$)
-            </button>
-          ) : selectedTower.type === "rapidShooter" ? (
-            <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
-              Already have Triple Attack
-            </div>
-          ) : null}
-
-          {/* Stealth Detection Upgrade */}
-          {!selectedTower.canHitStealth ? (
-            <button 
-              className="bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 
-                text-white font-bold py-3 px-4 text-center rounded-lg w-full transition-all duration-200 shadow-md
-                disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={upgradeToHitStealth}
-              disabled={money < 2000}
-            >
-              Stealth Enemies Detection (2000$)
-            </button>
-          ) : (
-            <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
-              Already detect stealth enemies
-            </div>
-          )}
-
-          {/* Slow Amount Upgrade */}
-          {selectedTower.type === "slower" && selectedTower.slowAmount !== selectedTower.maxSlow ? (
-            <button 
-              className="bg-gradient-to-r from-cyan-500 to-cyan-700 hover:from-cyan-600 hover:to-cyan-800 
-                text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
-                disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={upgradeSlow}
-              disabled={money < 1000}
-            >
-              Upgrade Slow (1000$)
-            </button>
-          ) : selectedTower.type === "slower" ? (
-            <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
-              Slow already upgraded
-            </div>
-          ) : null}
-           {selectedTower.type === "gasspitter" && selectedTower.poisonDamage !== selectedTower.maxPoisonDamage ? (
-            <button 
-              className="bg-gradient-to-r from-cyan-500 to-cyan-700 hover:from-cyan-600 hover:to-cyan-800 
-                text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
-                disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={upgradePoison}
-              disabled={money < 500}
-            >
-              Upgrade Poison(500$ for +80 dmg)
-            </button>
-          ) : selectedTower.type === "gasspitter" ? (
-            <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
-              Poison is maxed out
-            </div>
-          ) : null}
-          {checkSpecialUpgradeAvailability(selectedTower) && !selectedTower.hasSpecialUpgrade ? (
-  <button 
-    className="bg-gradient-to-r from-yellow-500 to-yellow-700 hover:from-yellow-600 hover:to-yellow-800 
-      text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
-      disabled:opacity-50 disabled:cursor-not-allowed"
-    onClick={upgradeSpecial}
-    disabled={money < 20000}
-  >
-    {getSpecialUpgradeText(selectedTower.type)}
-  </button>
-) : selectedTower.hasSpecialUpgrade ? (
-  <div className="bg-gray-700 text-gray-300 font-bold py-3 px-4 rounded-lg w-full text-center">
-    Special Upgrade Active
-  </div>
-) : null}
-          {/* Control Buttons */}
+          {/* Control buttons */}
           <div className="flex gap-2 mt-4">
             <button 
               className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg flex-1 
@@ -1284,7 +1193,7 @@ const upgradeTower = () => {
           </div>
         </div>
 
-        {/* Right side - Stats */}
+        {/* Stats panel remains the same */}
         <div className='bg-slate-700 p-4 rounded-lg space-y-4 w-1/2'>
           <h2 className="text-xl font-bold text-white border-b border-blue-400 pb-2">Tower Stats</h2>
           
@@ -1299,9 +1208,7 @@ const upgradeTower = () => {
         style={{width: `${(selectedTower.attack / selectedTower.maxDamage) * 100}%`}}
       />
     </div>
-    <span className="text-xs text-gray-400">
-      ({Math.floor((selectedTower.maxDamage - selectedTower.attack) / (selectedTower.maxDamage / 5))} upgrades left)
-    </span>
+    
   </div>
 
   <div>
@@ -1314,9 +1221,7 @@ const upgradeTower = () => {
         style={{width: `${((selectedTower.attackInterval - selectedTower.maxAttackInterval) / (selectedTower.baseAttackInterval - selectedTower.maxAttackInterval)) * 100}%`}}
       />
     </div>
-    <span className="text-xs text-gray-400">
-      ({Math.ceil((selectedTower.attackInterval - selectedTower.maxAttackInterval) / ((selectedTower.baseAttackInterval - selectedTower.maxAttackInterval) / 5))} upgrades left)
-    </span>
+    
   </div>
   
   {selectedTower.type === "gasspitter" && selectedTower.maxPoisonDamage != undefined && selectedTower.poisonDamage != undefined && (
@@ -1330,9 +1235,7 @@ const upgradeTower = () => {
         style={{width: `${(selectedTower.poisonDamage / selectedTower.maxPoisonDamage) * 100}%`}}
       />
     </div>
-    <span className="text-xs text-gray-400">
-      ({Math.floor((selectedTower.maxPoisonDamage - selectedTower.poisonDamage) / 20)} upgrades left)
-    </span>
+    
   </div>
   )}
             <div className="pt-2 border-t border-gray-600">
@@ -1342,25 +1245,13 @@ const upgradeTower = () => {
               {selectedTower.type === "slower" && (
                 <div>
                   <div>Slow Amount: {selectedTower.slowAmount ? selectedTower.slowAmount.toFixed(2) : 'N/A'} / {selectedTower.maxSlow}</div>
-                  <span className="text-xs text-gray-400">
-                    ({selectedTower.slowAmount !== undefined ? Math.floor((selectedTower.slowAmount - (selectedTower.maxSlow ?? 0)) / 0.25) : 0} upgrades left)
-                  </span>
+                  
                 </div>
               )}
-              <div>
-                Targetting:
-              <button 
-              className="bg-blue-400 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg flex-1 
-                transition-all duration-200 shadow-md w-[100%]"
-              onClick={changeTowerTargetting}
-            >
-            {selectedTower.targettingType === "first" ? "First" : selectedTower.targettingType === "highestHp" ? "Highest HP" : "Last"}
-            </button>
-            </div>
-            </div>
-          </div>
         </div>
       </div>
+      </div>
+    </div>
     );
   }
   return null;
@@ -1368,6 +1259,40 @@ const upgradeTower = () => {
   const closeUpgradeMenu = () => {
     setShowUpgradeMenu(false);
   }
+  const performUpgrade = (tower: Tower, upgrade: TowerUpgrade) => {
+    if (money >= upgrade.cost) {
+      setMoney(prev => prev - upgrade.cost);
+      setTower(prevTowers => 
+        prevTowers.map(t => {
+          if (t.id === tower.id) {
+            const newLevel = (t.upgradeLevel || 0) + 1;
+            // Create a new tower object with all upgrades
+            return {
+              ...t,
+              ...upgrade.effect(t),
+              upgradeLevel: newLevel,
+              // Ensure other properties are preserved
+              id: t.id,
+              positionX: t.positionX,
+              positionY: t.positionY,
+              isAttacking: t.isAttacking,
+              furthestEnemyInRange: t.furthestEnemyInRange,
+              damageDone: t.damageDone
+            };
+          }
+          return t;
+        })
+      );
+  
+      // Update the tower image if it's on the board
+      const towerElement = document.getElementById(tower.id) as HTMLImageElement;
+      if (towerElement && upgrade.effect(tower).src) {
+        if (upgrade.effect(tower).src) {
+          towerElement.src = upgrade.effect(tower).src!;
+        }
+      }
+    }
+  };
   const changeTowerTargetting = () => {
     setTower(() => 
       tower.map((t) =>
@@ -1381,78 +1306,7 @@ const upgradeTower = () => {
         } : t
     ))
   }
-  const upgradeDamage = () => {
-    if (money >= 300){
-      setMoney((prevMoney) => prevMoney - 300);
-      setTower((prevTower) => 
-        prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t, attack: Math.min(t.attack + (t.maxDamage / 5) , t.maxDamage), towerWorth: t.towerWorth + 300 } : t
-        )
-      );
-    }
-    
-  }
-  const upgradeAttackInterval = () => {
-    if (money >= 300){
-      setMoney((prevMoney) => prevMoney - 300);
-      setTower((prevTower) => 
-        prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t, attackInterval: Math.max(t.attackInterval - ((t.baseAttackInterval - t.maxAttackInterval) / 5), t.maxAttackInterval), towerWorth: t.towerWorth + 300 } : t
-        )
-      );
-    }
-  }
-  const upgradeDoubleAttack = () => {
-    if (money >= 1500){
-      setMoney((prevMoney) => prevMoney - 1500);
-      setTower((prevTower) => 
-        prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t,  attackType: 'double', towerWorth: t.towerWorth + 1500 } : t
-        )
-      );
-    }
-  }
-  const upgradeTotripleAttack = () => {
-    if (money >= 2500){
-      setMoney((prevMoney) => prevMoney - 2500);
-      setTower((prevTower) => 
-        prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t, attackType: 'triple', towerWorth: t.towerWorth + 2500} : t
-        )
-      );
-    }
-  }
-  const upgradeToHitStealth = () => {
-    if (money >= 2000){
-      setMoney((prevMoney) => prevMoney - 2000);
-      setTower((prevTower) => 
-        prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t, canHitStealth: true, towerWorth: t.towerWorth + 2000} : t
-        )
-      );
-    }
-  }
-  const upgradeSlow = () => {
-    if (money >= 1000){
-      setMoney((prevMoney) => prevMoney - 1000);
-      setTower((prevTower) => 
-        prevTower.map((t) =>
-          t.id === selectedTowerID ? { ...t, slowAmount: Math.max((t.slowAmount ?? 0) - 0.25, t.maxSlow ?? 0), towerWorth: t.towerWorth + 1000 } : t
-        )
-      );
-    }
-  }
-  const upgradePoison = () => {
-    if (money >= 500){
-      setMoney((prevMoney) => prevMoney - 500);
-      setTower((prevTower) => 
-        prevTower.map((t) =>
-          t.id === selectedTowerID && t.poisonDamage !== undefined && t.maxPoisonDamage !== undefined ?
-          { ...t, poisonDamage: Math.min(t.poisonDamage + 20, t.maxPoisonDamage), towerWorth: t.towerWorth + 500 } : t
-        )
-      );
-    }
-  }
+  
   const sellTower = (towerPrice: number) => {
     setMoney((prevMoney) => prevMoney + towerPrice / 1.5); // Add money back (changed from subtract)
     setTower((prevTower) => 
@@ -1486,168 +1340,8 @@ const upgradeTower = () => {
           
       ));
   };
-  const upgradeSpecial = () => {
-    if (money >= 20000) {
-      setMoney(prev => prev - 20000);
-      setTower(prevTower => 
-        prevTower.map(t => {
-          if (t.id === selectedTowerID) {
-            t.towerWorth = t.towerWorth + 20000
-            switch(t.type) {
-              case 'basic':
-                return { 
-                  ...t, 
-                  hasSpecialUpgrade: true, 
-                  attack: t.attack * 2, 
-                  maxDamage: t.maxDamage * 2,
-                  radius: t.radius * 1.4, 
-                  type: "explosion",
-                  explosionRadius: 10,
-                  src: '/basicSpecial.png' 
-                };
-              case 'sniper':
-                return { 
-                  ...t, 
-                  hasSpecialUpgrade: true, 
-                  attack: t.attack * 4,
-                  maxDamage: t.maxDamage * 4,
-                  src: '/sniperSpecial.png'
-                };
-              case 'rapidShooter':
-                return { 
-                  ...t, 
-                  hasSpecialUpgrade: true, 
-                  attack: t.attack * 1.5,
-                  maxDamage: t.maxDamage * 1.5,
-                  attackInterval: t.attackInterval * 0.6, 
-                  maxAttackInterval: t.maxAttackInterval * 0.6,
-                  attackType: "quadruple",
-                  src: '/rapidShooterSpecial.png'
-                };
-              case 'slower':
-                return { 
-                  ...t, 
-                  hasSpecialUpgrade: true, 
-                  slowAmount: t.slowAmount ? t.slowAmount * 0.5 : t.slowAmount,
-                  maxSlow: t.maxSlow ? t.maxSlow * 0.5 : t.maxSlow,
-                  attackType: "triple",
-                  src: '/slowerSpecial.png'
-                };
-              case 'gasspitter':
-                return { 
-                  ...t, 
-                  hasSpecialUpgrade: true, 
-                  poisonDamage: t.poisonDamage * 4,
-                  maxPoisonDamage: t.maxPoisonDamage * 4,
-                  canStopRegen: true,
-                  src: '/gasSpitterSpecial.png'
-                };
-              case 'mortar':
-                return { 
-                    ...t, 
-                    hasSpecialUpgrade: true, 
-                    attack: t.attack * 2, 
-                    maxDamage: t.maxDamage * 2,
-                    radius: t.radius * 1.5, 
-                    explosionRadius: t.explosionRadius * 1.25,
-                    src: '/mortarSpecial.png'
-                };
-                case 'cannon':
-                  return { 
-                      ...t, 
-                      hasSpecialUpgrade: true, 
-                      attack: t.attack * 2, 
-                      maxDamage: t.maxDamage * 2,
-                      radius: t.radius * 1.2, 
-                      explosionRadius: t.explosionRadius * 1.25,
-                      src: '/cannonSpecial.png'
-                  };
-              default:
-                return t;
-            }
-          }
-          return t;
-        })
-      );
   
-      // Update the tower image in the DOM
-      const towerElement = document.getElementById(selectedTowerID) as HTMLImageElement;
-      if (towerElement) {
-        const selectedTower = tower.find(t => t.id === selectedTowerID);
-        if (selectedTower) {
-          switch(selectedTower.type) {
-            case 'basic':
-              towerElement.src = '/basicSpecial.png';
-              break;
-            case 'sniper':
-              towerElement.src = '/sniperSpecial.png';
-              break;
-            case 'rapidShooter':
-              towerElement.src = '/rapidShooterSpecial.png';
-              break;
-            case 'slower':
-              towerElement.src = '/slowerSpecial.png';
-              break;
-            case 'gasspitter':
-              towerElement.src = '/gasSpitterSpecial.png';
-              break;
-            case 'mortar':
-              towerElement.src = '/mortarSpecial.png';
-            case 'cannon':
-              towerElement.src = '/cannonSpecial.png';
-                break;
-          }
-        }
-      }
-    }
-  };
-  const getSpecialUpgradeText = (towerType: string) => {
-    switch(towerType) {
-      case 'basic':
-        return "Artillery(20000$)";
-      case 'sniper':
-        return "Rail Gun(20000$)";
-      case 'rapidShooter':
-        return "Gatling Gun (20000$)";
-      case 'slower':
-        return "Cryogen(20000$)";
-      case 'gasspitter':
-        return "Acid Spitter (20000$)";
-      case 'mortar':
-        return "Armageddon (20000$)";
-      case 'cannon':
-        return "Armageddon (20000$)";
-      default:
-        return "Special Upgrade (20000$)";
-    }
-  };
   
-  // Add this function to check if all upgrades are purchased
-const checkSpecialUpgradeAvailability = (tower: Tower) => {
-  const baseConditions = 
-    tower.attack === tower.maxDamage &&
-    tower.attackInterval === tower.maxAttackInterval &&
-    tower.canHitStealth;
-
-  switch(tower.type) {
-    case 'basic':
-      return baseConditions && tower.attackType === 'double';
-    case 'sniper':
-      return baseConditions && tower.attackType === 'double';
-    case 'rapidShooter':
-      return baseConditions && tower.attackType === 'triple';
-    case 'slower':
-      return baseConditions && tower.slowAmount === tower.maxSlow;
-    case 'gasspitter':
-      return baseConditions && tower.poisonDamage === tower.maxPoisonDamage;
-    case 'mortar':
-      return baseConditions;
-    case 'cannon':
-      return baseConditions;
-    default:
-      return false;
-  }
-};
 const renderExplosions = () => {
   return explosionEffects.map((effect) => {
     // Find the tower that caused this explosion
@@ -1671,6 +1365,541 @@ const renderExplosions = () => {
   });
 };
 
+// Define upgrade paths for each tower type
+const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
+  basic: [
+    {
+      name: "Enhanced Targeting",
+      cost: 400,
+      requires: 0,
+      description: "Increases attack damage by 40",
+      effect: (tower) => ({ 
+        attack: tower.attack + 40,
+        towerWorth: tower.towerWorth + 400
+      })
+    },
+    {
+      name: "Rapid Fire",
+      cost: 600,
+      description: "Reduces attack interval by 250ms",
+      requires: 1,
+      effect: (tower) => ({ 
+        attackInterval: tower.attackInterval - 250,
+        towerWorth: tower.towerWorth + 600
+      })
+    },
+    {
+      name: "Double Shot",
+      cost: 1500,
+      description: "Attacks two targets at once",
+      requires: 2,
+      effect: (tower) => ({ 
+        attackType: 'double',
+        towerWorth: tower.towerWorth + 1500
+      })
+    },
+    {
+      name: "Armor Piercing and stealth detection",
+      cost: 2500,
+      description: "Can damage armored enemies and detect stealth enemies",
+      requires: 3,
+      effect: (tower) => ({ 
+        attack: tower.attack + 60,
+        canHitArmored: true,
+        canHitStealth: true,
+        towerWorth: tower.towerWorth + 2500
+      })
+    },
+    {
+      name: "Extended Range",
+      cost: 3000,
+      description: "Increases attack range by 30%",
+      requires: 4,
+      effect: (tower) => ({ 
+        radius: tower.radius * 1.3,
+        towerWorth: tower.towerWorth + 3000
+      })
+    },
+    {
+      name: "Critical Strike",
+      cost: 5000,
+      description: "25% chance to deal double damage",
+      requires: 5,
+      effect: (tower) => ({ 
+        hasCritical: true,
+        criticalChance: 0.25,
+        criticalMultiplier: 2,
+        towerWorth: tower.towerWorth + 5000
+      })
+    },
+    {
+      name: "Artillery Master",
+      cost: 15000,
+      description: "Converts to explosive damage with increased area",
+      requires: 6,
+      effect: (tower) => ({
+        attackType: 'explosion',
+        explosionRadius: 15,
+        attack: tower.attack * 2,
+        src: '/basicSpecial.png',
+        towerWorth: tower.towerWorth + 15000
+      })
+    }
+  ],
+  sniper: [
+    {
+      name: "Precision Scope",
+      cost: 800,
+      requires: 0,
+      description: "Increases attack damage by 80",
+      effect: (tower) => ({
+        attack: tower.attack + 80,
+        towerWorth: tower.towerWorth + 800
+      })
+    },
+    {
+      name: "Advanced Targeting",
+      cost: 1000,
+      description: "Reduces attack interval by 500ms",
+      requires: 1,
+      effect: (tower) => ({
+        attackInterval: tower.attackInterval - 500,
+        towerWorth: tower.towerWorth + 1000
+      })
+    },
+    {
+      name: "Armor Piercing Rounds",
+      cost: 2000,
+      description: "Can damage armored enemies",
+      requires: 2,
+      effect: (tower) => ({
+        canHitArmored: true,
+        attack: tower.attack + 100,
+        towerWorth: tower.towerWorth + 2000
+      })
+    },
+    {
+      name: "Rapid targeting",
+      cost: 2500,
+      description: "reduce attack interval by 500 ms",
+      requires: 3,
+      effect: (tower) => ({
+        attackInterval: tower.attackInterval - 500,
+        towerWorth: tower.towerWorth + 2500
+      })
+    },
+    {
+      name: "Critical Strike",
+      cost: 4000,
+      description: "35% chance to deal triple damage",
+      requires: 4,
+      effect: (tower) => ({
+        hasCritical: true,
+        criticalChance: 0.35,
+        criticalMultiplier: 3,
+        towerWorth: tower.towerWorth + 2000
+      })
+    },
+    {
+      name: "Double Shot",
+      cost: 5000,
+      description: "Can target two enemies at once",
+      requires: 5,
+      effect: (tower) => ({
+        attackType: 'double',
+        towerWorth: tower.towerWorth + 5000
+      })
+    },
+    {
+      name: "Elite Sniper",
+      cost: 10000,
+      description: "Quadruples damage and gains ultimate precision",
+      requires: 6,
+      effect: (tower) => ({
+        attack: tower.attack * 5,
+        src: '/sniperSpecial.png',
+        towerWorth: tower.towerWorth + 10000
+      })
+    }
+  ],
+  rapidShooter: [
+    {
+      name: "Rapid Fire",
+      cost: 500,
+      requires: 0,
+      description: "Reduces attack interval by 100ms",
+      effect: (tower) => ({
+        attackInterval: tower.attackInterval - 100,
+        towerWorth: tower.towerWorth + 500
+      })
+    },
+    {
+      name: "Enhanced Damage",
+      cost: 1000,
+      description: "Increases attack damage by 25",
+      requires: 1,
+      effect: (tower) => ({
+        attack: tower.attack + 25,
+        towerWorth: tower.towerWorth + 1000
+      })
+    },
+    {
+      name: "Triple Shot",
+      cost: 2500,
+      description: "Can target three enemies at once",
+      requires: 2,
+      effect: (tower) => ({
+        attackType: 'triple',
+        towerWorth: tower.towerWorth + 2500
+      })
+    },
+    {
+      name: "Quick Loader",
+      cost: 2000,
+      description: "Further reduces attack interval by 100ms",
+      requires: 3,
+      effect: (tower) => ({
+        attackInterval: tower.attackInterval - 100,
+        towerWorth: tower.towerWorth + 2000
+      })
+    },
+    {
+      name: "Extended Range",
+      cost: 5000,
+      description: "Increases attack range by 25%, stealth detection",
+      requires: 4,
+      effect: (tower) => ({
+        radius: tower.radius * 1.25,
+        canHitStealth: true,
+        towerWorth: tower.towerWorth + 5000
+      })
+    },
+    {
+      name: "Quadruple Shot",
+      cost: 7500,
+      description: "Can target four enemies at once",
+      requires: 5,
+      effect: (tower) => ({
+        attackType: 'quadruple',
+        towerWorth: tower.towerWorth + 7500
+      })
+    },
+    {
+      name: "Gatling Master",
+      cost: 10000,
+      description: "Massive attack speed and damage increase",
+      requires: 6,
+      effect: (tower) => ({
+        attack: tower.attack * 1.5,
+        attackInterval: tower.attackInterval * 0.6,
+        src: '/rapidShooterSpecial.png',
+        towerWorth: tower.towerWorth + 10000
+      })
+    }
+  ],
+  slower: [
+    {
+      name: "Enhanced Slow",
+      cost: 400,
+      requires: 0,
+      description: "Increases slow effect by 10%",
+      effect: (tower) => ({
+        slowAmount: tower.slowAmount ? tower.slowAmount * 0.8 : 0.8,
+        towerWorth: tower.towerWorth + 400
+      })
+    },
+    {
+      name: "Double Target",
+      cost: 1000,
+      description: "Can slow two targets at once",
+      requires: 1,
+      effect: (tower) => ({
+        attackType: 'double',
+        towerWorth: tower.towerWorth + 1000
+      })
+    },
+    {
+      name: "Extended Duration",
+      cost: 1500,
+      description: "Slow effect lasts longer and stealth detection",
+      requires: 2,
+      effect: (tower) => ({
+        attack: tower.attack + 5,
+        canHitStealth: true,
+        towerWorth: tower.towerWorth + 1500
+      })
+    },
+    {
+      name: "Triple Target",
+      cost: 4500,
+      description: "Can slow three targets at once",
+      requires: 3,
+      effect: (tower) => ({
+        attackType: 'triple',
+        towerWorth: tower.towerWorth + 4500
+      })
+    },
+    {
+      name: "Potent Slow",
+      cost: 5000,
+      description: "Further increases slow effect by 15%",
+      requires: 4,
+      effect: (tower) => ({
+        slowAmount: tower.slowAmount ? tower.slowAmount * 0.75 : 0.75,
+        towerWorth: tower.towerWorth + 1500
+      })
+    },
+    {
+      name: "Extended Range",
+      cost: 7500,
+      description: "Increases range by 40%",
+      requires: 5,
+      effect: (tower) => ({
+        radius: tower.radius * 1.4,
+        towerWorth: tower.towerWorth + 2000
+      })
+    },
+    {
+      name: "Time Warper",
+      cost: 10000,
+      description: "Maximum slow effect and area control",
+      requires: 6,
+      effect: (tower) => ({
+        slowAmount: tower.slowAmount ? tower.slowAmount * 0.5 : 0.5,
+        radius: tower.radius * 1.2,
+        src: '/slowerSpecial.png',
+        towerWorth: tower.towerWorth + 10000
+      })
+    }
+  ],
+  gasspitter: [
+    {
+      name: "Potent Toxin",
+      cost: 300,
+      requires: 0,
+      description: "Increases poison damage by 20",
+      effect: (tower) => ({
+        poisonDamage: tower.poisonDamage + 20,
+        towerWorth: tower.towerWorth + 300
+      })
+    },
+    {
+      name: "Better Toxin",
+      cost: 600,
+      description: "Increases poison damage by 20",
+      requires: 1,
+      effect: (tower) => ({
+        poisonDamage: tower.poisonDamage + 20,
+        towerWorth: tower.towerWorth + 600
+      })
+    },
+    {
+      name: "Double Spray",
+      cost: 1200,
+      description: "Can poison two targets",
+      requires: 2,
+      effect: (tower) => ({
+        attackType: 'double',
+        towerWorth: tower.towerWorth + 1200
+      })
+    },
+    {
+      name: "Concentrated Toxin",
+      cost: 1500,
+      description: "Further increases poison damage by 30",
+      requires: 3,
+      effect: (tower) => ({
+        poisonDamage: tower.poisonDamage + 30,
+        towerWorth: tower.towerWorth + 1500
+      })
+    },
+    {
+      name: "Extended Range",
+      cost: 2500,
+      description: "Increases range by 25%",
+      requires: 4,
+      effect: (tower) => ({
+        radius: tower.radius * 1.25,
+        towerWorth: tower.towerWorth + 2500
+      })
+    },
+    {
+      name: "Triple Spray",
+      cost: 5000,
+      description: "Can poison three targets",
+      requires: 5,
+      effect: (tower) => ({
+        attackType: 'triple',
+        towerWorth: tower.towerWorth + 5000
+      })
+    },
+    {
+      name: "Plague Master",
+      cost: 10000,
+      description: "Massively enhanced poison and stops regeneration",
+      requires: 6,
+      effect: (tower) => ({
+        poisonDamage: tower.poisonDamage * 4,
+        canStopRegen: true,
+        src: '/gasSpitterSpecial.png',
+        towerWorth: tower.towerWorth + 10000
+      })
+    }
+  ],
+  mortar: [
+    {
+      name: "Heavy Shells",
+      cost: 400,
+      requires: 0,
+      description: "Increases explosion damage by 50",
+      effect: (tower) => ({
+        attack: tower.attack + 50,
+        towerWorth: tower.towerWorth + 400
+      })
+    },
+    {
+      name: "Faster Reload",
+      cost: 1000,
+      description: "Reduces attack interval by 1000ms",
+      requires: 1,
+      effect: (tower) => ({
+        attackInterval: tower.attackInterval - 1000,
+        towerWorth: tower.towerWorth + 1000
+      })
+    },
+    {
+      name: "Bigger Explosions",
+      cost: 2000,
+      description: "Increases explosion radius by 20%",
+      requires: 2,
+      effect: (tower) => ({
+        explosionRadius: tower.explosionRadius * 1.20,
+        towerWorth: tower.towerWorth + 1000
+      })
+    },
+    {
+      name: "Better shells",
+      cost: 4000,
+      description: "+75 damage and faster reload",
+      requires: 3,
+      effect: (tower) => ({
+        attackInterval: tower.attackInterval - 1000,
+        attack: tower.attack + 75,
+        towerWorth: tower.towerWorth + 1500
+      })
+    },
+    {
+      name: "Extended Range",
+      cost: 5000,
+      description: "Increases range by 30%",
+      requires: 4,
+      effect: (tower) => ({
+        radius: tower.radius * 1.3,
+        towerWorth: tower.towerWorth + 2000
+      })
+    },
+    {
+      name: "Devastating Blast",
+      cost: 7500,
+      description: "Further increases explosion damage and radius",
+      requires: 5,
+      effect: (tower) => ({
+        attack: tower.attack + 100,
+        explosionRadius: tower.explosionRadius * 1.25,
+        towerWorth: tower.towerWorth + 2500
+      })
+    },
+    {
+      name: "Artillery Master",
+      cost: 15000,
+      description: "Maximum explosive power",
+      requires: 6,
+      effect: (tower) => ({
+        attack: tower.attack * 2,
+        radius: tower.radius * 1.3,
+        src: '/mortarSpecial.png',
+        towerWorth: tower.towerWorth + 15000
+      })
+    }
+  ],
+  cannon: [
+    {
+      name: "Heavy Ammunition",
+      cost: 400,
+      requires: 0,
+      description: "Increases explosion damage by 40",
+      effect: (tower) => ({
+        attack: tower.attack + 40,
+        towerWorth: tower.towerWorth + 400
+      })
+    },
+    {
+      name: "Rapid Loading",
+      cost: 1000,
+      description: "Reduces attack interval by 300ms",
+      requires: 1,
+      effect: (tower) => ({
+        attackInterval: tower.attackInterval - 300,
+        towerWorth: tower.towerWorth + 1000
+      })
+    },
+    {
+      name: "Blast Radius",
+      cost: 1500,
+      description: "Increases explosion radius by 20%",
+      requires: 2,
+      effect: (tower) => ({
+        explosionRadius: tower.explosionRadius * 1.2,
+        towerWorth: tower.towerWorth + 800
+      })
+    },
+    {
+      name: "Better shells",
+      cost: 4000,
+      description: "+75 damage and faster reload",
+      requires: 3,
+      effect: (tower) => ({
+        attackInterval: tower.attackInterval - 400,
+        attack: tower.attack + 75,
+        towerWorth: tower.towerWorth + 4000
+      })
+    },
+    {
+      name: "Extended Range",
+      cost: 6000,
+      description: "Increases range by 25%",
+      requires: 4,
+      effect: (tower) => ({
+        radius: tower.radius * 1.25,
+        towerWorth: tower.towerWorth + 1500
+      })
+    },
+    {
+      name: "Critical Strike",
+      cost: 8000,
+      description: "30% chance to deal double damage",
+      requires: 5,
+      effect: (tower) => ({
+        hasCritical: true,
+        criticalChance: 0.3,
+        criticalMultiplier: 2,
+        towerWorth: tower.towerWorth + 8000
+      })
+    },
+    {
+      name: "Siege Master",
+      cost: 15000,
+      description: "Ultimate explosive power",
+      requires: 6,
+      effect: (tower) => ({
+        attack: tower.attack * 2,
+        explosionRadius: tower.explosionRadius * 1.20,
+        src: '/cannonSpecial.png',
+        towerWorth: tower.towerWorth + 10000
+      })
+    }
+  ]
+};
 // Add this new component near your other components
 const RangeIndicator = ({ tower }: { tower: Tower }) => {
   const gameAreaWidth = 100; // Adjust this value based on your game area width
