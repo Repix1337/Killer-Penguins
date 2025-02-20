@@ -1556,12 +1556,13 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Enhanced Damage",
+      name: "Enhanced Damage & Stealth detection",
       cost: 1000,
-      description: "Increases attack damage by 25",
+      description: "Increases attack damage by 25, stealth detection",
       requires: 1,
       effect: (tower) => ({
         attack: tower.attack + 25,
+        canHitStealth: true,
         towerWorth: tower.towerWorth + 1000
       })
     },
@@ -1588,11 +1589,11 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
     {
       name: "Extended Range",
       cost: 5000,
-      description: "Increases attack range by 25%, stealth detection",
+      description: "Increases attack range by 25%",
       requires: 4,
       effect: (tower) => ({
         radius: tower.radius * 1.25,
-        canHitStealth: true,
+        
         towerWorth: tower.towerWorth + 5000
       })
     },
