@@ -686,7 +686,7 @@ useEffect(() => {
             const newHp = enemy.hp - tower.attack;
             // Grant money if enemy dies
             if (newHp <= 0) {
-              setMoney(prev => prev + Math.floor((enemy.maxHp / 15) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1)));            }
+              setMoney(prev => prev + Math.floor((enemy.maxHp / 10) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1)));            }
             return {
               ...enemy,
               src: enemy.isArmored ? enemy.src.replace('armored', '') : enemy.src,
@@ -703,7 +703,7 @@ useEffect(() => {
             const newHp = enemy.hp - splashDamage;
             // Grant money if enemy dies from splash
             if (newHp <= 0) {
-              setMoney(prev => prev + Math.floor((enemy.maxHp / 15) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1)));
+              setMoney(prev => prev + Math.floor((enemy.maxHp / 10) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1)));
             }
             return {
               ...enemy,
@@ -753,7 +753,7 @@ useEffect(() => {
             newHp = enemy.isArmored ? enemy.hp : Math.max(enemy.hp - actualDamage, 0);
             // Add money reward when basic tower kills an enemy
             if (newHp <= 0 && enemy.hp > 0) {
-              setMoney(prev => prev + Math.floor((enemy.maxHp / 15) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1)));            }
+              setMoney(prev => prev + Math.floor((enemy.maxHp / 10) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1)));            }
             return {
               ...enemy,
               hp: newHp,
@@ -1086,7 +1086,7 @@ useEffect(() => {
           const newHp = enemy.hp - actualPoisonDamage;
           // Only grant money if the poison damage kills the enemy
           if (newHp <= 0 && enemy.hp > 0) {
-            setMoney(prev => prev + Math.floor((enemy.maxHp / 15) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1)));          }
+            setMoney(prev => prev + Math.floor((enemy.maxHp / 10) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1)));          }
   
           return {
             ...enemy,
@@ -1379,7 +1379,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Rapid Fire",
+      name: "Combat Accelerator",  // was "Rapid Fire"
       cost: 600,
       description: "Reduces attack interval by 250ms",
       requires: 1,
@@ -1448,7 +1448,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
   ],
   sniper: [
     {
-      name: "Precision Scope",
+      name: "High-Caliber Rounds",  // was "Precision Scope"
       cost: 800,
       requires: 0,
       description: "Increases attack damage by 80",
@@ -1458,7 +1458,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Advanced Targeting",
+      name: "Neural Interface",  // was "Advanced Targeting"
       cost: 1000,
       description: "Reduces attack interval by 500ms",
       requires: 1,
@@ -1611,7 +1611,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
     {
       name: "Double Target",
       cost: 1000,
-      description: "Can slow two targets at once",
+      description: "Can slow two targets simultaneously",
       requires: 1,
       effect: (tower) => ({
         attackType: 'double',
@@ -1674,7 +1674,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
   ],
   gasspitter: [
     {
-      name: "Potent Toxin",
+      name: "Virulent Strain",  // was "Potent Toxin"
       cost: 300,
       requires: 0,
       description: "Increases poison damage by 20",
@@ -1684,7 +1684,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Better Toxin",
+      name: "Caustic Catalyst",  // was "Better Toxin"
       cost: 600,
       description: "Increases poison damage by 20",
       requires: 1,
@@ -1696,7 +1696,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
     {
       name: "Double Spray",
       cost: 1200,
-      description: "Can poison two targets",
+      description: "Can poison two targets simultaneously",
       requires: 2,
       effect: (tower) => ({
         attackType: 'double',
@@ -1748,7 +1748,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
   ],
   mortar: [
     {
-      name: "Heavy Shells",
+      name: "Seismic Shells",  // was "Heavy Shells"
       cost: 400,
       requires: 0,
       description: "Increases explosion damage by 50",
@@ -1758,7 +1758,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Faster Reload",
+      name: "Rapid Reloader",  // was "Faster Reload"
       cost: 1000,
       description: "Reduces attack interval by 1000ms",
       requires: 1,
@@ -1768,7 +1768,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Bigger Explosions",
+      name: "Shockwave Amplifier",  // was "Bigger Explosions"
       cost: 2000,
       description: "Increases explosion radius by 20%",
       requires: 2,
@@ -1824,7 +1824,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
   ],
   cannon: [
     {
-      name: "Heavy Ammunition",
+      name: "Tungsten Core",  // was "Heavy Ammunition"
       cost: 400,
       requires: 0,
       description: "Increases explosion damage by 40",
@@ -1834,7 +1834,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Rapid Loading",
+      name: "Autoloader System",  // was "Rapid Loading"
       cost: 1000,
       description: "Reduces attack interval by 300ms",
       requires: 1,
