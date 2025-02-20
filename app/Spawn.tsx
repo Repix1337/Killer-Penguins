@@ -398,6 +398,29 @@ const TOWER_TYPES = {
     explosionRadius: 20,
     effectSrc: '/sniperAttack.png'
   }
+  ,
+  CANNON: {
+    src: '/cannon.png',
+    baseAttack: 75,
+    attack: 75,
+    baseAttackInterval: 2000,
+    attackInterval: 2000,
+    price: 500,
+    towerWorth: 500,
+    type: 'cannon',
+    maxDamage: 300,
+    maxAttackInterval: 1000,
+    radius: 27,
+    attackType: 'explosion',
+    canHitStealth: false,
+    poisonDamage: 0,
+    maxPoisonDamage: 0,
+    hasSpecialUpgrade: false,
+    specialUpgradeAvailable: false,
+    canStopRegen: false,
+    explosionRadius: 15,
+    effectSrc: '/sniperAttack.png'
+  }
 };
 
 
@@ -1529,6 +1552,16 @@ const upgradeTower = () => {
                     explosionRadius: t.explosionRadius * 1.25,
                     src: '/mortarSpecial.png'
                 };
+                case 'cannon':
+                  return { 
+                      ...t, 
+                      hasSpecialUpgrade: true, 
+                      attack: t.attack * 2, 
+                      maxDamage: t.maxDamage * 2,
+                      radius: t.radius * 1.2, 
+                      explosionRadius: t.explosionRadius * 1.25,
+                      src: '/cannonSpecial.png'
+                  };
               default:
                 return t;
             }
@@ -1560,6 +1593,8 @@ const upgradeTower = () => {
               break;
             case 'mortar':
               towerElement.src = '/mortarSpecial.png';
+            case 'cannon':
+              towerElement.src = '/cannonSpecial.png';
                 break;
           }
         }
@@ -1578,8 +1613,10 @@ const upgradeTower = () => {
         return "Cryogen(20000$)";
       case 'gasspitter':
         return "Acid Spitter (20000$)";
-        case 'mortar':
-          return "Armageddon (20000$)";
+      case 'mortar':
+        return "Armageddon (20000$)";
+      case 'cannon':
+        return "Armageddon (20000$)";
       default:
         return "Special Upgrade (20000$)";
     }
@@ -1604,6 +1641,8 @@ const checkSpecialUpgradeAvailability = (tower: Tower) => {
     case 'gasspitter':
       return baseConditions && tower.poisonDamage === tower.maxPoisonDamage;
     case 'mortar':
+      return baseConditions;
+    case 'cannon':
       return baseConditions;
     default:
       return false;

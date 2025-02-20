@@ -83,7 +83,7 @@ const GameInterface = () => {
         {/* Tower Selection Panel */}
         <div className='bg-slate-800 flex flex-col items-center p-2 shadow-lg border border-blue-400 w-full'>
   <h1 className="text-lg font-bold mb-2">Tower Select Panel</h1>
-  <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-1 w-full max-w-3xl px-1 justify-items-center'>
+  <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-1 w-full max-w-3xl px-1 justify-items-center'>
             <TowerButton
               type="basic"
               src="/tower1.png"
@@ -132,6 +132,14 @@ const GameInterface = () => {
               onClick={() => handleTowerSelect('mortar')}
               label="Mortar"
             />
+            <TowerButton
+              type="cannon"
+              src="/cannon.png"
+              price={500}
+              isSelected={selectedTowerType === 'cannon'}
+              onClick={() => handleTowerSelect('cannon')}
+              label="Cannon"
+            />
           </div>
         </div>
       </div>
@@ -145,6 +153,7 @@ interface TowerType {
   slower: string;
   gasspitter: string;
   mortar: string;
+  cannon: string;
 }
 
 interface TowerButtonProps {
