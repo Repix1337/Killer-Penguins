@@ -133,7 +133,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   // First, extract enemy types as constants
   const ENEMY_TYPES = {
     BASIC: {
-      src: 'basic.png',
+      src: 'basicEnemy.png',
       hp: 100,
       damage: 5,
       type: 'basic',
@@ -244,7 +244,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       isArmored: false,
     },
     ARMOREDBASIC: {
-      src: 'armoredbasic.png',
+      src: 'armoredbasicEnemy.png',
       hp: 150,
       damage: 30,
       type: 'armoredbasic',

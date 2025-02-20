@@ -6,68 +6,151 @@ interface TutorialWindowProps {
 
 const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
     const [activeTab, setActiveTab] = useState<'towers' | 'mechanics'>('towers');
+    const [selectedTowerInfo, setSelectedTowerInfo] = useState<string | null>(null);
 
-    const renderTowerContent = () => (
-        <div className="space-y-6">
-            {/* Basic Tower */}
-            <div className="bg-slate-700 p-4 rounded-lg">
-                <div className="flex items-center gap-4 mb-2">
-                    <img src="/tower1.png" alt="Basic Tower" className="w-12 h-12"/>
-                    <h3 className="text-xl text-white">Basic Tower (100$)</h3>
-                </div>
-                <p className="text-gray-300">Balanced tower with good damage and attack speed. Can be upgraded to hit 2 enemies at a time.</p>
-                <p className="text-yellow-400 mt-2">Special: Artillery (20000$) - Massive damage, range increase, and explosion damage.</p>
+    const renderTowerContent = () => {
+        const towerData = { 
+            basic: {
+                name: "Basic Tower",
+                cost: 100,
+                description: "Balanced tower with good damage and attack speed.",
+                special: "Artillery Master (20000$) - Massive damage, range increase, and explosion damage.",
+                upgrades: [
+                    "Level 1 (400$) - Enhanced Targeting: +40 damage",
+                    "Level 2 (600$) - Combat Accelerator: -250ms attack interval",
+                    "Level 3 (1500$) - Double Shot: Can hit 2 enemies",
+                    "Level 4 (2500$) - Armor Piercing: Can hit armored and stealth",
+                    "Level 5 (3000$) - Extended Range: +30% range",
+                    "Level 6 (5000$) - Critical Strike: 25% chance for 2x damage",
+                    "Level 7 (15000$) - Artillery Master: Explosive damage"
+                ]
+            },
+            sniper: {
+                name: "Sniper Tower",
+                cost: 200,
+                description: "High single-target damage with long range.",
+                special: "Elite Sniper (20000$) - 5x damage boost.",
+                upgrades: [
+                    "Level 1 (800$) - High-Caliber: +80 damage",
+                    "Level 2 (1000$) - Neural Interface: -500ms attack interval",
+                    "Level 3 (2000$) - Armor Piercing: Can hit armored, +100 damage",
+                    "Level 4 (2500$) - Rapid Targeting: -500ms attack interval",
+                    "Level 5 (4000$) - Critical Strike: 35% chance for 3x damage",
+                    "Level 6 (5000$) - Double Shot: Can hit 2 enemies",
+                    "Level 7 (10000$) - Elite Sniper: 5x damage"
+                ]
+            },
+            rapidShooter: {
+                name: "Rapid Shooter",
+                cost: 500,
+                description: "High attack speed tower, effective against groups.",
+                special: "Gatling Master (10000$) - Ultimate attack speed.",
+                upgrades: [
+                    "Level 1 (500$) - Rapid Fire: -100ms attack interval",
+                    "Level 2 (1000$) - Enhanced Damage: +25 damage, stealth detection",
+                    "Level 3 (2500$) - Triple Shot: Can hit 3 enemies",
+                    "Level 4 (2000$) - Quick Loader: -100ms attack interval",
+                    "Level 5 (5000$) - Extended Range: +25% range",
+                    "Level 6 (7500$) - Quadruple Shot: Can hit 4 enemies",
+                    "Level 7 (10000$) - Gatling Master: 1.5x damage, 40% faster attack"
+                ]
+            },
+            slower: {
+                name: "Slower Tower",
+                cost: 300,
+                description: "Slows down enemies in range.",
+                special: "Time Warper (10000$) - Maximum slow effect.",
+                upgrades: [
+                    "Level 1 (400$) - Enhanced Slow: +10% slow effect",
+                    "Level 2 (1000$) - Double Target: Can slow 2 enemies",
+                    "Level 3 (1500$) - Extended Duration: Longer slow, stealth detection",
+                    "Level 4 (4500$) - Triple Target: Can slow 3 enemies",
+                    "Level 5 (5000$) - Potent Slow: +15% slow effect",
+                    "Level 6 (7500$) - Extended Range: +40% range",
+                    "Level 7 (10000$) - Time Warper: Maximum slow effect"
+                ]
+            },
+            gasSpitter: {
+                name: "Gas Spitter",
+                cost: 300,
+                description: "Poisons enemies with damage over time.",
+                special: "Plague Master (10000$) - Deadly poison, stops regen.",
+                upgrades: [
+                    "Level 1 (300$) - Virulent Strain: +20 poison damage",
+                    "Level 2 (600$) - Caustic Catalyst: +20 poison damage",
+                    "Level 3 (1200$) - Double Spray: Can poison 2 enemies",
+                    "Level 4 (1500$) - Concentrated Toxin: +30 poison damage",
+                    "Level 5 (2500$) - Extended Range: +25% range",
+                    "Level 6 (5000$) - Triple Spray: Can poison 3 enemies",
+                    "Level 7 (10000$) - Plague Master: 4x poison damage, stops regen"
+                ]
+            },
+            mortar: {
+                name: "Mortar Tower",
+                cost: 1200,
+                description: "Long-range explosive damage to groups.",
+                special: "Artillery Master (15000$) - Maximum explosion power.",
+                upgrades: [
+                    "Level 1 (400$) - Seismic Shells: +50 damage",
+                    "Level 2 (1000$) - Rapid Reloader: -1000ms attack interval",
+                    "Level 3 (2000$) - Shockwave Amplifier: +20% explosion radius",
+                    "Level 4 (4000$) - Better Shells: +75 damage, faster reload",
+                    "Level 5 (5000$) - Extended Range: +30% range",
+                    "Level 6 (7500$) - Devastating Blast: +100 damage, +25% radius",
+                    "Level 7 (15000$) - Artillery Master: 2x damage, +30% range"
+                ]
+            },
+            cannon: {
+                name: "Cannon Tower",
+                cost: 500,
+                description: "Explosive damage tower effective against groups.",
+                special: "Siege Master (15000$) - Ultimate explosive power.",
+                upgrades: [
+                    "Level 1 (400$) - Tungsten Core: +40 damage",
+                    "Level 2 (1000$) - Autoloader: -300ms attack interval",
+                    "Level 3 (1500$) - Blast Radius: +20% explosion radius",
+                    "Level 4 (4000$) - Better Shells: +75 damage, faster reload",
+                    "Level 5 (6000$) - Extended Range: +25% range",
+                    "Level 6 (8000$) - Critical Strike: 30% chance for 2x damage",
+                    "Level 7 (15000$) - Siege Master: 2x damage, larger explosions"
+                ]
+            }
+        };
+    
+        return (
+            <div className="space-y-6">
+                {Object.entries(towerData).map(([key, tower]) => (
+                    <div key={key} className="bg-slate-700 p-4 rounded-lg hover:bg-slate-600 transition-all">
+                        <div 
+                            className="flex items-center gap-4 mb-2 cursor-pointer group"
+                            onClick={() => setSelectedTowerInfo(selectedTowerInfo === key ? null : key)}
+                        >
+                            <img src={`/${key}.png`} alt={tower.name} className="w-12 h-12"/>
+                            <div className="flex-1">
+                                <h3 className="text-xl text-white flex items-center gap-2">
+                                    {tower.name} ({tower.cost}$)
+                                    <span className="text-blue-400 text-sm">
+                                        {selectedTowerInfo === key ? '▼ Click to hide' : '▶ Click to show upgrades'}
+                                    </span>
+                                </h3>
+                            </div>
+                        </div>
+                        <p className="text-gray-300">{tower.description}</p>
+                        <p className="text-yellow-400 mt-2">{tower.special}</p>
+                        
+                        {selectedTowerInfo === key && (
+                            <div className="mt-4 ml-4 space-y-2 border-t border-blue-400 pt-4">
+                                <h4 className="text-lg text-blue-400 mb-2">Upgrade Path:</h4>
+                                {tower.upgrades.map((upgrade, index) => (
+                                    <p key={index} className="text-gray-300">{upgrade}</p>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                ))}
             </div>
-
-            {/* Sniper Tower */}
-            <div className="bg-slate-700 p-4 rounded-lg">
-                <div className="flex items-center gap-4 mb-2">
-                    <img src="/tower2.png" alt="Sniper Tower" className="w-12 h-12"/>
-                    <h3 className="text-xl text-white">Sniper Tower (200$)</h3>
-                </div>
-                <p className="text-gray-300">High single-target damage with long range but slow attack speed.</p>
-                <p className="text-red-500">Has base stealth detection.</p>
-                <p className="text-yellow-400 mt-2">Special: Rail Gun (20000$) - Quadruple damage.</p>
-            </div>
-
-            {/* Update the rest of the towers with correct prices and abilities */}
-            <div className="bg-slate-700 p-4 rounded-lg">
-                <div className="flex items-center gap-4 mb-2">
-                    <img src="/rapidShooter.png" alt="Rapid Shooter" className="w-12 h-12"/>
-                    <h3 className="text-xl text-white">Rapid Shooter (500$)</h3>
-                </div>
-                <p className="text-gray-300">Fast-attacking tower that can be upgraded to triple attack.</p>
-                <p className="text-yellow-400 mt-2">Special: Gatling Gun (20000$) - Increased damage, faster attacks, and quad targeting.</p>
-            </div>
-
-            <div className="bg-slate-700 p-4 rounded-lg">
-                <div className="flex items-center gap-4 mb-2">
-                    <img src="/slower.png" alt="Slower Tower" className="w-12 h-12"/>
-                    <h3 className="text-xl text-white">Slower Tower (300$)</h3>
-                </div>
-                <p className="text-gray-300">Slows down enemies in range. Perfect for strategic control.</p>
-                <p className="text-yellow-400 mt-2">Special: Cryogen (20000$) - Maximum slow effect and triple targeting.</p>
-            </div>
-
-            <div className="bg-slate-700 p-4 rounded-lg">
-                <div className="flex items-center gap-4 mb-2">
-                    <img src="/gasSpitter.png" alt="Gas Spitter" className="w-12 h-12"/>
-                    <h3 className="text-xl text-white">Gas Spitter (300$)</h3>
-                </div>
-                <p className="text-gray-300">Poisons enemies with damage over time. Effective vs high HP units.</p>
-                <p className="text-yellow-400 mt-2">Special: Acid Spitter (20000$) - Deadly poison and stops enemy regeneration.</p>
-            </div>
-
-            <div className="bg-slate-700 p-4 rounded-lg">
-                <div className="flex items-center gap-4 mb-2">
-                    <img src="/mortar.png" alt="Mortar Tower" className="w-12 h-12"/>
-                    <h3 className="text-xl text-white">Mortar Tower (1200$)</h3>
-                </div>
-                <p className="text-gray-300">Area damage tower that hits multiple enemies in blast radius.</p>
-                <p className="text-yellow-400 mt-2">Special: Armageddon (20000$) - Massive explosion radius and damage.</p>
-            </div>
-        </div>
-    );
+        );
+    };
 
     const renderMechanicsContent = () => (
         <div className="space-y-6">
@@ -88,12 +171,20 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
                 <p className="text-gray-300">• Change targeting priority between First, Last, and Highest HP</p>
             </div>
 
+            <div className="bg-slate-700 p-4 rounded-lg">
+                <h3 className="text-xl text-white mb-2">Targeting Options</h3>
+                <p className="text-gray-300">• First - Targets enemy furthest along the path</p>
+                <p className="text-gray-300">• Last - Targets enemy closest to start</p>
+                <p className="text-gray-300">• Highest HP - Targets enemy with most health</p>
+                <p className="text-gray-300">• Change targeting in tower upgrade menu</p>
+            </div>
+
             {/* Enemy Types */}
             <div className="bg-slate-700 p-4 rounded-lg">
                 <h3 className="text-xl text-white mb-2">Enemy Types</h3>
                 <div className="space-y-2">
                     <div className="flex items-center gap-4">
-                        <img src="/basic.png" alt="Normal Enemy" className="w-8 h-8"/>
+                        <img src="/basicEnemy.png" alt="Normal Enemy" className="w-8 h-8"/>
                         <p className="text-gray-300">• Normal - Basic enemies</p>
                     </div>
                     <div className="flex items-center gap-4">
