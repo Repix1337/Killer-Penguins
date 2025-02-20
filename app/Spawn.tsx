@@ -11,7 +11,7 @@ interface SpawnProps {
   setMoney: React.Dispatch<React.SetStateAction<number>>;
   setRound: React.Dispatch<React.SetStateAction<number>>;
   hp: number;
-  isSpeedUp: boolean;  
+  isSpeedUp: number;  
   isPaused: boolean;
   setCanPause: React.Dispatch<React.SetStateAction<boolean>>;
   selectedTowerType: string;
@@ -580,7 +580,7 @@ setEnemies([]);
     if (round > 0) {
       spawnEnemies();
     }
-  }, (round === 32  ? (isSpeedUp ? 2500 : 1250) : Math.max(1000 / round, 50)) / (isSpeedUp ? 2 : 1));
+  }, (round === 32  ? (isSpeedUp ? 2500 : 1250) : Math.max(1000 / round, 50)) / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
 
   // Cleanup
   return () => clearInterval(spawnInterval);
@@ -596,7 +596,7 @@ useEffect(() => {
       setRound(prev => prev + 1);
       setEnemyCount(0);
       setCanPause(false); // Disable pausing when new round starts
-    }, 4000 / (isSpeedUp ? 2 : 1));
+      }, 4000 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
 
     return () => clearTimeout(roundTimeout);
   }
@@ -612,7 +612,7 @@ useEffect(() => {
   useEffect(() => {
     if (!isPageVisible || round <= 0 || isPaused) return; 
 
-    const interval = setInterval(moveEnemy, isSpeedUp ? 12.5 : 25); // Twice as fast when speed up
+    const interval = setInterval(moveEnemy, 25 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)); // Adjusted for 3x speed
     return () => clearInterval(interval);
   }, [round, isPageVisible, isSpeedUp, isPaused]); // Add isPaused to dependencies
 
@@ -626,7 +626,7 @@ useEffect(() => {
           enemy.regen > 0 && enemy.canRegen ? {...enemy, hp: enemy.hp + enemy.regen} : enemy
         )
       )
-    }, 1500 / (isSpeedUp ? 2 : 1));
+    }, 1500 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)); // Adjusted for 3x speed
     return () => clearInterval(interval);
   }, [enemies, isPageVisible, isSpeedUp, isPaused]); // Add isPaused to dependencies
 
@@ -802,7 +802,7 @@ useEffect(() => {
           })
         );
       }
-    }, tower.attackInterval / (isSpeedUp ? 2 : 1));
+    }, tower.attackInterval / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
   
     return () => clearTimeout(timeoutId);
   
@@ -1049,8 +1049,8 @@ useEffect(() => {
   useEffect(() => {
     if (!isPageVisible || isPaused) return;
              
-    const POISON_TICK_RATE = isSpeedUp ? 5 : 10; 
-    const POISON_DURATION = isSpeedUp ? 2000 : 4000; 
+    const POISON_TICK_RATE = isSpeedUp === 2 ? 3.33 : isSpeedUp ? 5 : 10; // Adjusted for 3x speed
+    const POISON_DURATION = isSpeedUp === 2 ? 1333 : isSpeedUp ? 2000 : 4000; // Adjusted for 3x speed
     const TOTAL_TICKS = POISON_DURATION / POISON_TICK_RATE;
     
     const poisonInterval = setInterval(() => {
@@ -1334,7 +1334,7 @@ const upgradeTower = () => {
             '--enemy-positionX': `${effect.enemyPositionX + 1.5}%`,
             '--enemy-positionY': `${effect.enemyPositionY}%`,
             left: `${effect.towerPositionX}%`,
-            animationDuration: `${isSpeedUp ? '50ms' : '100ms'}`,
+            animationDuration: `${100 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)}ms`,
           } as React.CSSProperties}
         />
           

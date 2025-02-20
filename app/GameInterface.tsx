@@ -8,7 +8,7 @@ const GameInterface = () => {
     const [round, setRound] = React.useState(0)
     const [HealthPoints, setHealthPoints] = React.useState(100)
     const [money, setMoney] = React.useState(200);
-    const [isSpeedUp, setIsSpeedUp] = React.useState(false);
+    const [isSpeedUp, setIsSpeedUp] = React.useState(0);
     const [isPaused, setIsPaused] = React.useState(false);
     const [canPause, setCanPause] = React.useState(false);
     const [selectedTowerType, setSelectedTowerType] = React.useState('');
@@ -21,15 +21,16 @@ const GameInterface = () => {
 
     const handleSpeedUp = () => {
       if (!isPaused) {
-        setIsSpeedUp(prev => !prev);
+        setIsSpeedUp(prev => (prev >= 2 ? 0 : prev + 1));
       }
     }
+    
 
     const handlePause = () => {
       if (canPause) {
         setIsPaused(prev => !prev);
         if (isSpeedUp) {
-          setIsSpeedUp(false);
+          setIsSpeedUp(0);
         }
       }
     }
@@ -50,9 +51,9 @@ const GameInterface = () => {
           <div className='text-red-500 text-sm md:text-xl'> &hearts; {HealthPoints}</div>
           <div className='text-green-500 text-sm md:text-xl'>{Math.floor(money)}$</div>
           <div className={`p-1 rounded-lg shadow-sm hover:cursor-pointer text-sm md:text-xl
-                          ${isSpeedUp ? 'bg-blue-600' : 'bg-blue-400'}`}
+                          ${isSpeedUp === 2 ? 'bg-blue-800' : isSpeedUp ? 'bg-blue-600' : 'bg-blue-400'}`}
                onClick={handleSpeedUp}>
-            Speed {isSpeedUp ? '2x' : '1x'}
+             Speed {isSpeedUp === 2 ? '3x' : isSpeedUp === 1 ? '2x' : '1x'}
           </div>
           <div className={`p-1 rounded-lg shadow-sm text-sm md:text-xl
                           ${canPause ? 'hover:cursor-pointer' : 'opacity-50 cursor-not-allowed'}
