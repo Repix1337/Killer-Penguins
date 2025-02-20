@@ -691,7 +691,7 @@ useEffect(() => {
             if (newHp <= 0 && !processedEnemies.has(enemy.id)) {
               processedEnemies.add(enemy.id);
               setMoney(prev => {
-                const reward = Math.floor((enemy.maxHp / 10) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1));
+                const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1));
                 return prev + reward;
               });
             }
@@ -713,7 +713,7 @@ useEffect(() => {
             if (newHp <= 0 && !processedEnemies.has(enemy.id)) {
               processedEnemies.add(enemy.id);
               setMoney(prev => {
-                const reward = Math.floor((enemy.maxHp / 10) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1));
+                const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1));
                 return prev + reward;
               });
             }
@@ -767,7 +767,7 @@ useEffect(() => {
             if (newHp <= 0 && enemy.hp > 0 && !processedEnemies.has(enemy.id)) {
               processedEnemies.add(enemy.id);
               setMoney(prev => {
-                const reward = Math.floor((enemy.maxHp / 10) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1));
+                const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1));
                 return prev + reward;
               });
             }
@@ -1105,7 +1105,7 @@ useEffect(() => {
           if (newHp <= 0 && enemy.hp > 0 && !processedEnemies.has(enemy.id)) {
             processedEnemies.add(enemy.id);
             setMoney(prev => {
-              const reward = Math.floor((enemy.maxHp / 10) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1));
+              const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1));
               return prev + reward;
             });
           }
