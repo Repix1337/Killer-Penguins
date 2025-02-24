@@ -85,6 +85,7 @@ interface Tower {
   criticalChance?: number;
   criticalMultiplier?: number;
   canHitArmored?: boolean;
+  canStun?: boolean;
 }
 
 const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp, isSpeedUp, isPaused, setCanPause, selectedTowerType }) => {
@@ -334,7 +335,7 @@ const TOWER_TYPES = {
     towerWorth: 500,
     type: 'rapidShooter',
     maxDamage: 68,
-    maxAttackInterval: 200,
+    maxAttackInterval: 150,
     radius: 27,
     attackType: 'double',
     canHitStealth: false,
@@ -402,8 +403,8 @@ const TOWER_TYPES = {
     price: 1200,
     towerWorth: 1200,
     type: 'mortar',
-    maxDamage: 650,
-    maxAttackInterval: 4500,
+    maxDamage: 900,
+    maxAttackInterval: 5500,
     radius: 40,
     attackType: 'explosion',
     canHitStealth: false,
@@ -412,7 +413,7 @@ const TOWER_TYPES = {
     hasSpecialUpgrade: false,
     specialUpgradeAvailable: false,
     canStopRegen: false,
-    explosionRadius: 20,
+    explosionRadius: 15,
     effectSrc: '/sniperAttack.png'
   }
   ,
@@ -426,7 +427,7 @@ const TOWER_TYPES = {
     towerWorth: 500,
     type: 'cannon',
     maxDamage: 380,
-    maxAttackInterval: 1000,
+    maxAttackInterval: 1300,
     radius: 27,
     attackType: 'explosion',
     canHitStealth: false,
@@ -435,7 +436,7 @@ const TOWER_TYPES = {
     hasSpecialUpgrade: false,
     specialUpgradeAvailable: false,
     canStopRegen: false,
-    explosionRadius: 15,
+    explosionRadius: 10,
     effectSrc: '/sniperAttack.png'
   }
 };
@@ -691,7 +692,7 @@ useEffect(() => {
             if (newHp <= 0 && !processedEnemies.has(enemy.id)) {
               processedEnemies.add(enemy.id);
               setMoney(prev => {
-                const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1));
+                const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.15 : round > 20 ? 0.3 : 1));
                 return prev + reward;
               });
             }
@@ -700,7 +701,11 @@ useEffect(() => {
               src: enemy.isArmored ? enemy.src.replace('armored', '') : enemy.src,
               isTargeted: true,
               hp: newHp,
-              isArmored: false
+              isArmored: false,
+              isSlowed: tower.canStun ? true : false,
+              slowSourceId: tower.canStun ? tower.id : undefined,
+              slowStartTime: tower.canStun ? Date.now() : undefined,
+              speed: tower.canStun ? 0 : enemy.baseSpeed
             };
           }
   
@@ -722,7 +727,11 @@ useEffect(() => {
               src: enemy.isArmored ? enemy.src.replace('armored', '') : enemy.src,
               isTargeted: true,
               hp: newHp,
-              isArmored: false
+              isArmored: false,
+              isSlowed: tower.canStun ? true : false,
+              slowSourceId: tower.canStun ? tower.id : undefined,
+              slowStartTime: tower.canStun ? Date.now() : undefined,
+              speed: tower.canStun ? 0 :enemy.baseSpeed
             };
           }
           return enemy;
@@ -760,7 +769,7 @@ useEffect(() => {
               hp: enemy.isArmored ? enemy.hp : Math.max(enemy.hp - actualDamage, 0),
               isTargeted: true
             };
-          } else {
+          }  else {
             // Regular towers can't damage armored enemies
             newHp = enemy.isArmored ? enemy.hp : Math.max(enemy.hp - actualDamage, 0);
             // Add money reward when basic tower kills an enemy
@@ -1028,6 +1037,8 @@ useEffect(() => {
   useEffect(() => {
     if (!isPageVisible || isPaused) return;
     
+    const slowCheckInterval = 10 * (isSpeedUp === 2 ? 1/3 : isSpeedUp ? 1/2 : 1);
+    
     const slowInterval = setInterval(() => {
       const currentTime = Date.now();
   
@@ -1036,14 +1047,19 @@ useEffect(() => {
         const updatedEnemies = prevEnemies.map(enemy => {
           if (!enemy.isSlowed || !enemy.slowSourceId || !enemy.slowStartTime) return enemy;
           
-          // Find the tower that applied the slow effect
-          const slowTower = tower.find(t => t.id === enemy.slowSourceId);
-          if (!slowTower) return enemy;
-
-          // Use the tower's slowDuration property, or fall back to default values
-          const slowDuration = isSpeedUp ? slowTower.slowDuration ?? 0 / 2 : slowTower.slowDuration; 
+          // Find the tower that applied the effect
+          const effectTower = tower.find(t => t.id === enemy.slowSourceId);
+          if (!effectTower) return enemy;
+  
+          // If it's a stun (speed = 0), use the stun duration, otherwise use slow duration
+          const isStunEffect = enemy.speed === 0;
+          const effectDuration = isStunEffect ? 
+            (effectTower.slowDuration ?? 250) : 
+            (effectTower.slowDuration ?? 2000);
+  
+          const adjustedDuration = effectDuration / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1);
           
-          if (currentTime - enemy.slowStartTime >= (slowDuration ?? 0)) {
+          if (currentTime - enemy.slowStartTime >= adjustedDuration) {
             hasChanges = true;
             return {
               ...enemy,
@@ -1056,13 +1072,12 @@ useEffect(() => {
           return enemy;
         });
   
-        // Only return new array if there were actual changes
         return hasChanges ? updatedEnemies : prevEnemies;
       });
-    }, 1000); // Check every second
+    }, slowCheckInterval);
   
     return () => clearInterval(slowInterval);
-}, [isPageVisible, isPaused, isSpeedUp, tower]); // Added tower to dependencies
+  }, [isPageVisible, isPaused, isSpeedUp, tower]);// Added tower to dependencies
   useEffect(() => {
     if (!isPageVisible || isPaused) return;
              
@@ -1774,41 +1789,40 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       name: "Seismic Shells",  // was "Heavy Shells"
       cost: 400,
       requires: 0,
-      description: "Increases explosion damage by 50",
+      description: "Increases explosion damage by 100",
       effect: (tower) => ({
-        attack: tower.attack + 50,
+        attack: tower.attack + 100,
         towerWorth: tower.towerWorth + 400
       })
     },
     {
       name: "Rapid Reloader",  // was "Faster Reload"
       cost: 1000,
-      description: "Reduces attack interval by 1000ms",
+      description: "Reduces attack interval by 1500ms",
       requires: 1,
       effect: (tower) => ({
-        attackInterval: tower.attackInterval - 1000,
+        attackInterval: tower.attackInterval - 1500,
         towerWorth: tower.towerWorth + 1000
       })
     },
     {
       name: "Shockwave Amplifier",  // was "Bigger Explosions"
       cost: 2000,
-      description: "Increases explosion radius by 20%",
+      description: "Increases explosion radius by 10%",
       requires: 2,
       effect: (tower) => ({
-        explosionRadius: tower.explosionRadius * 1.20,
-        towerWorth: tower.towerWorth + 1000
+        explosionRadius: tower.explosionRadius * 1.1,
+        towerWorth: tower.towerWorth + 2000
       })
     },
     {
       name: "Better shells",
       cost: 4000,
-      description: "+75 damage and faster reload",
+      description: "+125 damage and faster reload",
       requires: 3,
       effect: (tower) => ({
-        attackInterval: tower.attackInterval - 1000,
-        attack: tower.attack + 75,
-        towerWorth: tower.towerWorth + 1500
+        attack: tower.attack + 125,
+        towerWorth: tower.towerWorth + 4000
       })
     },
     {
@@ -1818,7 +1832,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       requires: 4,
       effect: (tower) => ({
         radius: tower.radius * 1.3,
-        towerWorth: tower.towerWorth + 2000
+        towerWorth: tower.towerWorth + 5000
       })
     },
     {
@@ -1827,7 +1841,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       description: "Further increases explosion damage and radius",
       requires: 5,
       effect: (tower) => ({
-        attack: tower.attack + 100,
+        attack: tower.attack + 125,
         explosionRadius: tower.explosionRadius * 1.25,
         towerWorth: tower.towerWorth + 2500
       })
@@ -1888,13 +1902,14 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Extended Range",
+      name: "Stun shells",
       cost: 6000,
-      description: "Increases range by 25%",
+      description: "Cannon can now stun enemies",
       requires: 4,
       effect: (tower) => ({
-        radius: tower.radius * 1.25,
-        towerWorth: tower.towerWorth + 1500
+        canStun: true,
+        slowDuration: 250,
+        towerWorth: tower.towerWorth + 6000
       })
     },
     {
@@ -1911,12 +1926,12 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
     },
     {
       name: "Siege Master",
-      cost: 15000,
+      cost: 10000,
       description: "Ultimate explosive power",
       requires: 6,
       effect: (tower) => ({
-        attack: tower.attack * 2,
-        explosionRadius: tower.explosionRadius * 1.20,
+        attack: tower.attack * 1.25,
+        explosionRadius: tower.explosionRadius * 1.15,
         src: '/cannonSpecial.png',
         towerWorth: tower.towerWorth + 10000
       })
