@@ -674,6 +674,15 @@ useEffect(() => {
         
         const enemiesInExplosionRadius = prevEnemies.filter(enemy => {
           if (enemy.hp <= 0 || enemy.id === primaryTarget.id) return false;
+          const newHp = enemy.hp - tower.attack;
+            // Grant money if enemy dies
+            if (newHp <= 0 && !processedEnemies.has(enemy.id)) {
+              processedEnemies.add(enemy.id);
+              setMoney(prev => {
+                const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.2 : round > 20 ? 0.4 : 1));
+                return prev + reward;
+              });
+            }
           const dx = enemy.positionX - primaryTarget.positionX;
           const dy = enemy.positionY - primaryTarget.positionY;
           const distance = Math.sqrt(dx * dx + dy * dy);
@@ -704,10 +713,31 @@ useEffect(() => {
                                enemiesInExplosionRadius.some(e => e.id === enemy.id);
       
           if (isInExplosion) {
-            // Calculate damage
+            // Calculate damage based on whether it's the primary target or splash damage
             const damage = enemy.id === primaryTarget.id ? tower.attack : tower.attack / 2;
             const actualDamage = Math.min(damage, enemy.hp);
             explosionDamageTotal += actualDamage;
+      
+            // Calculate new HP
+            const newHp = enemy.hp - actualDamage;
+      
+            // Grant money separately for primary target and splash damage kills
+            if (newHp <= 0 && !processedEnemies.has(enemy.id)) {
+              processedEnemies.add(enemy.id);
+              if (enemy.id === primaryTarget.id) {
+                // Primary target kill reward
+                setMoney(prev => {
+                  const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.2 : round > 20 ? 0.4 : 1));
+                  return prev + reward;
+                });
+              } else {
+                // Splash damage kill reward
+                setMoney(prev => {
+                  const reward = Math.floor((enemy.maxHp / 8.5) * (round >= 33 ? 0.2 : round > 20 ? 0.4 : 1));
+                  return prev + reward;
+                });
+              }
+            }
       
             let updatedEnemy = { ...enemy };
       
@@ -735,7 +765,7 @@ useEffect(() => {
                   0
               };
             }
-      
+            
             // Apply damage based on armor
             updatedEnemy.hp = enemy.isArmored && !tower.canHitArmored ? 
               enemy.hp : 
@@ -745,15 +775,7 @@ useEffect(() => {
       
             return updatedEnemy;
           }
-          const newHp = enemy.hp - explosionDamageTotal;
-            // Grant money if enemy dies
-            if (newHp <= 0 && !processedEnemies.has(enemy.id)) {
-              processedEnemies.add(enemy.id);
-              setMoney(prev => {
-                const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.2 : round > 20 ? 0.4 : 1));
-                return prev + reward;
-              });
-            }
+          
           return enemy;
         });
         totalDamageDealt = explosionDamageTotal;
