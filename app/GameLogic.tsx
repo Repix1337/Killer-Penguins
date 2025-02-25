@@ -740,8 +740,9 @@ useEffect(() => {
                 slowSourceId: tower.id,
                 slowStartTime: Date.now(),
                 slowValue: tower.slowAmount,
-                speed: !updatedEnemy.isStunned ? 
-                  Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount) :
+                speed: !updatedEnemy.isStunned ?
+                  round < 30 ? Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount):
+                   Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * 0.6) :
                   0
               };
             }
@@ -844,9 +845,10 @@ useEffect(() => {
               slowSourceId: tower.id,
               slowStartTime: Date.now(),
               slowValue: tower.slowAmount,
-              speed: !updatedEnemy.isStunned ? 
-                Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount) :
-                0
+              speed: !updatedEnemy.isStunned ?
+                  round < 30 ? Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount):
+                   Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * 0.6) :
+                  0
             };
           }
       
