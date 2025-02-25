@@ -1948,10 +1948,11 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       cost: 1500,
       requires: 1,
       path: 2,
-      description: "Further increases range and damage",
+      description: "Further increases range, damage and stealth detection",
       effect: (tower) => ({
         radius: tower.radius * 1.2,
         attack: tower.attack + 15,
+        canHitStealth: true,
         towerWorth: tower.towerWorth + 1500,
         path: 2
       })
@@ -1983,7 +1984,6 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
         chainCount: 3,
         chainRange: 25,
         attack: tower.attack * 1.4,
-        canHitStealth: true,
         src: '/rapidShooterSpecial2.png',
         towerWorth: tower.towerWorth + 12000,
         path: 2
