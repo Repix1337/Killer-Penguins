@@ -223,7 +223,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     },
     SPEEDYREGENTANK: {
       src: 'regenTank.png',
-      hp: 500,
+      hp: 600,
       damage: 50,
       type: 'speedyregentank',
       speed: 0.35,    // from 0.2 * 1.5
@@ -2045,7 +2045,7 @@ slower: [
     path: 1,
     description: "Increases slow effect by 10%",
     effect: (tower) => ({
-      slowAmount: tower.slowAmount ? tower.slowAmount * 0.8 : 0.8,
+      slowAmount: tower.slowAmount ? tower.slowAmount * 0.9 : 0.9,
       towerWorth: tower.towerWorth + 400,
       path: 1
     })
@@ -2057,7 +2057,7 @@ slower: [
     path: 1,
     description: "Further increases slow effect and duration",
     effect: (tower) => ({
-      slowAmount: tower.slowAmount ? tower.slowAmount * 0.7 : 0.7,
+      slowAmount: tower.slowAmount ? tower.slowAmount * 0.8 : 0.8,
       slowDuration: 3000,
       towerWorth: tower.towerWorth + 1500,
       path: 1
@@ -2072,7 +2072,7 @@ slower: [
     effect: (tower) => ({
       attackType: 'explosion',
       explosionRadius: 15,
-      slowAmount: tower.slowAmount ? tower.slowAmount * 0.6 : 0.6,
+      slowAmount: tower.slowAmount ? tower.slowAmount * 0.7: 0.7,
       src: '/slowerSpecial1.png',
       towerWorth: tower.towerWorth + 3500,
       path: 1
@@ -2086,7 +2086,7 @@ slower: [
     description: "Massive slow effect in larger area",
     effect: (tower) => ({
       explosionRadius: 20,
-      slowAmount: tower.slowAmount ? tower.slowAmount * 0.4 : 0.4,
+      slowAmount: tower.slowAmount ? tower.slowAmount * 0.5: 0.5,
       slowDuration: 4000,
       towerWorth: tower.towerWorth + 8000,
       path: 1
@@ -2100,7 +2100,7 @@ slower: [
     description: "Ultimate time manipulation",
     effect: (tower) => ({
       explosionRadius: 25,
-      slowAmount: tower.slowAmount ? tower.slowAmount * 0.3 : 0.3,
+      slowAmount: tower.slowAmount ? tower.slowAmount * 0.4 : 0.4,
       slowDuration: 5000,
       canHitStealth: true,
       towerWorth: tower.towerWorth + 15000,
