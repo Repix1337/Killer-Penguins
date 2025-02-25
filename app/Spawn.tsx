@@ -20,8 +20,9 @@ interface TowerUpgrade {
   name: string;
   cost: number;
   description: string;
+  path: number;
   effect: (tower: Tower) => Partial<Tower>;
-  requires?: number; // Previous upgrade level required
+  requires: number; // Previous upgrade level required
 }
 
 // Define the Enemy interface
@@ -91,6 +92,11 @@ interface Tower {
   canHitArmored?: boolean;
   canStun?: boolean;
   stunDuration?: number;
+  chainCount?: number;
+  chainRange?: number;
+  path1Level: number;
+  path2Level: number;
+  path: number;
 }
 
 const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp, isSpeedUp, isPaused, setCanPause, selectedTowerType }) => {
@@ -340,7 +346,7 @@ const TOWER_TYPES = {
     towerWorth: 500,
     type: 'rapidShooter',
     maxDamage: 68,
-    maxAttackInterval: 150,
+    maxAttackInterval: 200,
     radius: 27,
     attackType: 'double',
     canHitStealth: false,
@@ -408,8 +414,8 @@ const TOWER_TYPES = {
     price: 1200,
     towerWorth: 1200,
     type: 'mortar',
-    maxDamage: 900,
-    maxAttackInterval: 5500,
+    maxDamage: 650,
+    maxAttackInterval: 4500,
     radius: 40,
     attackType: 'explosion',
     canHitStealth: false,
@@ -418,7 +424,7 @@ const TOWER_TYPES = {
     hasSpecialUpgrade: false,
     specialUpgradeAvailable: false,
     canStopRegen: false,
-    explosionRadius: 15,
+    explosionRadius: 20,
     effectSrc: '/sniperAttack.png'
   }
   ,
@@ -432,7 +438,7 @@ const TOWER_TYPES = {
     towerWorth: 500,
     type: 'cannon',
     maxDamage: 380,
-    maxAttackInterval: 1300,
+    maxAttackInterval: 1000,
     radius: 27,
     attackType: 'explosion',
     canHitStealth: false,
@@ -441,7 +447,7 @@ const TOWER_TYPES = {
     hasSpecialUpgrade: false,
     specialUpgradeAvailable: false,
     canStopRegen: false,
-    explosionRadius: 10,
+    explosionRadius: 15,
     effectSrc: '/sniperAttack.png'
   }
 };
@@ -469,7 +475,7 @@ const resetGame = () => {
 };
 
 // Then create a helper function for creating new towers
-const createNewTower = (type: keyof typeof TOWER_TYPES, positionX: number, positionY: number, id: string) => ({
+const createNewTower = (type: keyof typeof TOWER_TYPES, positionX: number, positionY: number, id: string): Tower => ({
   id: id,
   positionX: positionX,
   positionY: positionY,
@@ -478,6 +484,9 @@ const createNewTower = (type: keyof typeof TOWER_TYPES, positionX: number, posit
   targettingType: "first",
   damageDone: 0,
   upgradeLevel: 0,
+  path1Level: 0,
+  path2Level: 0,
+  path: 0,
   ...TOWER_TYPES[type]
 });
 
@@ -661,88 +670,141 @@ useEffect(() => {
       const damageMultiplier = isCriticalHit ? (tower.criticalMultiplier || 1) : 1;
   
       if (tower.attackType === 'explosion') {
-        const primaryTarget = targets[0]; // Get the main target
+        const primaryTarget = targets[0];
         const enemiesInExplosionRadius = prevEnemies.filter(enemy => {
-          if (enemy.hp <= 0 || enemy.id === primaryTarget.id) return false; // Skip dead enemies and primary target
-  
-          // Calculate distance between primary target and other enemies
+          if (enemy.hp <= 0 || enemy.id === primaryTarget.id) return false;
+      
           const dx = enemy.positionX - primaryTarget.positionX;
           const dy = enemy.positionY - primaryTarget.positionY;
           const distance = Math.sqrt(dx * dx + dy * dy);
-  
+      
           return distance <= tower.explosionRadius;
         });
+      
+        // Add explosion effect
         setExplosionEffects(prev => [...prev, {
           id: uuidv4(),
           positionX: primaryTarget.positionX,
           positionY: primaryTarget.positionY,
           timestamp: Date.now()
         }]);
-  
+      
         // Remove explosion effect after animation
         setTimeout(() => {
           setExplosionEffects(prev =>
             prev.filter(effect => effect.positionX !== primaryTarget.positionX)
           );
         }, 300);
+      
         let explosionDamageTotal = 0;
         updatedEnemies = prevEnemies.map(enemy => {
           if (enemy.hp <= 0) return enemy;
-  
-          if (enemy.id === primaryTarget.id) {
-            // Calculate actual damage for primary target
-            const actualDamage = Math.max(Math.min(tower.attack * damageMultiplier, enemy.hp), 0);
+      
+          const isInExplosion = enemy.id === primaryTarget.id || 
+                               enemiesInExplosionRadius.some(e => e.id === enemy.id);
+      
+          if (isInExplosion) {
+            // Calculate damage
+            const damage = enemy.id === primaryTarget.id ? tower.attack : tower.attack / 2;
+            const actualDamage = Math.min(damage, enemy.hp);
             explosionDamageTotal += actualDamage;
-            const newHp = enemy.hp - tower.attack;
-            // Grant money if enemy dies
-            if (newHp <= 0 && !processedEnemies.has(enemy.id)) {
-              processedEnemies.add(enemy.id);
-              setMoney(prev => {
-                const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.2 : round > 20 ? 0.4 : 1));
-                return prev + reward;
-              });
+      
+            let updatedEnemy = { ...enemy };
+      
+            // Apply stun effect if tower has it
+            if (tower.canStun) {
+              updatedEnemy = {
+                ...updatedEnemy,
+                isStunned: true,
+                stunSourceId: tower.id,
+                stunStartTime: Date.now(),
+                speed: 0
+              };
             }
-            return {
-              ...enemy,
-              src: enemy.isArmored ? enemy.src.replace('armored', '') : enemy.src,
-              isTargeted: true,
-              hp: newHp,
-              isArmored: false,
-              isStunned: tower.canStun ? true : false,
-              stunSourceId: tower.canStun ? tower.id : undefined,
-              stunStartTime: tower.canStun ? Date.now() : undefined,
-              speed: tower.canStun ? 0 : enemy.baseSpeed
-            };
-          }
-  
-          if (enemiesInExplosionRadius.some(e => e.id === enemy.id)) {
-            const splashDamage = tower.attack / 2;
-            const actualDamage = Math.min(splashDamage, enemy.hp);
-            explosionDamageTotal += actualDamage; // Add to total damage
-            const newHp = enemy.hp - splashDamage;
-            // Grant money if enemy dies from splash
-            if (newHp <= 0 && !processedEnemies.has(enemy.id)) {
-              processedEnemies.add(enemy.id);
-              setMoney(prev => {
-                const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.2 : round > 20 ? 0.4 : 1));
-                return prev + reward;
-              });
+      
+            // Apply slow effect if tower has it
+            if (tower.slowAmount) {
+              updatedEnemy = {
+                ...updatedEnemy,
+                isSlowed: true,
+                slowSourceId: tower.id,
+                slowStartTime: Date.now(),
+                slowValue: tower.slowAmount,
+                speed: !updatedEnemy.isStunned ? 
+                  Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount) :
+                  0
+              };
             }
-            return {
-              ...enemy,
-              src: enemy.isArmored ? enemy.src.replace('armored', '') : enemy.src,
-              isTargeted: true,
-              hp: newHp,
-              isArmored: false,
-              isStunned: tower.canStun ? true : false,
-              stunSourceId: tower.canStun ? tower.id : undefined,
-              stunStartTime: tower.canStun ? Date.now() : undefined,
-              speed: tower.canStun ? 0 :enemy.baseSpeed
-            };
+      
+            // Apply damage based on armor
+            updatedEnemy.hp = enemy.isArmored && !tower.canHitArmored ? 
+              enemy.hp : 
+              Math.max(enemy.hp - actualDamage, 0);
+            
+            updatedEnemy.isTargeted = true;
+      
+            return updatedEnemy;
           }
           return enemy;
         });
         totalDamageDealt = explosionDamageTotal;
+      }else if (tower.attackType === 'chain') {
+        // Get initial target
+        let chainedEnemies = new Set([targets[0].id]);
+        let currentTarget = targets[0];
+        let chainsLeft = tower.chainCount || 1;
+      
+        // Chain lightning effect
+        while (chainsLeft > 1) {
+          // Find nearest enemy within chain range that hasn't been hit
+          const nextTarget = prevEnemies.find(enemy => {
+            if (enemy.hp <= 0 || chainedEnemies.has(enemy.id)) return false;
+      
+            const dx = enemy.positionX - currentTarget.positionX;
+            const dy = enemy.positionY - currentTarget.positionY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+      
+            return distance <= (tower.chainRange || 15);
+          });
+      
+          if (!nextTarget) break;
+      
+          // Add new chain target
+          chainedEnemies.add(nextTarget.id);
+          currentTarget = nextTarget;
+          chainsLeft--;
+      
+          // Create chain lightning effect
+          setAttackEffects(prev => [...prev, {
+            id: uuidv4(),
+            towerPositionX: currentTarget.positionX,
+            towerPositionY: currentTarget.positionY,
+            enemyPositionX: nextTarget.positionX,
+            enemyPositionY: nextTarget.positionY,
+            effectSrc: '/chainLightning.png', // Create this asset
+            timestamp: Date.now()
+          }]);
+        }
+      
+        // Update enemies with chain damage
+        updatedEnemies = prevEnemies.map(enemy => {
+          if (!chainedEnemies.has(enemy.id)) return enemy;
+      
+          const newHp = Math.max(enemy.hp - tower.attack, 0);
+          if (newHp <= 0 && !processedEnemies.has(enemy.id)) {
+            processedEnemies.add(enemy.id);
+            setMoney(prev => {
+              const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.2 : round > 20 ? 0.4 : 1));
+              return prev + reward;
+            });
+          }
+      
+          return {
+            ...enemy,
+            hp: newHp,
+            isTargeted: true
+          };
+        });
       } else {
         // Non-explosion attack logic
         updatedEnemies = prevEnemies.map((enemy) => {
@@ -752,47 +814,52 @@ useEffect(() => {
           // Update damage calculation to include critical hits
           const actualDamage = Math.min(tower.attack * damageMultiplier, enemy.hp);
           totalDamageDealt += actualDamage;
-          let newHp = enemy.hp;
-           if (tower.type === "gasspitter") {
-            return {
-              ...enemy,
-              isPoisoned: true,
-              poisonSourceId: tower.id,
-              poisonStartTime: Date.now(),
-              canRegen: tower.canStopRegen ? false : true,
-              hp: enemy.isArmored ? enemy.hp : Math.max(enemy.hp - actualDamage, 0),
-              isTargeted: true
+          let updatedEnemy = { ...enemy };
+      
+          // Apply stun effect if tower has it
+          if (tower.canStun && Math.random() < (tower.criticalChance || 0)) {
+            updatedEnemy = {
+              ...updatedEnemy,
+              isStunned: true,
+              stunSourceId: tower.id,
+              stunStartTime: Date.now(),
+              speed: 0
             };
-          } else if (tower.type === "slower") {
-            return {
-              ...enemy,
+          }
+      
+          // Apply slow effect if tower has it
+          if (tower.slowAmount) {
+            updatedEnemy = {
+              ...updatedEnemy,
               isSlowed: true,
               slowSourceId: tower.id,
               slowStartTime: Date.now(),
               slowValue: tower.slowAmount,
-              speed: tower.slowAmount ? 
+              speed: !updatedEnemy.isStunned ? 
                 Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount) :
-                enemy.speed,
-              hp: enemy.isArmored ? enemy.hp : Math.max(enemy.hp - actualDamage, 0),
-              isTargeted: true
-            };
-          }  else {
-            // Regular towers can't damage armored enemies
-            newHp = enemy.isArmored ? enemy.hp : Math.max(enemy.hp - actualDamage, 0);
-            // Add money reward when basic tower kills an enemy
-            if (newHp <= 0 && enemy.hp > 0 && !processedEnemies.has(enemy.id)) {
-              processedEnemies.add(enemy.id);
-              setMoney(prev => {
-                const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.2 : round > 20 ? 0.4 : 1));
-                return prev + reward;
-              });
-            }
-            return {
-              ...enemy,
-              hp: newHp,
-              isTargeted: true
+                0
             };
           }
+      
+          // Apply other effects (poison, etc.)
+          if (tower.type === "gasspitter") {
+            updatedEnemy = {
+              ...updatedEnemy,
+              isPoisoned: true,
+              poisonSourceId: tower.id,
+              poisonStartTime: Date.now(),
+              canRegen: tower.canStopRegen ? false : true
+            };
+          }
+      
+          // Apply damage based on armor
+          updatedEnemy.hp = enemy.isArmored && !tower.canHitArmored ? 
+            enemy.hp : 
+            Math.max(enemy.hp - actualDamage, 0);
+      
+          updatedEnemy.isTargeted = true;
+      
+          return updatedEnemy;
         });
       }
       return updatedEnemies;
@@ -1164,7 +1231,7 @@ useEffect(() => {
           if (newHp <= 0 && enemy.hp > 0 && !processedEnemies.has(enemy.id)) {
             processedEnemies.add(enemy.id);
             setMoney(prev => {
-              const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.2 : round > 20 ? 0.4 : 1));
+              const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1));
               return prev + reward;
             });
           }
@@ -1209,39 +1276,70 @@ useEffect(() => {
     }
   };
   
-const upgradeTower = () => {
-  if (showUpgradeMenu) {
-    const selectedTower = tower.find(t => t.id === selectedTowerID);
-    if (!selectedTower) return null;
-
-    const availableUpgrades = TOWER_UPGRADES[selectedTower.type]?.filter(upgrade => 
-      upgrade.requires === selectedTower.upgradeLevel) || [];
-
-    const currentUpgrade = availableUpgrades[0]; // Get the next available upgrade
-
-    return (
-      <div 
-        data-upgrade-menu
-        className='absolute top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-800 
-          flex items-start justify-between p-6 rounded-lg gap-6 shadow-lg border border-blue-400'
-        style={{left: selectedTower.positionX < 50 ? '70%' : '30%', width: '700px'}}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className='flex flex-col space-y-3 w-1/2'>
-          <h1 className="text-2xl font-bold mb-4 text-white border-b border-blue-400 pb-2">Upgrade Menu</h1>
-          
-          {currentUpgrade && (
-            <button 
-              className="bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 
-                text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
-                disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={() => performUpgrade(selectedTower, currentUpgrade)}
-              disabled={money < currentUpgrade.cost}
-            >
-              {currentUpgrade.name} (${currentUpgrade.cost})
-              <div className="text-sm text-gray-200">{currentUpgrade.description}</div>
-            </button>
-          )}
+  const upgradeTower = () => {
+    if (showUpgradeMenu) {
+      const selectedTower = tower.find(t => t.id === selectedTowerID);
+      if (!selectedTower) return null;
+  
+      // Get all available upgrades for the tower's current level
+      const availableUpgrades = TOWER_UPGRADES[selectedTower.type]?.filter(upgrade => {
+        // Check if tower has already chosen a path (reached level 3 in one path)
+        const hasChosenPath = selectedTower.path1Level >= 3 || selectedTower.path2Level >= 3;
+        
+        if (hasChosenPath) {
+          // If path 1 is level 3 or higher, only allow path 1 upgrades
+          if (selectedTower.path1Level >= 3) {
+            // Allow path 2 upgrades up to level 2 if they haven't been purchased yet
+            if (upgrade.path === 2 && upgrade.requires < 2 && 
+                upgrade.requires === selectedTower.path2Level) {
+              return true;
+            }
+            return upgrade.path === 1 && upgrade.requires === selectedTower.path1Level;
+          }
+          // If path 2 is level 3 or higher, only allow path 2 upgrades
+          if (selectedTower.path2Level >= 3) {
+            // Allow path 1 upgrades up to level 2 if they haven't been purchased yet
+            if (upgrade.path === 1 && upgrade.requires < 2 && 
+                upgrade.requires === selectedTower.path1Level) {
+              return true;
+            }
+            return upgrade.path === 2 && upgrade.requires === selectedTower.path2Level;
+          }
+        }
+        
+        // Before choosing a path:
+        // Show only the next available upgrade for each path
+        return (upgrade.path === 1 && upgrade.requires === selectedTower.path1Level) || 
+               (upgrade.path === 2 && upgrade.requires === selectedTower.path2Level);
+      }).filter(Boolean) || [];
+  
+      return (
+        <div 
+          data-upgrade-menu
+          className='absolute top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-800 
+            flex items-start justify-between p-6 rounded-lg gap-6 shadow-lg border border-blue-400'
+          style={{left: selectedTower.positionX < 50 ? '70%' : '30%', width: '700px'}}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className='flex flex-col space-y-3 w-1/2'>
+            <h1 className="text-2xl font-bold mb-4 text-white border-b border-blue-400 pb-2">Upgrade Menu</h1>
+            
+            {availableUpgrades.map((upgrade) => (
+              <button 
+                key={upgrade.name}
+                className={`bg-gradient-to-r 
+                  ${upgrade.path === 1 ? 'from-red-500 to-red-700 hover:from-red-600 hover:to-red-800' : 
+                   upgrade.path === 2 ? 'from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800' :
+                   'from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800'}
+                  text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
+                  disabled:opacity-50 disabled:cursor-not-allowed`}
+                onClick={() => performUpgrade(selectedTower, upgrade)}
+                disabled={money < upgrade.cost}
+              >
+                {upgrade.name} (${upgrade.cost})
+                <div className="text-sm text-gray-200">{upgrade.description}</div>
+              </button>
+            ))}
 
           {/* Tower targeting type button */}
           <div className="pt-4">
@@ -1282,26 +1380,18 @@ const upgradeTower = () => {
   <div>
     <div className="flex justify-between items-center mb-1">
       <span>Attack:</span>
-      <span>{selectedTower.attack} / {selectedTower.maxDamage}</span>
+      <span>{selectedTower.attack}</span>
     </div>
-    <div className="w-full bg-gray-600 rounded-full h-2">
-      <div className="bg-red-500 h-2 rounded-full" 
-        style={{width: `${(selectedTower.attack / selectedTower.maxDamage) * 100}%`}}
-      />
-    </div>
+   
     
   </div>
 
   <div>
     <div className="flex justify-between items-center mb-1">
       <span>Attack Interval:</span>
-      <span>{selectedTower.attackInterval} / {selectedTower.maxAttackInterval}</span>
+      <span>{selectedTower.attackInterval}</span>
     </div>
-    <div className="w-full bg-gray-600 rounded-full h-2">
-      <div className="bg-blue-500 h-2 rounded-full" 
-        style={{width: `${((selectedTower.attackInterval - selectedTower.maxAttackInterval) / (selectedTower.baseAttackInterval - selectedTower.maxAttackInterval)) * 100}%`}}
-      />
-    </div>
+    
     
   </div>
   
@@ -1309,13 +1399,9 @@ const upgradeTower = () => {
   <div>
     <div className="flex justify-between items-center mb-1">
       <span>Poison Damage:</span>
-      <span>{selectedTower.poisonDamage * 4} / {selectedTower.maxPoisonDamage * 4}</span>
+      <span>{selectedTower.poisonDamage * 4} </span>
     </div>
-    <div className="w-full bg-gray-600 rounded-full h-2">
-      <div className="bg-green-500 h-2 rounded-full" 
-        style={{width: `${(selectedTower.poisonDamage / selectedTower.maxPoisonDamage) * 100}%`}}
-      />
-    </div>
+    
     
   </div>
   )}
@@ -1346,12 +1432,20 @@ const upgradeTower = () => {
       setTower(prevTowers => 
         prevTowers.map(t => {
           if (t.id === tower.id) {
-            const newLevel = (t.upgradeLevel || 0) + 1;
-            // Create a new tower object with all upgrades
+            // Determine which path level to increment
+            const newPath1Level = upgrade.path === 1 ? (t.path1Level + 1) : t.path1Level;
+            const newPath2Level = upgrade.path === 2 ? (t.path2Level + 1) : t.path2Level;
+            
+            // Set path if reaching level 3 in either path
+            const newPath = (newPath1Level === 3 && !t.path) ? 1 : 
+                           (newPath2Level === 3 && !t.path) ? 2 : t.path;
+            
             return {
               ...t,
               ...upgrade.effect(t),
-              upgradeLevel: newLevel,
+              path1Level: newPath1Level,
+              path2Level: newPath2Level,
+              path: newPath,
               // Ensure other properties are preserved
               id: t.id,
               positionX: t.positionX,
@@ -1368,9 +1462,7 @@ const upgradeTower = () => {
       // Update the tower image if it's on the board
       const towerElement = document.getElementById(tower.id) as HTMLImageElement;
       if (towerElement && upgrade.effect(tower).src) {
-        if (upgrade.effect(tower).src) {
-          towerElement.src = upgrade.effect(tower).src!;
-        }
+        towerElement.src = upgrade.effect(tower).src!;
       }
     }
   };
@@ -1423,562 +1515,1025 @@ const upgradeTower = () => {
   };
   
   
-const renderExplosions = () => {
-  return explosionEffects.map((effect) => {
-    // Find the tower that caused this explosion
-    const explosionTower = tower.find(t => t.attackType === 'explosion');
-    const explosionSize = explosionTower ? explosionTower.explosionRadius * 2 : 50; // Default to 50 if no tower found
-
-    return (
-      <div
-        key={effect.id}
-        className="absolute rounded-full animate-explosion z-30"
-        style={{
-          left: `${effect.positionX}%`,
-          top: `${effect.positionY}%`,
-          width: `${explosionSize / 1.5}%`,
-          height: `${explosionSize / 1.5}%`,
-          transform: 'translate(-50%, -50%)',
-          background: 'radial-gradient(circle, rgba(255,0,0,0.5) 0%, rgba(255,0,0,0) 70%)',
-        }}
-      />
-    );
-  });
-};
+  const renderExplosions = () => {
+    return explosionEffects.map((effect) => {
+      // Find the tower that caused this explosion
+      const explosionTower = tower.find(t => t.attackType === 'explosion');
+      const explosionSize = explosionTower ? explosionTower.explosionRadius * 2 : 50; // Default to 50 if no tower found
+  
+      return (
+        <div
+          key={effect.id}
+          className="absolute rounded-full animate-explosion z-30"
+          style={{
+            left: `${effect.positionX}%`,
+            top: `${effect.positionY}%`,
+            width: `${explosionSize / 1.5}%`,
+            height: `${explosionSize / 1.5}%`,
+            transform: 'translate(-50%, -50%)',
+            background: 'radial-gradient(circle, rgba(255,0,0,0.5) 0%, rgba(255,0,0,0) 70%)',
+          }}
+        />
+      );
+    });
+  };
 
 // Define upgrade paths for each tower type
 const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
   basic: [
+    // Path 1 - Attack Speed focused
     {
-      name: "Enhanced Targeting",
+      name: "Stealth Detection",
       cost: 400,
       requires: 0,
-      description: "Increases attack damage by 40",
+      path: 1,
+      description: "Can hit stealth enemies",
       effect: (tower) => ({ 
-        attack: tower.attack + 40,
-        towerWorth: tower.towerWorth + 400
+        canHitStealth: true,
+        towerWorth: tower.towerWorth + 400,
+        path: 1
       })
     },
     {
-      name: "Combat Accelerator",  // was "Rapid Fire"
-      cost: 600,
-      description: "Reduces attack interval by 250ms",
+      name: "Rapid Fire",
+      cost: 800,
+      description: "Reduces attack interval by 300ms",
       requires: 1,
+      path: 1,
       effect: (tower) => ({ 
-        attackInterval: tower.attackInterval - 250,
-        towerWorth: tower.towerWorth + 600
+        attackInterval: tower.attackInterval - 300,
+        towerWorth: tower.towerWorth + 800,
+        path: 1
       })
     },
     {
       name: "Double Shot",
-      cost: 1500,
-      description: "Attacks two targets at once",
+      cost: 2000,
+      description: "Attacks two targets at once with increased speed",
       requires: 2,
+      path: 1,
       effect: (tower) => ({ 
         attackType: 'double',
-        towerWorth: tower.towerWorth + 1500
+        attackInterval: tower.attackInterval - 200,
+        towerWorth: tower.towerWorth + 2000,
+        path: 1
       })
     },
     {
-      name: "Armor Piercing and stealth detection",
-      cost: 2500,
-      description: "Can damage armored enemies and detect stealth enemies",
+      name: "Speed Master",
+      cost: 15000,
+      description: "Ultimate attack speed and triple shot",
       requires: 3,
+      path: 1,
+      effect: (tower) => ({
+        attackInterval: tower.attackInterval - 250,
+        attackType: 'triple',
+        attack: tower.attack * 1.5,
+        src: '/basicSpecial.png',
+        towerWorth: tower.towerWorth + 15000,
+        path: 1
+      })
+    },
+    {
+      name: "Hypersonic Barrage",
+      cost: 25000,
+      description: "Quadruple shot with extreme attack speed",
+      requires: 4,
+      path: 1,
+      effect: (tower) => ({
+        attackInterval: tower.attackInterval - 100,
+        attackType: 'quadruple',
+        attack: tower.attack * 1.8,
+        towerWorth: tower.towerWorth + 25000,
+        path: 1
+      })
+    },
+
+    // Path 2 - Heavy Damage focused
+    {
+      name: "Enhanced Targeting",
+      cost: 600,
+      requires: 0,
+      path: 2,
+      description: "Increases attack damage by 60",
       effect: (tower) => ({ 
         attack: tower.attack + 60,
-        canHitArmored: true,
-        canHitStealth: true,
-        towerWorth: tower.towerWorth + 2500
+        towerWorth: tower.towerWorth + 600,
+        path: 2
       })
     },
     {
-      name: "Extended Range",
-      cost: 3000,
-      description: "Increases attack range by 30%",
-      requires: 4,
+      name: "Heavy Shells",
+      cost: 2000,
+      description: "Further increases damage and adds armor piercing",
+      requires: 1,
+      path: 2,
       effect: (tower) => ({ 
-        radius: tower.radius * 1.3,
-        towerWorth: tower.towerWorth + 3000
+        attack: tower.attack + 80,
+        canHitArmored: true,
+        towerWorth: tower.towerWorth + 2000,
+        path: 2
       })
     },
     {
       name: "Critical Strike",
       cost: 5000,
-      description: "25% chance to deal double damage",
-      requires: 5,
+      description: "30% chance to deal triple damage",
+      requires: 2,
+      path: 2,
       effect: (tower) => ({ 
         hasCritical: true,
-        criticalChance: 0.25,
-        criticalMultiplier: 2,
-        towerWorth: tower.towerWorth + 5000
+        criticalChance: 0.30,
+        criticalMultiplier: 3,
+        towerWorth: tower.towerWorth + 5000,
+        path: 2
       })
     },
     {
-      name: "Artillery Master",
+      name: "Demolition Expert",
       cost: 15000,
-      description: "Converts to explosive damage with increased area",
-      requires: 6,
+      description: "Converts to massive explosive damage",
+      requires: 3,
+      path: 2,
       effect: (tower) => ({
         attackType: 'explosion',
-        explosionRadius: 15,
-        attack: tower.attack * 2,
-        src: '/basicSpecial.png',
-        towerWorth: tower.towerWorth + 15000
+        explosionRadius: 25,
+        attack: tower.attack * 3,
+        src: '/basicSpecial2.png',
+        towerWorth: tower.towerWorth + 15000,
+        path: 2
+      })
+    },
+    {
+      name: "Nuclear Strike",
+      cost: 30000,
+      description: "Devastating explosion with stun effect",
+      requires: 4,
+      path: 2,
+      effect: (tower) => ({
+        explosionRadius: tower.explosionRadius * 1.4,
+        attack: tower.attack * 1.5,
+        canStun: true,
+        stunDuration: 500,
+        towerWorth: tower.towerWorth + 30000,
+        path: 2
       })
     }
   ],
   sniper: [
+    // Path 1 - High Damage/Stun
     {
-      name: "High-Caliber Rounds",  // was "Precision Scope"
-      cost: 800,
-      requires: 0,
-      description: "Increases attack damage by 80",
-      effect: (tower) => ({
-        attack: tower.attack + 80,
-        towerWorth: tower.towerWorth + 800
-      })
-    },
-    {
-      name: "Neural Interface",  // was "Advanced Targeting"
+      name: "Precision Scope",
       cost: 1000,
-      description: "Reduces attack interval by 500ms",
-      requires: 1,
+      requires: 0,
+      path: 1,
+      description: "Increases damage by 100",
       effect: (tower) => ({
-        attackInterval: tower.attackInterval - 500,
-        towerWorth: tower.towerWorth + 1000
+        attack: tower.attack + 100,
+        towerWorth: tower.towerWorth + 1000,
+        path: 1
       })
     },
     {
-      name: "Armor Piercing Rounds",
-      cost: 2000,
-      description: "Can damage armored enemies",
+      name: "Stun Rounds",
+      cost: 2500,
+      requires: 1,
+      path: 1,
+      description: "20% chance to stun enemies",
+      effect: (tower) => ({
+        canStun: true,
+        stunDuration: 500,
+        criticalChance: 0.2,
+        towerWorth: tower.towerWorth + 2500,
+        path: 1
+      })
+    },
+    {
+      name: "Armor Piercing",
+      cost: 5000,
       requires: 2,
+      path: 1,
+      description: "Can hit armored enemies and +150 damage",
       effect: (tower) => ({
         canHitArmored: true,
-        attack: tower.attack + 100,
-        towerWorth: tower.towerWorth + 2000
+        attack: tower.attack + 150,
+        towerWorth: tower.towerWorth + 5000,
+        path: 1
       })
     },
     {
-      name: "Rapid targeting",
-      cost: 2500,
-      description: "reduce attack interval by 500 ms",
+      name: "Heavy Impact",
+      cost: 12000,
       requires: 3,
+      path: 1,
+      description: "40% stun chance and doubled damage",
       effect: (tower) => ({
-        attackInterval: tower.attackInterval - 500,
-        towerWorth: tower.towerWorth + 2500
+        attack: tower.attack * 2,
+        criticalChance: 0.4,
+        stunDuration: 750,
+        src: '/sniperSpecial.png',
+        towerWorth: tower.towerWorth + 12000,
+        path: 1
       })
     },
     {
-      name: "Critical Strike",
-      cost: 4000,
-      description: "35% chance to deal triple damage",
+      name: "Ultimate Destroyer",
+      cost: 25000,
       requires: 4,
+      path: 1,
+      description: "Massive damage and guaranteed stun",
       effect: (tower) => ({
-        hasCritical: true,
-        criticalChance: 0.35,
-        criticalMultiplier: 3,
-        towerWorth: tower.towerWorth + 2000
+        attack: tower.attack * 2.5,
+        criticalChance: 1.0,
+        stunDuration: 1000,
+        towerWorth: tower.towerWorth + 25000,
+        path: 1
+      })
+    },
+
+    // Path 2 - Attack Speed
+    {
+      name: "Quick Loader",
+      cost: 800,
+      requires: 0,
+      path: 2,
+      description: "Reduces attack interval by 400ms",
+      effect: (tower) => ({
+        attackInterval: tower.attackInterval - 400,
+        towerWorth: tower.towerWorth + 800,
+        path: 2
       })
     },
     {
       name: "Double Shot",
-      cost: 5000,
-      description: "Can target two enemies at once",
-      requires: 5,
+      cost: 2000,
+      requires: 1,
+      path: 2,
+      description: "Can target two enemies",
       effect: (tower) => ({
         attackType: 'double',
-        towerWorth: tower.towerWorth + 5000
+        attackInterval: tower.attackInterval - 200,
+        towerWorth: tower.towerWorth + 2000,
+        path: 2
       })
     },
     {
-      name: "Elite Sniper",
-      cost: 10000,
-      description: "Quadruples damage and gains ultimate precision",
-      requires: 6,
+      name: "Advanced Targeting",
+      cost: 4500,
+      requires: 2,
+      path: 2,
+      description: "Triple shot and faster firing",
       effect: (tower) => ({
-        attack: tower.attack * 5,
-        src: '/sniperSpecial.png',
-        towerWorth: tower.towerWorth + 10000
+        attackType: 'triple',
+        attackInterval: tower.attackInterval - 300,
+        towerWorth: tower.towerWorth + 4500,
+        path: 2
+      })
+    },
+    {
+      name: "Rapid Fire Master",
+      cost: 15000,
+      requires: 3,
+      path: 2,
+      description: "Extremely fast attack speed",
+      effect: (tower) => ({
+        attackInterval: tower.attackInterval - 500,
+        attack: tower.attack * 1.3,
+        src: '/sniperSpecial2.png',
+        towerWorth: tower.towerWorth + 15000,
+        path: 2
+      })
+    },
+    {
+      name: "Machine Gun Mode",
+      cost: 25000,
+      requires: 4,
+      path: 2,
+      description: "Quadruple shot with insane speed",
+      effect: (tower) => ({
+        attackType: 'quadruple',
+        attackInterval: tower.attackInterval - 300,
+        attack: tower.attack * 1.5,
+        towerWorth: tower.towerWorth + 25000,
+        path: 2
       })
     }
   ],
   rapidShooter: [
+    // Path 1 - Multi-target Attack Speed Path
     {
-      name: "Rapid Fire",
+      name: "Faster Firing",
       cost: 500,
       requires: 0,
-      description: "Reduces attack interval by 100ms",
+      path: 1,
+      description: "Reduces attack interval by 75ms",
       effect: (tower) => ({
-        attackInterval: tower.attackInterval - 100,
-        towerWorth: tower.towerWorth + 500
+        attackInterval: tower.attackInterval - 75,
+        towerWorth: tower.towerWorth + 500,
+        path: 1
       })
     },
     {
-      name: "Enhanced Damage & Stealth detection",
-      cost: 1000,
-      description: "Increases attack damage by 25, stealth detection",
+      name: "Enhanced Targeting",
+      cost: 1200,
       requires: 1,
+      path: 1,
+      description: "Increases damage by 15 and attack speed",
       effect: (tower) => ({
-        attack: tower.attack + 25,
-        canHitStealth: true,
-        towerWorth: tower.towerWorth + 1000
+        attack: tower.attack + 15,
+        attackInterval: tower.attackInterval - 50,
+        towerWorth: tower.towerWorth + 1200,
+        path: 1
+      })
+    },
+    {
+      name: "Double Shot",
+      cost: 3500,
+      requires: 2,
+      path: 1,
+      description: "Can target two enemies at once",
+      effect: (tower) => ({
+        attackType: 'double',
+        attackInterval: tower.attackInterval - 25,
+        towerWorth: tower.towerWorth + 3500,
+        path: 1
       })
     },
     {
       name: "Triple Shot",
-      cost: 2500,
-      description: "Can target three enemies at once",
-      requires: 2,
+      cost: 8000,
+      requires: 3,
+      path: 1,
+      description: "Three targets and enhanced speed",
       effect: (tower) => ({
         attackType: 'triple',
-        towerWorth: tower.towerWorth + 2500
+        attackInterval: tower.attackInterval - 50,
+        attack: tower.attack + 10,
+        src: '/rapidShooterSpecial1.png',
+        towerWorth: tower.towerWorth + 8000,
+        path: 1
       })
     },
     {
-      name: "Quick Loader",
-      cost: 3500,
-      description: "Further reduces attack interval by 100ms",
-      requires: 3,
-      effect: (tower) => ({
-        attackInterval: tower.attackInterval - 100,
-        towerWorth: tower.towerWorth + 3500
-      })
-    },
-    {
-      name: "Extended Range",
-      cost: 5000,
-      description: "Increases attack range by 25%",
+      name: "Bullet Storm",
+      cost: 15000,
       requires: 4,
-      effect: (tower) => ({
-        radius: tower.radius * 1.25,
-        towerWorth: tower.towerWorth + 5000
-      })
-    },
-    {
-      name: "Quadruple Shot",
-      cost: 7500,
-      description: "Can target four enemies at once",
-      requires: 5,
+      path: 1,
+      description: "Four targets with maximum speed",
       effect: (tower) => ({
         attackType: 'quadruple',
-        towerWorth: tower.towerWorth + 7500
-      })
-    },
-    {
-      name: "Gatling Master",
-      cost: 15000,
-      description: "Massive attack speed and damage increase",
-      requires: 6,
-      effect: (tower) => ({
+        attackInterval: tower.attackInterval - 75,
         attack: tower.attack * 1.5,
-        attackInterval: tower.attackInterval * 0.6,
-        src: '/rapidShooterSpecial.png',
-        towerWorth: tower.towerWorth + 15000
+        towerWorth: tower.towerWorth + 15000,
+        path: 1
       })
-    }
-  ],
-  slower: [
+    },
+
+    // Path 2 - Chain Lightning Path
     {
-      name: "Enhanced Slow",
-      cost: 400,
+      name: "Static Charge",
+      cost: 800,
       requires: 0,
-      description: "Increases slow effect by 10%",
+      path: 2,
+      description: "Adds 25 damage and slight range",
       effect: (tower) => ({
-        slowAmount: tower.slowAmount ? tower.slowAmount * 0.8 : 0.8,
-        towerWorth: tower.towerWorth + 400
+        attack: tower.attack + 25,
+        radius: tower.radius * 1.1,
+        towerWorth: tower.towerWorth + 800,
+        path: 2
       })
     },
     {
-      name: "Double Target",
-      cost: 1000,
-      description: "Can slow two targets simultaneously",
-      requires: 1,
-      effect: (tower) => ({
-        attackType: 'double',
-        towerWorth: tower.towerWorth + 1000
-      })
-    },
-    {
-      name: "Extended Duration",
+      name: "Enhanced Range",
       cost: 1500,
-      description: "Slow effect lasts longer and stealth detection",
-      requires: 2,
+      requires: 1,
+      path: 2,
+      description: "Further increases range and damage",
       effect: (tower) => ({
-        attack: tower.attack + 5,
-        canHitStealth: true,
-        towerWorth: tower.towerWorth + 1500
-      })
-    },
-    {
-      name: "Triple Target",
-      cost: 4500,
-      description: "Can slow three targets at once",
-      requires: 3,
-      effect: (tower) => ({
-        attackType: 'triple',
-        towerWorth: tower.towerWorth + 4500
-      })
-    },
-    {
-      name: "Potent Slow",
-      cost: 5000,
-      description: "Further increases slow effect by 15%",
-      requires: 4,
-      effect: (tower) => ({
-        slowAmount: tower.slowAmount ? tower.slowAmount * 0.75 : 0.75,
-        towerWorth: tower.towerWorth + 1500
-      })
-    },
-    {
-      name: "Extended Range",
-      cost: 7500,
-      description: "Increases range by 40%",
-      requires: 5,
-      effect: (tower) => ({
-        radius: tower.radius * 1.4,
-        towerWorth: tower.towerWorth + 2000
-      })
-    },
-    {
-      name: "Time Warper",
-      cost: 10000,
-      description: "Maximum slow effect and area control",
-      requires: 6,
-      effect: (tower) => ({
-        slowAmount: tower.slowAmount ? tower.slowAmount * 0.5 : 0.5,
         radius: tower.radius * 1.2,
-        src: '/slowerSpecial.png',
-        towerWorth: tower.towerWorth + 10000
-      })
-    }
-  ],
-  gasspitter: [
-    {
-      name: "Virulent Strain",  // was "Potent Toxin"
-      cost: 300,
-      requires: 0,
-      description: "Increases poison damage by 20",
-      effect: (tower) => ({
-        poisonDamage: tower.poisonDamage + 20,
-        towerWorth: tower.towerWorth + 300
+        attack: tower.attack + 15,
+        towerWorth: tower.towerWorth + 1500,
+        path: 2
       })
     },
     {
-      name: "Caustic Catalyst",  // was "Better Toxin"
-      cost: 600,
-      description: "Increases poison damage by 20",
-      requires: 1,
-      effect: (tower) => ({
-        poisonDamage: tower.poisonDamage + 20,
-        towerWorth: tower.towerWorth + 600
-      })
-    },
-    {
-      name: "Double Spray",
-      cost: 1200,
-      description: "Can poison two targets simultaneously",
+      name: "Chain Lightning",
+      cost: 4500,
       requires: 2,
+      path: 2,
+      description: "Attacks chain to 2 nearby enemies",
       effect: (tower) => ({
-        attackType: 'double',
-        towerWorth: tower.towerWorth + 1200
+        attackType: 'chain',
+        chainCount: 2,
+        chainRange: 20,
+        effectSrc: '/chainLightning.png',
+        src: '/rapidShooterSpecial2.png',
+        attack: tower.attack + 20,
+        towerWorth: tower.towerWorth + 4500,
+        path: 2
       })
     },
     {
-      name: "Concentrated Toxin",
-      cost: 1500,
-      description: "Further increases poison damage by 30",
+      name: "Storm Caller",
+      cost: 12000,
       requires: 3,
+      path: 2,
+      description: "Chain to 3 enemies with increased damage",
       effect: (tower) => ({
-        poisonDamage: tower.poisonDamage + 30,
-        towerWorth: tower.towerWorth + 1500
+        chainCount: 3,
+        chainRange: 25,
+        attack: tower.attack * 1.4,
+        canHitStealth: true,
+        src: '/rapidShooterSpecial2.png',
+        towerWorth: tower.towerWorth + 12000,
+        path: 2
       })
     },
     {
-      name: "Extended Range",
-      cost: 2500,
-      description: "Increases range by 25%",
+      name: "Lightning Master",
+      cost: 20000,
       requires: 4,
+      path: 2,
+      description: "Maximum chain potential and massive damage",
       effect: (tower) => ({
-        radius: tower.radius * 1.25,
-        towerWorth: tower.towerWorth + 2500
-      })
-    },
-    {
-      name: "Triple Spray",
-      cost: 5000,
-      description: "Can poison three targets",
-      requires: 5,
-      effect: (tower) => ({
-        attackType: 'triple',
-        towerWorth: tower.towerWorth + 5000
-      })
-    },
-    {
-      name: "Plague Master",
-      cost: 10000,
-      description: "Massively enhanced poison and stops regeneration",
-      requires: 6,
-      effect: (tower) => ({
-        poisonDamage: tower.poisonDamage * 4,
-        canStopRegen: true,
-        src: '/gasSpitterSpecial.png',
-        towerWorth: tower.towerWorth + 10000
-      })
-    }
-  ],
-  mortar: [
-    {
-      name: "Seismic Shells",  // was "Heavy Shells"
-      cost: 400,
-      requires: 0,
-      description: "Increases explosion damage by 100",
-      effect: (tower) => ({
-        attack: tower.attack + 100,
-        towerWorth: tower.towerWorth + 400
-      })
-    },
-    {
-      name: "Rapid Reloader",  // was "Faster Reload"
-      cost: 1000,
-      description: "Reduces attack interval by 1500ms",
-      requires: 1,
-      effect: (tower) => ({
-        attackInterval: tower.attackInterval - 1500,
-        towerWorth: tower.towerWorth + 1000
-      })
-    },
-    {
-      name: "Shockwave Amplifier",  // was "Bigger Explosions"
-      cost: 2000,
-      description: "Increases explosion radius by 10%",
-      requires: 2,
-      effect: (tower) => ({
-        explosionRadius: tower.explosionRadius * 1.1,
-        towerWorth: tower.towerWorth + 2000
-      })
-    },
-    {
-      name: "Better shells",
-      cost: 4000,
-      description: "+125 damage and faster reload",
-      requires: 3,
-      effect: (tower) => ({
-        attack: tower.attack + 125,
-        towerWorth: tower.towerWorth + 4000
-      })
-    },
-    {
-      name: "Extended Range",
-      cost: 5000,
-      description: "Increases range by 30%",
-      requires: 4,
-      effect: (tower) => ({
-        radius: tower.radius * 1.3,
-        towerWorth: tower.towerWorth + 5000
-      })
-    },
-    {
-      name: "Devastating Blast",
-      cost: 7500,
-      description: "Further increases explosion damage and radius",
-      requires: 5,
-      effect: (tower) => ({
-        attack: tower.attack + 125,
-        explosionRadius: tower.explosionRadius * 1.25,
-        towerWorth: tower.towerWorth + 2500
-      })
-    },
-    {
-      name: "Artillery Master",
-      cost: 15000,
-      description: "Maximum explosive power",
-      requires: 6,
-      effect: (tower) => ({
+        chainCount: 4,
+        chainRange: 30,
         attack: tower.attack * 2,
-        radius: tower.radius * 1.3,
-        src: '/mortarSpecial.png',
-        towerWorth: tower.towerWorth + 15000
+        towerWorth: tower.towerWorth + 20000,
+        path: 2
       })
     }
-  ],
-  cannon: [
-    {
-      name: "Tungsten Core",  // was "Heavy Ammunition"
-      cost: 400,
-      requires: 0,
-      description: "Increases explosion damage by 40",
-      effect: (tower) => ({
-        attack: tower.attack + 40,
-        towerWorth: tower.towerWorth + 400
-      })
-    },
-    {
-      name: "Autoloader System",  // was "Rapid Loading"
-      cost: 1000,
-      description: "Reduces attack interval by 300ms",
-      requires: 1,
-      effect: (tower) => ({
-        attackInterval: tower.attackInterval - 300,
-        towerWorth: tower.towerWorth + 1000
-      })
-    },
-    {
-      name: "Blast Radius",
-      cost: 1500,
-      description: "Increases explosion radius by 20%",
-      requires: 2,
-      effect: (tower) => ({
-        explosionRadius: tower.explosionRadius * 1.2,
-        towerWorth: tower.towerWorth + 800
-      })
-    },
-    {
-      name: "Better shells",
-      cost: 4000,
-      description: "+75 damage and faster reload",
-      requires: 3,
-      effect: (tower) => ({
-        attackInterval: tower.attackInterval - 400,
-        attack: tower.attack + 75,
-        towerWorth: tower.towerWorth + 4000
-      })
-    },
-    {
-      name: "Stun shells",
-      cost: 6000,
-      description: "Cannon can now stun enemies",
-      requires: 4,
-      effect: (tower) => ({
-        canStun: true,
-        stunDuration: 250,
-        towerWorth: tower.towerWorth + 6000
-      })
-    },
-    {
-      name: "Critical Strike",
-      cost: 8000,
-      description: "30% chance to deal double damage",
-      requires: 5,
-      effect: (tower) => ({
-        hasCritical: true,
-        criticalChance: 0.3,
-        criticalMultiplier: 2,
-        towerWorth: tower.towerWorth + 8000
-      })
-    },
-    {
-      name: "Siege Master",
-      cost: 12500,
-      description: "Ultimate explosive power",
-      requires: 6,
-      effect: (tower) => ({
-        attack: tower.attack * 1.25,
-        explosionRadius: tower.explosionRadius * 1.15,
-        src: '/cannonSpecial.png',
-        towerWorth: tower.towerWorth + 12500
-      })
-    }
+],
+slower: [
+  // Path 1 - Time Warping Path
+  {
+    name: "Enhanced Slow",
+    cost: 400,
+    requires: 0,
+    path: 1,
+    description: "Increases slow effect by 10%",
+    effect: (tower) => ({
+      slowAmount: tower.slowAmount ? tower.slowAmount * 0.8 : 0.8,
+      towerWorth: tower.towerWorth + 400,
+      path: 1
+    })
+  },
+  {
+    name: "Time Distortion",
+    cost: 1500,
+    requires: 1,
+    path: 1,
+    description: "Further increases slow effect and duration",
+    effect: (tower) => ({
+      slowAmount: tower.slowAmount ? tower.slowAmount * 0.7 : 0.7,
+      slowDuration: 3000,
+      towerWorth: tower.towerWorth + 1500,
+      path: 1
+    })
+  },
+  {
+    name: "Temporal Field",
+    cost: 3500,
+    requires: 2,
+    path: 1,
+    description: "Creates slowing field around targets",
+    effect: (tower) => ({
+      attackType: 'explosion',
+      explosionRadius: 15,
+      slowAmount: tower.slowAmount ? tower.slowAmount * 0.6 : 0.6,
+      src: '/slowerSpecial1.png',
+      towerWorth: tower.towerWorth + 3500,
+      path: 1
+    })
+  },
+  {
+    name: "Chrono Break",
+    cost: 8000,
+    requires: 3,
+    path: 1,
+    description: "Massive slow effect in larger area",
+    effect: (tower) => ({
+      explosionRadius: 20,
+      slowAmount: tower.slowAmount ? tower.slowAmount * 0.4 : 0.4,
+      slowDuration: 4000,
+      towerWorth: tower.towerWorth + 8000,
+      path: 1
+    })
+  },
+  {
+    name: "Time Lord",
+    cost: 15000,
+    requires: 4,
+    path: 1,
+    description: "Ultimate time manipulation",
+    effect: (tower) => ({
+      explosionRadius: 25,
+      slowAmount: tower.slowAmount ? tower.slowAmount * 0.3 : 0.3,
+      slowDuration: 5000,
+      canHitStealth: true,
+      towerWorth: tower.towerWorth + 15000,
+      path: 1
+    })
+  },
+  // Path 2 - Multi-target Freezing Path
+  {
+    name: "Frost Touch",
+    cost: 600,
+    requires: 0,
+    path: 2,
+    description: "Adds freezing damage",
+    effect: (tower) => ({
+      attack: tower.attack + 15,
+      towerWorth: tower.towerWorth + 600,
+      path: 2
+    })
+  },
+  {
+    name: "Frost Touch 2",
+    cost: 1200,
+    requires: 1,
+    path: 2,
+    description: "Faster freeze",
+    effect: (tower) => ({
+      attackInterval: tower.attackInterval - 250,
+      towerWorth: tower.towerWorth + 600,
+      path: 2
+    })
+  },
+  {
+    name: "Arctic Wind",
+    cost: 4500,
+    requires: 2,
+    path: 2,
+    description: "Triple target and increased range",
+    effect: (tower) => ({
+      attackType: 'triple',
+      radius: tower.radius * 1.3,
+      attack: tower.attack + 25,
+      src: '/slowerSpecial2.png',
+      towerWorth: tower.towerWorth + 4500,
+      path: 2
+    })
+  },
+  {
+    name: "Deep Freeze",
+    cost: 12000,
+    requires: 3,
+    path: 2,
+    description: "Quad target and chance to stun",
+    effect: (tower) => ({
+      attackType: 'quadruple',
+      canStun: true,
+      stunDuration: 300,
+      attack: tower.attack + 30,
+      towerWorth: tower.towerWorth + 12000,
+      path: 2
+    })
+  },
+  {
+    name: "Permafrost",
+    cost: 20000,
+    requires: 4,
+    path: 2,
+    description: "Maximum freeze potential",
+    effect: (tower) => ({
+      attack: tower.attack * 2,
+      stunDuration: 500,
+      radius: tower.radius * 1.5,
+      towerWorth: tower.towerWorth + 20000,
+      path: 2
+    })
+  }
+],
+
+gasspitter: [
+  // Path 1 - DOT Damage Path
+  {
+    name: "Virulent Strain",
+    cost: 400,
+    requires: 0,
+    path: 1,
+    description: "Increases poison damage",
+    effect: (tower) => ({
+      poisonDamage: tower.poisonDamage + 25,
+      towerWorth: tower.towerWorth + 400,
+      path: 1
+    })
+  },
+  {
+    name: "Lingering Toxin",
+    cost: 1200,
+    requires: 1,
+    path: 1,
+    description: "Longer lasting poison",
+    effect: (tower) => ({
+      poisonDamage: tower.poisonDamage + 30,
+      canStopRegen: true,
+      towerWorth: tower.towerWorth + 1200,
+      path: 1
+    })
+  },
+  {
+    name: "Deadly Concoction",
+    cost: 3500,
+    requires: 2,
+    path: 1,
+    description: "Massively enhanced poison",
+    effect: (tower) => ({
+      poisonDamage: tower.poisonDamage * 2,
+      towerWorth: tower.towerWorth + 3500,
+      path: 1
+    })
+  },
+  {
+    name: "Toxic Catalyst",
+    cost: 8000,
+    requires: 3,
+    path: 1,
+    description: "Extreme poison damage",
+    effect: (tower) => ({
+      poisonDamage: tower.poisonDamage * 2.5,
+      canHitStealth: true,
+      towerWorth: tower.towerWorth + 8000,
+      path: 1
+    })
+  },
+  {
+    name: "Bio Weaponry",
+    cost: 15000,
+    requires: 4,
+    path: 1,
+    description: "Ultimate poison damage",
+    effect: (tower) => ({
+      poisonDamage: tower.poisonDamage * 3,
+      attack: tower.attack * 1.5,
+      src: '/gasSpitterSpecial1.png',
+      towerWorth: tower.towerWorth + 15000,
+      path: 1
+    })
+  },
+
+  // Path 2 - Gas Cloud Path
+  {
+    name: "Wider Spray",
+    cost: 600,
+    requires: 0,
+    path: 2,
+    description: "Increases attack radius",
+    effect: (tower) => ({
+      radius: tower.radius * 1.2,
+      towerWorth: tower.towerWorth + 600,
+      path: 2
+    })
+  },
+  {
+    name: "Double Nozzle",
+    cost: 2000,
+    requires: 1,
+    path: 2,
+    description: "Can target two enemies",
+    effect: (tower) => ({
+      attackType: 'double',
+      radius: tower.radius * 1.2,
+      towerWorth: tower.towerWorth + 2000,
+      path: 2
+    })
+  },
+  {
+    name: "Gas Cloud",
+    cost: 4500,
+    requires: 2,
+    path: 2,
+    description: "Creates poisonous explosion",
+    effect: (tower) => ({
+      attackType: 'explosion',
+      explosionRadius: 20,
+      poisonDamage: tower.poisonDamage + 20,
+      towerWorth: tower.towerWorth + 4500,
+      path: 2
+    })
+  },
+  {
+    name: "Dense Vapors",
+    cost: 12000,
+    requires: 3,
+    path: 2,
+    description: "Larger explosion and slowing effect",
+    effect: (tower) => ({
+      explosionRadius: 25,
+      slowAmount: 0.8,
+      slowDuration: 2000,
+      poisonDamage: tower.poisonDamage + 30,
+      towerWorth: tower.towerWorth + 12000,
+      src: '/gasSpitterSpecial2.png',
+      path: 2
+    })
+  },
+  {
+    name: "Chemical Warfare",
+    cost: 20000,
+    requires: 4,
+    path: 2,
+    description: "Maximum area control",
+    effect: (tower) => ({
+      explosionRadius: 30,
+      slowAmount: 0.7,
+      poisonDamage: tower.poisonDamage * 1.5,
+      towerWorth: tower.towerWorth + 20000,
+      path: 2
+    })
+  }
+],
+mortar: [
+  {
+    name: "High Explosive Shells",
+    cost: 800,
+    requires: 0,
+    path: 1,
+    description: "More powerful explosions",
+    effect: (tower) => ({
+      attack: tower.attack + 150,
+      explosionRadius: tower.explosionRadius * 1.1,
+      towerWorth: tower.towerWorth + 800,
+      path: 1
+    })
+  },
+  {
+    name: "Heavy Ordnance",
+    cost: 2000,
+    requires: 1,
+    path: 1,
+    description: "Massively enhanced explosion damage",
+    effect: (tower) => ({
+      explosionRadius: tower.explosionRadius * 1.2,
+      attack: tower.attack * 1.3,
+      towerWorth: tower.towerWorth + 2000,
+      path: 1
+    })
+  },
+  {
+    name: "Concentrated Blast",
+    cost: 4500,
+    requires: 2,
+    path: 1,
+    description: "Extreme explosive power",
+    effect: (tower) => ({
+      attack: tower.attack * 1.5,
+      canHitArmored: true,
+      src: '/mortarSpecial.png',
+      towerWorth: tower.towerWorth + 4500,
+      path: 1
+    })
+  },
+  {
+    name: "Napalm Shells",
+    cost: 8000,
+    requires: 3,
+    path: 1,
+    description: "Devastating area damage",
+    effect: (tower) => ({
+      attack: tower.attack * 1.75,
+      explosionRadius: tower.explosionRadius * 1.3,
+      canHitStealth: true,
+      towerWorth: tower.towerWorth + 8000,
+      path: 1
+    })
+  },
+  {
+    name: "Nuclear Artillery",
+    cost: 15000,
+    requires: 4,
+    path: 1,
+    description: "Ultimate destruction",
+    effect: (tower) => ({
+      attack: tower.attack * 2.5,
+      explosionRadius: tower.explosionRadius * 1.4,
+      attackInterval: tower.attackInterval * 1.5, // Slower but more powerful
+      criticalChance: 0.3,
+      criticalMultiplier: 2,
+      towerWorth: tower.towerWorth + 15000,
+      path: 1
+    })
+  },
+
+  // Path 2 - Tactical Support (crowd control)
+  {
+    name: "EMP Shells",
+    cost: 1000,
+    requires: 0,
+    path: 2,
+    description: "Shells temporarily disable enemies",
+    effect: (tower) => ({
+      canStun: true,
+      stunDuration: 300,
+      explosionRadius: tower.explosionRadius * 1.1,
+      towerWorth: tower.towerWorth + 1000,
+      path: 2
+    })
+  },
+  {
+    name: "Cryogenic Payload",
+    cost: 2500,
+    requires: 1,
+    path: 2,
+    description: "Freezing explosions slow enemies",
+    effect: (tower) => ({
+      slowAmount: 0.7,
+      slowDuration: 2000,
+      explosionRadius: tower.explosionRadius * 1.2,
+      towerWorth: tower.towerWorth + 2500,
+      path: 2
+    })
+  },
+  {
+    name: "Shockwave Artillery",
+    cost: 5000,
+    requires: 2,
+    path: 2,
+    description: "Enhanced control effects",
+    effect: (tower) => ({
+      explosionRadius: tower.explosionRadius * 1.3,
+      stunDuration: 500,
+      slowAmount: 0.6,
+      attack: tower.attack + 50,
+      towerWorth: tower.towerWorth + 5000,
+      path: 2
+    })
+  },
+  {
+    name: "Shock and Awe",
+    cost: 12000,
+    requires: 3,
+    path: 2,
+    description: "Devastating crowd control",
+    effect: (tower) => ({
+      explosionRadius: tower.explosionRadius * 1.4,
+      slowAmount: 0.5,
+      slowDuration: 3000,
+      stunDuration: 800,
+      attack: tower.attack + 100,
+      src: '/mortarSpecial2.png',
+      towerWorth: tower.towerWorth + 12000,
+      path: 2
+    })
+  },
+  {
+    name: "Strategic Command",
+    cost: 20000,
+    requires: 4,
+    path: 2,
+    description: "Ultimate battlefield control",
+    effect: (tower) => ({
+      explosionRadius: tower.explosionRadius * 1.5,
+      attack: tower.attack * 1.5,
+      slowAmount: 0.4,
+      stunDuration: 1200,
+      slowDuration: 4000,
+      canHitStealth: true,
+      towerWorth: tower.towerWorth + 20000,
+      path: 2
+    })
+  }
+],
+
+cannon: [
+  // Path 1 - Anti-Tank Specialist
+  {
+    name: "Reinforced Barrel",
+    cost: 800,
+    requires: 0,
+    path: 1,
+    description: "Increased damage and penetration",
+    effect: (tower) => ({
+      attack: tower.attack + 50,
+      canHitArmored: true,
+      towerWorth: tower.towerWorth + 800
+    })
+  },
+  {
+    name: "Armor Piercing Rounds",
+    cost: 2000,
+    requires: 1,
+    path: 1,
+    description: "Specialized anti-armor ammunition",
+    effect: (tower) => ({
+      attack: tower.attack + 75,
+      hasCritical: true,
+      criticalChance: 0.2,
+      criticalMultiplier: 2,
+      towerWorth: tower.towerWorth + 2000
+    })
+  },
+  {
+    name: "Depleted Uranium",
+    cost: 4500,
+    requires: 2,
+    path: 1,
+    description: "Extreme armor penetration",
+    effect: (tower) => ({
+      attack: tower.attack * 1.5,
+      criticalChance: 0.3,
+      criticalMultiplier: 2.5,
+      towerWorth: tower.towerWorth + 4500
+    })
+  },
+  {
+    name: "Tank Hunter",
+    cost: 8000,
+    requires: 3,
+    path: 1,
+    description: "Specialized in destroying tough enemies",
+    effect: (tower) => ({
+      attack: tower.attack * 1.75,
+      criticalChance: 0.4,
+      criticalMultiplier: 3,
+      attackInterval: tower.attackInterval - 500,
+      src: '/cannonSpecial.png',
+      towerWorth: tower.towerWorth + 8000
+    })
+  },
+  {
+    name: "Siege Breaker",
+    cost: 15000,
+    requires: 4,
+    path: 1,
+    description: "Ultimate anti-armor capabilities",
+    effect: (tower) => ({
+      attack: tower.attack * 1.5,
+      criticalChance: 0.5,
+      criticalMultiplier: 4,
+      canHitStealth: true,
+      towerWorth: tower.towerWorth + 15000
+    })
+  },
+
+  // Path 2 - Anti-Group Specialist
+  {
+    name: "Spread Shot",
+    cost: 1000,
+    requires: 0,
+    path: 2,
+    description: "Wider explosion radius",
+    effect: (tower) => ({
+      explosionRadius: tower.explosionRadius * 1.3,
+      attack: tower.attack + 25,
+      towerWorth: tower.towerWorth + 1000
+    })
+  },
+  {
+    name: "Shrapnel Shells",
+    cost: 2500,
+    requires: 1,
+    path: 2,
+    description: "Explosions create damaging fragments",
+    effect: (tower) => ({
+      explosionRadius: tower.explosionRadius * 1.4,
+      attack: tower.attack + 40,
+      towerWorth: tower.towerWorth + 2500
+    })
+  },
+  {
+    name: "Chain Reaction",
+    cost: 5000,
+    requires: 2,
+    path: 2,
+    description: "Secondary explosions on impact",
+    effect: (tower) => ({
+      explosionRadius: tower.explosionRadius * 1.5,
+      attack: tower.attack + 60,
+      attackInterval: tower.attackInterval - 200,
+      towerWorth: tower.towerWorth + 5000
+    })
+  },
+  {
+    name: "Carpet Bomber",
+    cost: 12000,
+    requires: 3,
+    path: 2,
+    description: "Massive area coverage",
+    effect: (tower) => ({
+      explosionRadius: tower.explosionRadius * 1.6,
+      attack: tower.attack * 1.3,
+      attackInterval: tower.attackInterval - 300,
+      src: '/cannonSpecial2.png',
+      towerWorth: tower.towerWorth + 12000
+    })
+  },
+  {
+    name: "Apocalypse Cannon",
+    cost: 20000,
+    requires: 4,
+    path: 2,
+    description: "Ultimate area destruction",
+    effect: (tower) => ({
+      explosionRadius: tower.explosionRadius * 2,
+      attack: tower.attack * 1.5,
+      attackInterval: tower.attackInterval - 400,
+      canStun: true,
+      stunDuration: 300,
+      towerWorth: tower.towerWorth + 20000
+    })
+  }
   ]
 };
 // Add this new component near your other components
