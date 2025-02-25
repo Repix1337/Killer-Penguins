@@ -1736,7 +1736,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
         explosionRadius: tower.explosionRadius * 1.4,
         attack: tower.attack * 1.5,
         canStun: true,
-        stunDuration: 500,
+        stunDuration: 150,
         towerWorth: tower.towerWorth + 30000,
         path: 2
       })
@@ -1764,7 +1764,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       description: "20% chance to stun enemies",
       effect: (tower) => ({
         canStun: true,
-        stunDuration: 500,
+        stunDuration: 150,
         criticalChance: 0.2,
         towerWorth: tower.towerWorth + 2500,
         path: 1
@@ -1792,7 +1792,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       effect: (tower) => ({
         attack: tower.attack * 2,
         criticalChance: 0.4,
-        stunDuration: 750,
+        stunDuration: 300,
         src: '/sniperSpecial.png',
         towerWorth: tower.towerWorth + 12000,
         path: 1
@@ -1807,7 +1807,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       effect: (tower) => ({
         attack: tower.attack * 2.5,
         criticalChance: 1.0,
-        stunDuration: 1000,
+        stunDuration: 500,
         towerWorth: tower.towerWorth + 25000,
         path: 1
       })
@@ -2146,7 +2146,7 @@ slower: [
     effect: (tower) => ({
       attackType: 'quadruple',
       canStun: true,
-      stunDuration: 300,
+      stunDuration: 200,
       attack: tower.attack + 30,
       towerWorth: tower.towerWorth + 12000,
       path: 2
@@ -2160,7 +2160,7 @@ slower: [
     description: "Maximum freeze potential",
     effect: (tower) => ({
       attack: tower.attack * 2,
-      stunDuration: 500,
+      stunDuration: 400,
       radius: tower.radius * 1.5,
       towerWorth: tower.towerWorth + 20000,
       path: 2
@@ -2387,7 +2387,7 @@ mortar: [
     description: "Shells temporarily disable enemies",
     effect: (tower) => ({
       canStun: true,
-      stunDuration: 300,
+      stunDuration: 100,
       explosionRadius: tower.explosionRadius * 1.1,
       towerWorth: tower.towerWorth + 1000,
       path: 2
@@ -2415,7 +2415,7 @@ mortar: [
     description: "Enhanced control effects",
     effect: (tower) => ({
       explosionRadius: tower.explosionRadius * 1.3,
-      stunDuration: 500,
+      stunDuration: 300,
       slowAmount: 0.6,
       attack: tower.attack + 50,
       towerWorth: tower.towerWorth + 5000,
@@ -2432,7 +2432,7 @@ mortar: [
       explosionRadius: tower.explosionRadius * 1.4,
       slowAmount: 0.5,
       slowDuration: 3000,
-      stunDuration: 800,
+      stunDuration: 500,
       attack: tower.attack + 100,
       src: '/mortarSpecial2.png',
       towerWorth: tower.towerWorth + 12000,
@@ -2449,7 +2449,7 @@ mortar: [
       explosionRadius: tower.explosionRadius * 1.5,
       attack: tower.attack * 1.5,
       slowAmount: 0.4,
-      stunDuration: 1200,
+      stunDuration: 700,
       slowDuration: 4000,
       canHitStealth: true,
       towerWorth: tower.towerWorth + 20000,
@@ -2592,7 +2592,7 @@ cannon: [
       attack: tower.attack * 1.5,
       attackInterval: tower.attackInterval - 400,
       canStun: true,
-      stunDuration: 300,
+      stunDuration: 150,
       towerWorth: tower.towerWorth + 20000
     })
   }
