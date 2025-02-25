@@ -34,6 +34,7 @@ interface Enemy {
   speed: number;
   baseSpeed: number;
   isSlowed: boolean;
+  slowValue?: number;
   slowSourceId?: string;
   slowStartTime?: number;
   damage: number;
@@ -46,6 +47,9 @@ interface Enemy {
   poisonStartTime?: number;
   canRegen: boolean;
   isArmored: boolean;
+  isStunned: boolean;
+  stunSourceId?: string;
+  stunStartTime?: number;
 }
 
 // Define the Tower interface
@@ -86,6 +90,7 @@ interface Tower {
   criticalMultiplier?: number;
   canHitArmored?: boolean;
   canStun?: boolean;
+  stunDuration?: number;
 }
 
 const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp, isSpeedUp, isPaused, setCanPause, selectedTowerType }) => {
@@ -486,6 +491,7 @@ const createNewEnemy = (type: keyof typeof ENEMY_TYPES) => {
     isTargeted: false,
     isSlowed: false,
     isPoisoned: false,
+    isStunned: false,
     maxHp: enemyStats.hp, // Add this line
     ...enemyStats
   };
@@ -702,9 +708,9 @@ useEffect(() => {
               isTargeted: true,
               hp: newHp,
               isArmored: false,
-              isSlowed: tower.canStun ? true : false,
-              slowSourceId: tower.canStun ? tower.id : undefined,
-              slowStartTime: tower.canStun ? Date.now() : undefined,
+              isStunned: tower.canStun ? true : false,
+              stunSourceId: tower.canStun ? tower.id : undefined,
+              stunStartTime: tower.canStun ? Date.now() : undefined,
               speed: tower.canStun ? 0 : enemy.baseSpeed
             };
           }
@@ -728,9 +734,9 @@ useEffect(() => {
               isTargeted: true,
               hp: newHp,
               isArmored: false,
-              isSlowed: tower.canStun ? true : false,
-              slowSourceId: tower.canStun ? tower.id : undefined,
-              slowStartTime: tower.canStun ? Date.now() : undefined,
+              isStunned: tower.canStun ? true : false,
+              stunSourceId: tower.canStun ? tower.id : undefined,
+              stunStartTime: tower.canStun ? Date.now() : undefined,
               speed: tower.canStun ? 0 :enemy.baseSpeed
             };
           }
@@ -763,6 +769,7 @@ useEffect(() => {
               isSlowed: true,
               slowSourceId: tower.id,
               slowStartTime: Date.now(),
+              slowValue: tower.slowAmount,
               speed: tower.slowAmount ? 
                 Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount) :
                 enemy.speed,
@@ -1051,11 +1058,7 @@ useEffect(() => {
           const effectTower = tower.find(t => t.id === enemy.slowSourceId);
           if (!effectTower) return enemy;
   
-          // If it's a stun (speed = 0), use the stun duration, otherwise use slow duration
-          const isStunEffect = enemy.speed === 0;
-          const effectDuration = isStunEffect ? 
-            (effectTower.slowDuration ?? 250) : 
-            (effectTower.slowDuration ?? 2000);
+          const effectDuration = 2500;
   
           const adjustedDuration = effectDuration / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1);
           
@@ -1063,7 +1066,7 @@ useEffect(() => {
             hasChanges = true;
             return {
               ...enemy,
-              speed: enemy.baseSpeed,
+              speed: !enemy.isStunned ? enemy.baseSpeed : enemy.speed,
               isSlowed: false,
               slowSourceId: undefined,
               slowStartTime: undefined
@@ -1078,6 +1081,47 @@ useEffect(() => {
   
     return () => clearInterval(slowInterval);
   }, [isPageVisible, isPaused, isSpeedUp, tower]);// Added tower to dependencies
+  useEffect(() => {
+    if (!isPageVisible || isPaused) return;
+    
+    const stunCheckInterval = 10 * (isSpeedUp === 2 ? 1/3 : isSpeedUp ? 1/2 : 1);
+    
+    const stunInterval = setInterval(() => {
+      const currentTime = Date.now();
+  
+      setEnemies(prevEnemies => {
+        let hasChanges = false;
+        const updatedEnemies = prevEnemies.map(enemy => {
+          if (!enemy.isStunned || !enemy.stunSourceId || !enemy.stunStartTime) return enemy;
+          
+          // Find the tower that applied the effect
+          const effectTower = tower.find(t => t.id === enemy.stunSourceId);
+          if (!effectTower) return enemy;
+  
+          // If it's a stun (speed = 0), use the stun duration, otherwise use slow duration
+          const effectDuration = 250
+  
+          const adjustedDuration = effectDuration / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1);
+          
+          if (currentTime - enemy.stunStartTime >= adjustedDuration) {
+            hasChanges = true;
+            return {
+              ...enemy,
+              speed: enemy.isSlowed ? enemy.baseSpeed * (enemy.slowValue ?? 1) : enemy.baseSpeed,
+              isStunned: false,
+              stunSourceId: undefined,
+              stunStartTime: undefined
+            };
+          }
+          return enemy;
+        });
+  
+        return hasChanges ? updatedEnemies : prevEnemies;
+      });
+    }, stunCheckInterval);
+  
+    return () => clearInterval(stunInterval);
+  }, [isPageVisible, isPaused, isSpeedUp, tower]);
   useEffect(() => {
     if (!isPageVisible || isPaused) return;
              
@@ -1593,12 +1637,12 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
     },
     {
       name: "Quick Loader",
-      cost: 2000,
+      cost: 3500,
       description: "Further reduces attack interval by 100ms",
       requires: 3,
       effect: (tower) => ({
         attackInterval: tower.attackInterval - 100,
-        towerWorth: tower.towerWorth + 2000
+        towerWorth: tower.towerWorth + 3500
       })
     },
     {
@@ -1907,7 +1951,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       requires: 4,
       effect: (tower) => ({
         canStun: true,
-        slowDuration: 250,
+        stunDuration: 250,
         towerWorth: tower.towerWorth + 6000
       })
     },
