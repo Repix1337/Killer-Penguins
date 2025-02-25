@@ -448,7 +448,8 @@ const TOWER_TYPES = {
     specialUpgradeAvailable: false,
     canStopRegen: false,
     explosionRadius: 15,
-    effectSrc: '/sniperAttack.png'
+    effectSrc: '/sniperAttack.png',
+    canHitArmored: true,
   }
 };
 
@@ -2474,10 +2475,9 @@ cannon: [
     cost: 800,
     requires: 0,
     path: 1,
-    description: "Increased damage and penetration",
+    description: "Increased damage ",
     effect: (tower) => ({
       attack: tower.attack + 50,
-      canHitArmored: true,
       towerWorth: tower.towerWorth + 800
     })
   },
