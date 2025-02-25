@@ -1667,14 +1667,14 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
     },
     {
       name: "Gatling Master",
-      cost: 10000,
+      cost: 15000,
       description: "Massive attack speed and damage increase",
       requires: 6,
       effect: (tower) => ({
         attack: tower.attack * 1.5,
         attackInterval: tower.attackInterval * 0.6,
         src: '/rapidShooterSpecial.png',
-        towerWorth: tower.towerWorth + 10000
+        towerWorth: tower.towerWorth + 15000
       })
     }
   ],
@@ -1969,14 +1969,14 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
     },
     {
       name: "Siege Master",
-      cost: 10000,
+      cost: 12500,
       description: "Ultimate explosive power",
       requires: 6,
       effect: (tower) => ({
         attack: tower.attack * 1.25,
         explosionRadius: tower.explosionRadius * 1.15,
         src: '/cannonSpecial.png',
-        towerWorth: tower.towerWorth + 10000
+        towerWorth: tower.towerWorth + 12500
       })
     }
   ]
