@@ -1163,7 +1163,7 @@ useEffect(() => {
           const effectTower = tower.find(t => t.id === enemy.slowSourceId);
           if (!effectTower) return enemy;
   
-          const effectDuration = 2500;
+          const effectDuration = effectTower.slowDuration || 2500;
   
           const adjustedDuration = effectDuration / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1);
           
@@ -1204,7 +1204,7 @@ useEffect(() => {
           if (!effectTower) return enemy;
   
           // If it's a stun (speed = 0), use the stun duration, otherwise use slow duration
-          const effectDuration = 250
+          const effectDuration = effectTower.stunDuration || 150
   
           const adjustedDuration = effectDuration / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1);
           
@@ -1319,24 +1319,18 @@ useEffect(() => {
       const selectedTower = tower.find(t => t.id === selectedTowerID);
       if (!selectedTower) return null;
   
-      // Get all available upgrades for the tower's current level
       const availableUpgrades = TOWER_UPGRADES[selectedTower.type]?.filter(upgrade => {
-        // Check if tower has already chosen a path (reached level 3 in one path)
         const hasChosenPath = selectedTower.path1Level >= 3 || selectedTower.path2Level >= 3;
         
         if (hasChosenPath) {
-          // If path 1 is level 3 or higher, only allow path 1 upgrades
           if (selectedTower.path1Level >= 3) {
-            // Allow path 2 upgrades up to level 2 if they haven't been purchased yet
             if (upgrade.path === 2 && upgrade.requires < 2 && 
                 upgrade.requires === selectedTower.path2Level) {
               return true;
             }
             return upgrade.path === 1 && upgrade.requires === selectedTower.path1Level;
           }
-          // If path 2 is level 3 or higher, only allow path 2 upgrades
           if (selectedTower.path2Level >= 3) {
-            // Allow path 1 upgrades up to level 2 if they haven't been purchased yet
             if (upgrade.path === 1 && upgrade.requires < 2 && 
                 upgrade.requires === selectedTower.path1Level) {
               return true;
@@ -1345,8 +1339,6 @@ useEffect(() => {
           }
         }
         
-        // Before choosing a path:
-        // Show only the next available upgrade for each path
         return (upgrade.path === 1 && upgrade.requires === selectedTower.path1Level) || 
                (upgrade.path === 2 && upgrade.requires === selectedTower.path2Level);
       }).filter(Boolean) || [];
@@ -1355,112 +1347,159 @@ useEffect(() => {
         <div 
           data-upgrade-menu
           className='absolute top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-800 
-            flex items-start justify-between p-6 rounded-lg gap-6 shadow-lg border border-blue-400'
-          style={{left: selectedTower.positionX < 50 ? '70%' : '30%', width: '700px'}}
+            flex items-start justify-between p-8 rounded-lg gap-8 shadow-xl border-2 border-blue-500'
+          style={{left: selectedTower.positionX < 50 ? '70%' : '30%', width: '800px'}}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className='flex flex-col space-y-3 w-1/2'>
-            <h1 className="text-2xl font-bold mb-4 text-white border-b border-blue-400 pb-2">Upgrade Menu</h1>
-            
+          {/* Left Panel - Tower Info & Stats */}
+          <div className='flex flex-col space-y-6 w-1/2'>
+            <div className='text-white'>
+              <h1 className="text-3xl font-bold mb-2 text-blue-400">
+                {selectedTower.type.charAt(0).toUpperCase() + selectedTower.type.slice(1)} Tower
+              </h1>
+              <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-4"></div>
+              
+              {/* Tower Image and Basic Info */}
+              <div className="flex items-center gap-4 mb-6">
+                <img src={selectedTower.src} alt="Tower" className="w-16 h-16" />
+                <div>
+                  <p className="text-sm text-gray-400">Level: {Math.max(selectedTower.path1Level, selectedTower.path2Level)}</p>
+                  <p className="text-sm text-gray-400">Total Value: ${Math.floor(selectedTower.towerWorth)}</p>
+                </div>
+              </div>
+  
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <StatBlock label="Attack Damage" value={selectedTower.attack} />
+                <StatBlock label="Attack Speed" value={`${selectedTower.attackInterval}ms`} />
+                <StatBlock label="Range" value={selectedTower.radius} />
+                <StatBlock label="Attack Type" value={selectedTower.attackType} />
+                <StatBlock label="Targets Stealth" value={selectedTower.canHitStealth ? "Yes" : "No"} />
+                <StatBlock label="Targets Armored" value={selectedTower.canHitArmored ? "Yes" : "No"} />
+                
+                {selectedTower.hasCritical && (
+                  <>
+                    <StatBlock 
+                      label="Crit Chance" 
+                      value={`${(selectedTower.criticalChance || 0) * 100}%`} 
+                    />
+                    <StatBlock 
+                      label="Crit Multiplier" 
+                      value={`${selectedTower.criticalMultiplier}x`} 
+                    />
+                  </>
+                )}
+                
+                {selectedTower.slowAmount && (
+                  <>
+                    <StatBlock 
+                      label="Slow Amount" 
+                      value={`${(1 - selectedTower.slowAmount) * 100}%`} 
+                    />
+                    <StatBlock 
+                      label="Slow Duration" 
+                      value={`${selectedTower.slowDuration}ms`} 
+                    />
+                  </>
+                )}
+  
+                {selectedTower.poisonDamage > 0 && (
+                  <StatBlock 
+                    label="Poison DPS" 
+                    value={selectedTower.poisonDamage * 4} 
+                  />
+                )}
+  
+                {selectedTower.canStun && (
+                  <StatBlock 
+                    label="Stun Duration" 
+                    value={`${selectedTower.stunDuration}ms`} 
+                  />
+                )}
+  
+                {selectedTower.explosionRadius > 0 && (
+                  <StatBlock 
+                    label="Explosion Radius" 
+                    value={selectedTower.explosionRadius} 
+                  />
+                )}
+  
+                <StatBlock 
+                  label="Total Damage" 
+                  value={Math.floor(selectedTower.damageDone)} 
+                  highlight={true}
+                />
+              </div>
+            </div>
+  
+            {/* Control Buttons */}
+            <div className="flex gap-4 mt-4">
+              <button 
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg
+                  transition-all duration-200 shadow-md"
+                onClick={() => sellTower(selectedTower.towerWorth)}
+              >
+                Sell (${Math.floor(selectedTower.towerWorth * 0.75)})
+              </button>
+              <button 
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg
+                  transition-all duration-200 shadow-md"
+                onClick={changeTowerTargetting}
+              >
+                Target: {selectedTower.targettingType}
+              </button>
+            </div>
+          </div>
+  
+          {/* Right Panel - Upgrades */}
+          <div className='w-1/2 space-y-4'>
+            <h2 className="text-2xl font-bold text-blue-400 mb-4">Upgrades</h2>
             {availableUpgrades.map((upgrade) => (
               <button 
                 key={upgrade.name}
-                className={`bg-gradient-to-r 
-                  ${upgrade.path === 1 ? 'from-red-500 to-red-700 hover:from-red-600 hover:to-red-800' : 
-                   upgrade.path === 2 ? 'from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800' :
-                   'from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800'}
-                  text-white font-bold py-3 px-4 rounded-lg w-full transition-all duration-200 shadow-md
-                  disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`w-full text-left p-4 rounded-lg transition-all duration-200 shadow-md
+                  ${upgrade.path === 1 
+                    ? 'bg-gradient-to-r from-red-900 to-red-800 hover:from-red-800 hover:to-red-700 border-l-4 border-red-500' 
+                    : 'bg-gradient-to-r from-blue-900 to-blue-800 hover:from-blue-800 hover:to-blue-700 border-l-4 border-blue-500'}
+                  ${money < upgrade.cost ? 'opacity-50 cursor-not-allowed' : 'hover:scale-102'}`}
                 onClick={() => performUpgrade(selectedTower, upgrade)}
                 disabled={money < upgrade.cost}
               >
-                {upgrade.name} (${upgrade.cost})
-                <div className="text-sm text-gray-200">{upgrade.description}</div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-bold text-white">{upgrade.name}</span>
+                  <span className="text-sm text-gray-300">${upgrade.cost}</span>
+                </div>
+                <p className="text-sm text-gray-300">{upgrade.description}</p>
               </button>
             ))}
-
-          {/* Tower targeting type button */}
-          <div className="pt-4">
+  
             <button 
-              className="bg-blue-400 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg w-full
-                transition-all duration-200 shadow-md"
-              onClick={changeTowerTargetting}
-            >
-              Targeting: {selectedTower.targettingType === "first" ? "First" : 
-                         selectedTower.targettingType === "highestHp" ? "Highest HP" : "Last"}
-            </button>
-          </div>
-
-          {/* Control buttons */}
-          <div className="flex gap-2 mt-4">
-            <button 
-              className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg flex-1 
-                transition-all duration-200 shadow-md"
-              onClick={() => sellTower(selectedTower.towerWorth)}
-            >
-              Sell Tower ({Math.floor(selectedTower.towerWorth * 0.75)}$)
-            </button>
-            <button 
-              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg flex-1 
-                transition-all duration-200 shadow-md"
+              className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg
+                transition-all duration-200 shadow-md mt-6"
               onClick={closeUpgradeMenu}
             >
               Close
             </button>
           </div>
         </div>
-
-        {/* Stats panel remains the same */}
-        <div className='bg-slate-700 p-4 rounded-lg space-y-4 w-1/2'>
-          <h2 className="text-xl font-bold text-white border-b border-blue-400 pb-2">Tower Stats</h2>
-          
-          <div className="space-y-3 text-gray-200">
-  <div>
-    <div className="flex justify-between items-center mb-1">
-      <span>Attack:</span>
-      <span>{selectedTower.attack}</span>
-    </div>
-   
-    
-  </div>
-
-  <div>
-    <div className="flex justify-between items-center mb-1">
-      <span>Attack Interval:</span>
-      <span>{selectedTower.attackInterval}</span>
-    </div>
-    
-    
-  </div>
+      );
+    }
+    return null;
+  };
   
-  {selectedTower.type === "gasspitter" && selectedTower.maxPoisonDamage != undefined && selectedTower.poisonDamage != undefined && (
-  <div>
-    <div className="flex justify-between items-center mb-1">
-      <span>Poison Damage:</span>
-      <span>{selectedTower.poisonDamage * 4} </span>
-    </div>
-    
-    
-  </div>
-  )}
-            <div className="pt-2 border-t border-gray-600">
-              <div>Attack Type: {selectedTower.attackType}</div>
-              <div>Can hit stealth: {selectedTower.canHitStealth ? 'Yes' : 'No'}</div>
-              <div>Damage done to enemies: {Math.floor(selectedTower.damageDone)}</div>
-              {selectedTower.type === "slower" && (
-                <div>
-                  <div>Slow Amount: {selectedTower.slowAmount ? selectedTower.slowAmount.toFixed(2) : 'N/A'} / {selectedTower.maxSlow}</div>
-                  
-                </div>
-              )}
-        </div>
-      </div>
+  // Add this helper component for stats
+  const StatBlock = ({ label, value, highlight = false }: { 
+    label: string; 
+    value: string | number; 
+    highlight?: boolean 
+  }) => (
+    <div className={`p-2 rounded ${highlight ? 'bg-blue-900/50' : 'bg-gray-900/50'}`}>
+      <div className="text-xs text-gray-400">{label}</div>
+      <div className={`text-sm ${highlight ? 'text-blue-300 font-bold' : 'text-white'}`}>
+        {value}
       </div>
     </div>
-    );
-  }
-  return null;
-};
+  );
   const closeUpgradeMenu = () => {
     setShowUpgradeMenu(false);
   }

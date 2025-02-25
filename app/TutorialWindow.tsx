@@ -9,110 +9,140 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
     const [selectedTowerInfo, setSelectedTowerInfo] = useState<string | null>(null);
 
     const renderTowerContent = () => {
-        const towerData = { 
+        const towerData = {
             basic: {
                 name: "Basic Tower",
                 cost: 100,
-                description: "Balanced tower with good damage and attack speed.",
-                special: "Artillery Master (20000$) - Massive damage, range increase, and explosion damage.",
+                description: "Balanced tower with good damage and attack speed (50 damage, 1000ms interval)",
+                path1: "Path 1: Attack Speed - Multiple targets and faster firing, culminating in quad shot",
+                path2: "Path 2: Heavy Damage - Increasing damage leading to explosive attacks",
                 upgrades: [
-                    "Level 1 (400$) - Enhanced Targeting: +40 damage",
-                    "Level 2 (600$) - Combat Accelerator: -250ms attack interval",
-                    "Level 3 (1500$) - Double Shot: Can hit 2 enemies",
-                    "Level 4 (2500$) - Armor Piercing: Can hit armored and stealth",
-                    "Level 5 (3000$) - Extended Range: +30% range",
-                    "Level 6 (5000$) - Critical Strike: 25% chance for 2x damage",
-                    "Level 7 (15000$) - Artillery Master: Explosive damage"
+                    "Path 1-1: Stealth Detection (400$) - Can target stealth enemies",
+                    "Path 1-2: Rapid Fire (800$) - -300ms attack interval",
+                    "Path 1-3: Double Shot (2000$) - Can hit 2 targets, -200ms interval",
+                    "Path 1-4: Speed Master (15000$) - Triple shot, -250ms interval, +50% damage",
+                    "Path 1-5: Hypersonic Barrage (25000$) - Quad shot, -100ms interval, +80% damage",
+                    "Path 2-1: Enhanced Targeting (600$) - +60 damage",
+                    "Path 2-2: Heavy Shells (2000$) - +80 damage, can hit armored",
+                    "Path 2-3: Critical Strike (5000$) - 30% chance for 3x damage",
+                    "Path 2-4: Demolition Expert (15000$) - Converts to explosion damage, 3x damage, 25 radius",
+                    "Path 2-5: Nuclear Strike (30000$) - 1.5x damage, 40% larger radius, stuns for 150ms"
                 ]
             },
             sniper: {
                 name: "Sniper Tower",
                 cost: 200,
-                description: "High single-target damage with long range.",
-                special: "Elite Sniper (20000$) - 5x damage boost.",
+                description: "High single-target damage with long range (120 damage, 2000ms interval)",
+                path1: "Path 1: Heavy Impact - Massive damage and stunning capabilities",
+                path2: "Path 2: Speed Focus - Multiple targets with rapid firing",
                 upgrades: [
-                    "Level 1 (800$) - High-Caliber: +80 damage",
-                    "Level 2 (1000$) - Neural Interface: -500ms attack interval",
-                    "Level 3 (2000$) - Armor Piercing: Can hit armored, +100 damage",
-                    "Level 4 (2500$) - Rapid Targeting: -500ms attack interval",
-                    "Level 5 (4000$) - Critical Strike: 35% chance for 3x damage",
-                    "Level 6 (5000$) - Double Shot: Can hit 2 enemies",
-                    "Level 7 (10000$) - Elite Sniper: 5x damage"
-                ]
-            },
-            rapidShooter: {
-                name: "Rapid Shooter",
-                cost: 500,
-                description: "High attack speed tower, effective against groups.",
-                special: "Gatling Master (10000$) - Ultimate attack speed.",
-                upgrades: [
-                    "Level 1 (500$) - Rapid Fire: -100ms attack interval",
-                    "Level 2 (1000$) - Enhanced Damage: +25 damage, stealth detection",
-                    "Level 3 (2500$) - Triple Shot: Can hit 3 enemies",
-                    "Level 4 (2000$) - Quick Loader: -100ms attack interval",
-                    "Level 5 (5000$) - Extended Range: +25% range",
-                    "Level 6 (7500$) - Quadruple Shot: Can hit 4 enemies",
-                    "Level 7 (10000$) - Gatling Master: 1.5x damage, 40% faster attack"
-                ]
-            },
-            slower: {
-                name: "Slower Tower",
-                cost: 300,
-                description: "Slows down enemies in range.",
-                special: "Time Warper (10000$) - Maximum slow effect.",
-                upgrades: [
-                    "Level 1 (400$) - Enhanced Slow: +10% slow effect",
-                    "Level 2 (1000$) - Double Target: Can slow 2 enemies",
-                    "Level 3 (1500$) - Extended Duration: Longer slow, stealth detection",
-                    "Level 4 (4500$) - Triple Target: Can slow 3 enemies",
-                    "Level 5 (5000$) - Potent Slow: +15% slow effect",
-                    "Level 6 (7500$) - Extended Range: +40% range",
-                    "Level 7 (10000$) - Time Warper: Maximum slow effect"
+                    "Path 1-1: Precision Scope (1000$) - +100 damage",
+                    "Path 1-2: Stun Rounds (2500$) - 20% stun chance (150ms)",
+                    "Path 1-3: Armor Piercing (5000$) - Can hit armored, +150 damage",
+                    "Path 1-4: Heavy Impact (12000$) - 2x damage, 40% stun chance (300ms)",
+                    "Path 1-5: Ultimate Destroyer (25000$) - 2.5x damage, 100% stun chance (500ms)",
+                    "Path 2-1: Quick Loader (800$) - -400ms attack interval",
+                    "Path 2-2: Double Shot (2000$) - Can hit 2 targets, -200ms interval",
+                    "Path 2-3: Advanced Targeting (4500$) - Triple shot, -300ms interval",
+                    "Path 2-4: Rapid Fire Master (15000$) - -500ms interval, +30% damage",
+                    "Path 2-5: Machine Gun Mode (25000$) - Quad shot, -300ms interval, +50% damage"
                 ]
             },
             gasSpitter: {
                 name: "Gas Spitter",
                 cost: 300,
-                description: "Poisons enemies with damage over time.",
-                special: "Plague Master (10000$) - Deadly poison, stops regen.",
+                description: "Poisons enemies with damage over time (20 damage + 20 poison/tick)",
+                path1: "Path 1: Toxin - Enhanced poison damage and regen blocking",
+                path2: "Path 2: Gas Cloud - Area control with slowing effects",
                 upgrades: [
-                    "Level 1 (300$) - Virulent Strain: +20 poison damage",
-                    "Level 2 (600$) - Caustic Catalyst: +20 poison damage",
-                    "Level 3 (1200$) - Double Spray: Can poison 2 enemies",
-                    "Level 4 (1500$) - Concentrated Toxin: +30 poison damage",
-                    "Level 5 (2500$) - Extended Range: +25% range",
-                    "Level 6 (5000$) - Triple Spray: Can poison 3 enemies",
-                    "Level 7 (10000$) - Plague Master: 4x poison damage, stops regen"
+                    "Path 1-1: Virulent Strain (400$) - +25 poison damage",
+                    "Path 1-2: Lingering Toxin (1200$) - +30 poison, stops regen",
+                    "Path 1-3: Deadly Concoction (3500$) - 2x poison damage",
+                    "Path 1-4: Toxic Catalyst (8000$) - 2.5x poison, can hit stealth",
+                    "Path 1-5: Bio Weaponry (15000$) - 3x poison, +50% base damage",
+                    "Path 2-1: Wider Spray (600$) - +20% range",
+                    "Path 2-2: Double Nozzle (2000$) - Can hit 2 targets, +20% range",
+                    "Path 2-3: Gas Cloud (4500$) - Creates explosion, 20 radius, +20 poison",
+                    "Path 2-4: Dense Vapors (12000$) - 25 radius, 20% slow, +30 poison",
+                    "Path 2-5: Chemical Warfare (20000$) - 30 radius, 30% slow, +50% poison"
                 ]
             },
+            slower: {
+                name: "Slower Tower",
+                cost: 300,
+                description: "Slows down enemies in range (10 damage, 25% slow)",
+                path1: "Path 1: Time Warp - Stronger slowing and area effects",
+                path2: "Path 2: Frost - Multi-target with freezing capabilities",
+                upgrades: [
+                    "Path 1-1: Enhanced Slow (400$) - 20% stronger slow effect",
+                    "Path 1-2: Time Distortion (1500$) - 30% stronger slow, longer duration",
+                    "Path 1-3: Temporal Field (3500$) - Creates slow field, 15 radius, 40% slow",
+                    "Path 1-4: Chrono Break (8000$) - 20 radius, 60% slow, 4s duration",
+                    "Path 1-5: Time Lord (15000$) - 25 radius, 70% slow, 5s duration, hits stealth",
+                    "Path 2-1: Frost Touch (600$) - +15 damage",
+                    "Path 2-2: Frost Touch 2 (1200$) - -250ms attack interval",
+                    "Path 2-3: Arctic Wind (4500$) - Triple target, +30% range, +25 damage",
+                    "Path 2-4: Deep Freeze (12000$) - Quad target, stun chance, +30 damage",
+                    "Path 2-5: Permafrost (20000$) - 2x damage, 400ms stun, +50% range"
+                ]
+            },
+            rapidShooter: {
+                name: "Rapid Shooter",
+                cost: 500,
+                description: "High attack speed tower (20 damage, 350ms interval)",
+                path1: "Path 1: Multi-shot - Multiple targets and enhanced speed",
+                path2: "Path 2: Chain Lightning - Chain attacks between enemies",
+                upgrades: [
+                    "Path 1-1: Faster Firing (500$) - -75ms attack interval",
+                    "Path 1-2: Enhanced Targeting (1200$) - +15 damage, -50ms interval",
+                    "Path 1-3: Double Shot (3500$) - Can hit 2 targets, -25ms interval",
+                    "Path 1-4: Triple Shot (8000$) - Triple shot, -50ms interval, +10 damage",
+                    "Path 1-5: Bullet Storm (15000$) - Quad shot, -75ms interval, +50% damage",
+                    "Path 2-1: Static Charge (800$) - +25 damage, +10% range",
+                    "Path 2-2: Enhanced Range (1500$) - +20% range, stealth detection",
+                    "Path 2-3: Chain Lightning (4500$) - Chains to 2 enemies, +20 damage",
+                    "Path 2-4: Storm Caller (12000$) - Chains to 3 enemies, +40% damage",
+                    "Path 2-5: Lightning Master (20000$) - Chains to 4 enemies, 2x damage"
+                ]
+            },
+            
             mortar: {
                 name: "Mortar Tower",
                 cost: 1200,
-                description: "Long-range explosive damage to groups.",
-                special: "Artillery Master (15000$) - Maximum explosion power.",
+                description: "Long-range explosive damage (100 damage, 7000ms interval)",
+                path1: "Path 1: Heavy Artillery - Massive explosion damage",
+                path2: "Path 2: Tactical Support - Crowd control effects",
                 upgrades: [
-                    "Level 1 (400$) - Seismic Shells: +50 damage",
-                    "Level 2 (1000$) - Rapid Reloader: -1000ms attack interval",
-                    "Level 3 (2000$) - Shockwave Amplifier: +20% explosion radius",
-                    "Level 4 (4000$) - Better Shells: +75 damage, faster reload",
-                    "Level 5 (5000$) - Extended Range: +30% range",
-                    "Level 6 (7500$) - Devastating Blast: +100 damage, +25% radius",
-                    "Level 7 (15000$) - Artillery Master: 2x damage, +30% range"
+                    "Path 1-1: High Explosive (800$) - +150 damage, +10% radius",
+                    "Path 1-2: Heavy Ordnance (2000$) - +30% damage, +20% radius",
+                    "Path 1-3: Concentrated Blast (4500$) - +50% damage, armor piercing",
+                    "Path 1-4: Napalm Shells (8000$) - +75% damage, stealth detection",
+                    "Path 1-5: Nuclear Artillery (15000$) - 2.5x damage, crit chance",
+                    "Path 2-1: EMP Shells (1000$) - Adds stun effect",
+                    "Path 2-2: Cryogenic Payload (2500$) - 30% slow effect",
+                    "Path 2-3: Shockwave Artillery (5000$) - Enhanced CC, +50 damage",
+                    "Path 2-4: Shock and Awe (12000$) - Massive CC, +100 damage",
+                    "Path 2-5: Strategic Command (20000$) - Ultimate CC, +50% damage"
                 ]
             },
+            
             cannon: {
                 name: "Cannon Tower",
                 cost: 500,
-                description: "Explosive damage tower effective against groups.",
-                special: "Siege Master (15000$) - Ultimate explosive power.",
+                description: "Medium-range explosive damage (75 damage, 2000ms interval)",
+                path1: "Path 1: Anti-Tank - Single target and armor piercing",
+                path2: "Path 2: Anti-Group - Area damage and crowd control",
                 upgrades: [
-                    "Level 1 (400$) - Tungsten Core: +40 damage",
-                    "Level 2 (1000$) - Autoloader: -300ms attack interval",
-                    "Level 3 (1500$) - Blast Radius: +20% explosion radius",
-                    "Level 4 (4000$) - Better Shells: +75 damage, faster reload",
-                    "Level 5 (6000$) - Extended Range: +25% range",
-                    "Level 6 (8000$) - Critical Strike: 30% chance for 2x damage",
-                    "Level 7 (15000$) - Siege Master: 2x damage, larger explosions"
+                    "Path 1-1: Reinforced Barrel (800$) - +50 damage, armor piercing",
+                    "Path 1-2: AP Rounds (2000$) - +75 damage, 20% crit chance",
+                    "Path 1-3: Depleted Uranium (4500$) - +50% damage, 30% crit",
+                    "Path 1-4: Tank Hunter (8000$) - +75% damage, -500ms interval",
+                    "Path 1-5: Siege Breaker (15000$) - +50% damage, 50% crit chance",
+                    "Path 2-1: Spread Shot (1000$) - +30% explosion radius",
+                    "Path 2-2: Shrapnel Shells (2500$) - +40% radius, +40 damage",
+                    "Path 2-3: Chain Reaction (5000$) - +50% radius, -200ms interval",
+                    "Path 2-4: Carpet Bomber (12000$) - +60% radius, +30% damage",
+                    "Path 2-5: Apocalypse Cannon (20000$) - 2x radius, stun effect"
                 ]
             }
         };
@@ -122,28 +152,61 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
                 {Object.entries(towerData).map(([key, tower]) => (
                     <div key={key} className="bg-slate-700 p-4 rounded-lg hover:bg-slate-600 transition-all">
                         <div 
-                            className="flex items-center gap-4 mb-2 cursor-pointer group"
+                            className="flex items-center gap-4 mb-4 cursor-pointer group"
                             onClick={() => setSelectedTowerInfo(selectedTowerInfo === key ? null : key)}
                         >
-                            <img src={`/${key}.png`} alt={tower.name} className="w-12 h-12"/>
-                            <div className="flex-1">
-                                <h3 className="text-xl text-white flex items-center gap-2">
-                                    {tower.name} ({tower.cost}$)
-                                    <span className="text-blue-400 text-sm">
-                                        {selectedTowerInfo === key ? '▼ Click to hide' : '▶ Click to show upgrades'}
-                                    </span>
-                                </h3>
+                            <div className="relative">
+                                <img 
+                                    src={`/${key}.png`} 
+                                    alt={tower.name} 
+                                    className="w-16 h-16 border-2 border-blue-400 rounded-lg"
+                                />
+                                <span className="absolute -top-2 -right-2 bg-blue-500 text-white px-2 py-1 rounded-full text-sm">
+                                    {tower.cost}$
+                                </span>
                             </div>
+                            <div className="flex-1">
+                                <h3 className="text-2xl text-white font-bold mb-1">{tower.name}</h3>
+                                <p className="text-gray-300 text-sm">{tower.description}</p>
+                            </div>
+                            <span className="text-blue-400 text-sm">
+                                {selectedTowerInfo === key ? '▼ Hide Details' : '▶ Show Details'}
+                            </span>
                         </div>
-                        <p className="text-gray-300">{tower.description}</p>
-                        <p className="text-yellow-400 mt-2">{tower.special}</p>
                         
                         {selectedTowerInfo === key && (
-                            <div className="mt-4 ml-4 space-y-2 border-t border-blue-400 pt-4">
-                                <h4 className="text-lg text-blue-400 mb-2">Upgrade Path:</h4>
-                                {tower.upgrades.map((upgrade, index) => (
-                                    <p key={index} className="text-gray-300">{upgrade}</p>
-                                ))}
+                            <div className="mt-4 ml-4 space-y-4 border-t border-blue-400 pt-4">
+                                <div className="grid grid-cols-2 gap-6">
+                                    {/* Path 1 */}
+                                    <div className="space-y-2">
+                                        <h4 className="text-lg text-red-400 font-bold mb-3">{tower.path1}</h4>
+                                        {tower.upgrades.slice(0, 5).map((upgrade, index) => (
+                                            <div 
+                                                key={index} 
+                                                className="bg-slate-800 p-2 rounded border border-red-400/30 hover:border-red-400 transition-all"
+                                            >
+                                                <p className="text-red-300">{upgrade}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {/* Path 2 */}
+                                    <div className="space-y-2">
+                                        <h4 className="text-lg text-blue-400 font-bold mb-3">{tower.path2}</h4>
+                                        {tower.upgrades.slice(5, 10).map((upgrade, index) => (
+                                            <div 
+                                                key={index} 
+                                                className="bg-slate-800 p-2 rounded border border-blue-400/30 hover:border-blue-400 transition-all"
+                                            >
+                                                <p className="text-blue-300">{upgrade}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="mt-4 bg-slate-800 p-3 rounded">
+                                    <p className="text-yellow-400 text-sm">
+                                        Note: You can upgrade both paths up to level 2. After level 3, you must commit to one path.
+                                    </p>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -154,21 +217,25 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
 
     const renderMechanicsContent = () => (
         <div className="space-y-6">
-            {/* Money Management */}
+            {/* Tower Upgrades section update */}
             <div className="bg-slate-700 p-4 rounded-lg">
-                <h3 className="text-xl text-white mb-2">Money Management</h3>
-                <p className="text-gray-300">• Start with 200$ initial money</p>
-                <p className="text-gray-300">• Earn money by killing enemies</p>
-                <p className="text-gray-300">• Towers can be sold for 75% of total investment</p>
+                <h3 className="text-xl text-white mb-2">Tower Upgrades System</h3>
+                <p className="text-gray-300">• Each tower has two upgrade paths</p>
+                <p className="text-gray-300">• Path 1 (Red) and Path 2 (Blue) offer different specializations</p>
+                <p className="text-gray-300">• Can upgrade both paths up to level 2</p>
+                <p className="text-gray-300">• After level 3, must commit to one path</p>
+                <p className="text-gray-300">• Maximum upgrade level is 5 per path</p>
+                <p className="text-gray-300">• Later upgrades require previous upgrades in that path</p>
             </div>
-
-            {/* Tower Placement and Upgrades */}
+    
+            {/* Update the Tower Placement section */}
             <div className="bg-slate-700 p-4 rounded-lg">
-                <h3 className="text-xl text-white mb-2">Tower Placement & Upgrades</h3>
+                <h3 className="text-xl text-white mb-2">Tower Placement & Management</h3>
                 <p className="text-gray-300">• Place towers on building sites marked on the map</p>
                 <p className="text-gray-300">• Click a tower to open upgrade menu</p>
-                <p className="text-gray-300">• Blue circle shows tower&apos;s range</p>
-                <p className="text-gray-300">• Change targeting priority between First, Last, and Highest HP</p>
+                <p className="text-gray-300">• Blue circle shows tower's range</p>
+                <p className="text-gray-300">• Sell towers for 75% of total investment</p>
+                <p className="text-gray-300">• Switch targeting between First, Last, and Highest HP</p>
             </div>
 
             <div className="bg-slate-700 p-4 rounded-lg">
@@ -204,7 +271,7 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
                         <p className="text-gray-300">• Regenerating - Recovers HP over time</p>
                     </div>
                     <div className="flex items-center gap-4">
-                        <img src="/armoredbasic.png" alt="Armored Enemy" className="w-8 h-8"/>
+                        <img src="/armoredBasicEnemy.png" alt="Armored Enemy" className="w-8 h-8"/>
                         <p className="text-gray-300">• Armored - immune to non explosive attacks</p>
                     </div>
                     <div className="flex items-center gap-4">
