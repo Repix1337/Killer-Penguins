@@ -1,13 +1,13 @@
 'use client'
 import React from 'react'
-import Spawn from './Spawn'
+import Spawn from './GameLogic'
 import Menu from './Menu'
 
 const GameInterface = () => {
     const [renderMenu, setRenderMenu] = React.useState(false)
     const [round, setRound] = React.useState(0)
     const [HealthPoints, setHealthPoints] = React.useState(100)
-    const [money, setMoney] = React.useState(200);
+    const [money, setMoney] = React.useState(20000);
     const [isSpeedUp, setIsSpeedUp] = React.useState(0);
     const [isPaused, setIsPaused] = React.useState(false);
     const [canPause, setCanPause] = React.useState(false);

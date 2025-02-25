@@ -672,21 +672,12 @@ useEffect(() => {
       if (tower.attackType === 'explosion') {
         const primaryTarget = targets[0];
         
+        // First, just find enemies in radius without granting money
         const enemiesInExplosionRadius = prevEnemies.filter(enemy => {
           if (enemy.hp <= 0 || enemy.id === primaryTarget.id) return false;
-          const newHp = enemy.hp - tower.attack;
-            // Grant money if enemy dies
-            if (newHp <= 0 && !processedEnemies.has(enemy.id)) {
-              processedEnemies.add(enemy.id);
-              setMoney(prev => {
-                const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.2 : round > 20 ? 0.4 : 1));
-                return prev + reward;
-              });
-            }
           const dx = enemy.positionX - primaryTarget.positionX;
           const dy = enemy.positionY - primaryTarget.positionY;
           const distance = Math.sqrt(dx * dx + dy * dy);
-      
           return distance <= tower.explosionRadius;
         });
       
@@ -718,30 +709,19 @@ useEffect(() => {
             const actualDamage = Math.min(damage, enemy.hp);
             explosionDamageTotal += actualDamage;
       
-            // Calculate new HP
-            const newHp = enemy.hp - actualDamage;
+            // Calculate new HP first
+            const newHp = enemy.isArmored && !tower.canHitArmored ? 
+              enemy.hp : 
+              Math.max(enemy.hp - actualDamage, 0);
       
-            // Grant money separately for primary target and splash damage kills
-            if (newHp <= 0 && !processedEnemies.has(enemy.id)) {
-              processedEnemies.add(enemy.id);
-              if (enemy.id === primaryTarget.id) {
-                // Primary target kill reward
-                setMoney(prev => {
-                  const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.2 : round > 20 ? 0.4 : 1));
-                  return prev + reward;
-                });
-              } else {
-                // Splash damage kill reward
-                setMoney(prev => {
-                  const reward = Math.floor((enemy.maxHp / 8.5) * (round >= 33 ? 0.2 : round > 20 ? 0.4 : 1));
-                  return prev + reward;
-                });
-              }
+            let updatedEnemy = { ...enemy, hp: newHp };
+      
+            // Grant money only if the enemy dies and hasn't been processed
+            if (newHp <= 0 && enemy.hp > 0) {
+              grantMoneyForKill(enemy);
             }
       
-            let updatedEnemy = { ...enemy };
-      
-            // Apply stun effect if tower has it
+            // Apply other effects after HP calculation
             if (tower.canStun) {
               updatedEnemy = {
                 ...updatedEnemy,
@@ -752,7 +732,6 @@ useEffect(() => {
               };
             }
       
-            // Apply slow effect if tower has it
             if (tower.slowAmount) {
               updatedEnemy = {
                 ...updatedEnemy,
@@ -765,20 +744,23 @@ useEffect(() => {
                   0
               };
             }
-            
-            // Apply damage based on armor
-            updatedEnemy.hp = enemy.isArmored && !tower.canHitArmored ? 
-              enemy.hp : 
-              Math.max(enemy.hp - actualDamage, 0);
+            if (tower.poisonDamage > 0) {
+              updatedEnemy = {
+                ...updatedEnemy,
+                isPoisoned: true,
+                poisonSourceId: tower.id,
+                poisonStartTime: Date.now(),
+                canRegen: tower.canStopRegen ? false : true};
+            }
             
             updatedEnemy.isTargeted = true;
-      
             return updatedEnemy;
           }
           
           return enemy;
         });
         totalDamageDealt = explosionDamageTotal;
+      
       }else if (tower.attackType === 'chain') {
         // Get initial target
         const chainedEnemies = new Set([targets[0].id]);
@@ -821,12 +803,8 @@ useEffect(() => {
           if (!chainedEnemies.has(enemy.id)) return enemy;
       
           const newHp = Math.max(enemy.hp - tower.attack, 0);
-          if (newHp <= 0 && !processedEnemies.has(enemy.id)) {
-            processedEnemies.add(enemy.id);
-            setMoney(prev => {
-              const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.2 : round > 20 ? 0.4 : 1));
-              return prev + reward;
-            });
+          if (newHp <= 0 && enemy.hp > 0) {
+            grantMoneyForKill(enemy);
           }
       
           return {
@@ -887,16 +865,12 @@ useEffect(() => {
             enemy.hp : 
             Math.max(enemy.hp - actualDamage, 0);
       
+          // Then check for kill and grant money
+          if (updatedEnemy.hp <= 0 && enemy.hp > 0) {
+            grantMoneyForKill(enemy);
+          }
+      
           updatedEnemy.isTargeted = true;
-          const newHp = enemy.isArmored ? enemy.hp : Math.max(enemy.hp - actualDamage, 0);
-            // Add money reward when basic tower kills an enemy
-            if (newHp <= 0 && enemy.hp > 0 && !processedEnemies.has(enemy.id)) {
-              processedEnemies.add(enemy.id);
-              setMoney(prev => {
-                const reward = Math.floor((enemy.maxHp / 6.5) * (round >= 33 ? 0.2 : round > 20 ? 0.4 : 1));
-                return prev + reward;
-              });
-            }
           return updatedEnemy;
         });
       }
@@ -1266,12 +1240,8 @@ useEffect(() => {
   
           const newHp = enemy.hp - actualPoisonDamage;
           // Only grant money if the poison damage kills the enemy
-          if (newHp <= 0 && enemy.hp > 0 && !processedEnemies.has(enemy.id)) {
-            processedEnemies.add(enemy.id);
-            setMoney(prev => {
-              const reward = Math.floor((enemy.maxHp / 6.5) * (round >= 33 ? 0.35 : round > 20 ? 0.5 : 1));
-              return prev + reward;
-            });
+          if (newHp <= 0 && enemy.hp > 0) {
+            grantMoneyForKill(enemy);
           }
   
           return {
@@ -2668,10 +2638,38 @@ const handleOutsideClick = (event: React.MouseEvent) => {
 };
 
 useEffect(() => {
-  if (round === 0) {
+  if (enemies.length === 0 && (enemyCount >= 10 * round || enemyCount >= 15 * round)) {
+    // Clear processed enemies when round is complete
     processedEnemies.clear();
   }
-}, [round]);
+}, [enemies.length, enemyCount, round]);
+
+const grantMoneyForKill = useCallback((enemy: Enemy) => {
+  if (!processedEnemies.has(enemy.id)) {
+    processedEnemies.add(enemy.id);
+    const reward = Math.floor(
+      (enemy.maxHp / 7.5) * 
+      (round >= 33 ? 0.2 : round > 20 ? 0.4 : 1)
+    );
+    setMoney(prev => prev + reward);
+  }
+}, [processedEnemies, round]);
+
+// Add this near your other useEffects
+useEffect(() => {
+  // Check for dead enemies that haven't granted money yet
+  setEnemies(prevEnemies => {
+    let hasChanges = false;
+    const updatedEnemies = prevEnemies.map(enemy => {
+      if (enemy.hp <= 0 && !processedEnemies.has(enemy.id)) {
+        grantMoneyForKill(enemy);
+        hasChanges = true;
+      }
+      return enemy;
+    });
+    return hasChanges ? updatedEnemies : prevEnemies;
+  });
+}, [enemies, grantMoneyForKill]);
 
   return (
     <>
