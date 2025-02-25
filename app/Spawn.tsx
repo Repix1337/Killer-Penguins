@@ -671,9 +671,9 @@ useEffect(() => {
   
       if (tower.attackType === 'explosion') {
         const primaryTarget = targets[0];
+        
         const enemiesInExplosionRadius = prevEnemies.filter(enemy => {
           if (enemy.hp <= 0 || enemy.id === primaryTarget.id) return false;
-      
           const dx = enemy.positionX - primaryTarget.positionX;
           const dy = enemy.positionY - primaryTarget.positionY;
           const distance = Math.sqrt(dx * dx + dy * dy);
@@ -745,12 +745,21 @@ useEffect(() => {
       
             return updatedEnemy;
           }
+          const newHp = enemy.hp - explosionDamageTotal;
+            // Grant money if enemy dies
+            if (newHp <= 0 && !processedEnemies.has(enemy.id)) {
+              processedEnemies.add(enemy.id);
+              setMoney(prev => {
+                const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.2 : round > 20 ? 0.4 : 1));
+                return prev + reward;
+              });
+            }
           return enemy;
         });
         totalDamageDealt = explosionDamageTotal;
       }else if (tower.attackType === 'chain') {
         // Get initial target
-        let chainedEnemies = new Set([targets[0].id]);
+        const chainedEnemies = new Set([targets[0].id]);
         let currentTarget = targets[0];
         let chainsLeft = tower.chainCount || 1;
       
@@ -785,7 +794,6 @@ useEffect(() => {
             timestamp: Date.now()
           }]);
         }
-      
         // Update enemies with chain damage
         updatedEnemies = prevEnemies.map(enemy => {
           if (!chainedEnemies.has(enemy.id)) return enemy;
@@ -858,7 +866,15 @@ useEffect(() => {
             Math.max(enemy.hp - actualDamage, 0);
       
           updatedEnemy.isTargeted = true;
-      
+          const newHp = enemy.isArmored ? enemy.hp : Math.max(enemy.hp - actualDamage, 0);
+            // Add money reward when basic tower kills an enemy
+            if (newHp <= 0 && enemy.hp > 0 && !processedEnemies.has(enemy.id)) {
+              processedEnemies.add(enemy.id);
+              setMoney(prev => {
+                const reward = Math.floor((enemy.maxHp / 7.5) * (round >= 33 ? 0.2 : round > 20 ? 0.4 : 1));
+                return prev + reward;
+              });
+            }
           return updatedEnemy;
         });
       }
@@ -1519,7 +1535,31 @@ useEffect(() => {
     return explosionEffects.map((effect) => {
       // Find the tower that caused this explosion
       const explosionTower = tower.find(t => t.attackType === 'explosion');
-      const explosionSize = explosionTower ? explosionTower.explosionRadius * 2 : 50; // Default to 50 if no tower found
+      const explosionSize = explosionTower ? explosionTower.explosionRadius * 2 : 50;
+  
+      // Define explosion colors based on tower type
+      let explosionColor;
+      if (explosionTower) {
+        switch (explosionTower.type) {
+          case 'mortar':
+            explosionColor = 'rgba(255, 69, 0, 0.5)'; // Orange-red
+            break;
+          case 'cannon':
+            explosionColor = 'rgba(255, 215, 0, 0.5)'; // Golden
+            break;
+          case 'gasspitter':
+            explosionColor = 'rgba(0, 255, 0, 0.5)'; // Toxic green
+            break;
+          case 'basic':
+            explosionColor = 'rgba(255, 0, 0, 0.5)'; // Red
+            break;
+          case 'slower':
+            explosionColor = 'rgba(0, 191, 255, 0.5)'; // Deep sky blue
+            break;
+          default:
+            explosionColor = 'rgba(255, 0, 0, 0.5)'; // Default red
+        }
+      }
   
       return (
         <div
@@ -1531,7 +1571,7 @@ useEffect(() => {
             width: `${explosionSize / 1.5}%`,
             height: `${explosionSize / 1.5}%`,
             transform: 'translate(-50%, -50%)',
-            background: 'radial-gradient(circle, rgba(255,0,0,0.5) 0%, rgba(255,0,0,0) 70%)',
+            background: `radial-gradient(circle, ${explosionColor} 0%, rgba(255,255,255,0) 70%)`,
           }}
         />
       );
