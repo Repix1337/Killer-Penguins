@@ -233,7 +233,7 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
                 <h3 className="text-xl text-white mb-2">Tower Placement & Management</h3>
                 <p className="text-gray-300">• Place towers on building sites marked on the map</p>
                 <p className="text-gray-300">• Click a tower to open upgrade menu</p>
-                <p className="text-gray-300">• Blue circle shows tower's range</p>
+                <p className="text-gray-300">• Blue circle shows tower&apos;s range</p>
                 <p className="text-gray-300">• Sell towers for 75% of total investment</p>
                 <p className="text-gray-300">• Switch targeting between First, Last, and Highest HP</p>
             </div>
