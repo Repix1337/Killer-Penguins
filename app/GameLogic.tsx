@@ -738,9 +738,9 @@ const moveEnemy = useCallback(() => {
       .map((enemy) => {
         if (enemy.positionX < 28) {
           return { ...enemy, positionX: enemy.positionX + enemy.speed, positionY: enemy.positionY - enemy.speed / 10};
-        } else if (enemy.positionX >= 28 && enemy.positionX < 52 && enemy.positionY > 18) {
+        } else if (enemy.positionX >= 28 && enemy.positionX < 52 && enemy.positionY > 20) {
           return { ...enemy, positionY: enemy.positionY - (enemy.speed * 2), positionX: enemy.positionX + enemy.speed / 3 };
-        } else if (enemy.positionY <= 18 && enemy.positionX < 52) {
+        } else if (enemy.positionY <= 20 && enemy.positionX < 52) {
           return { ...enemy, positionX: enemy.positionX + enemy.speed };
         } else if (enemy.positionX >= 52 && enemy.positionX < 75 && enemy.positionY < 87) {
           return { ...enemy, positionY: enemy.positionY + enemy.speed * 2 };
