@@ -47,7 +47,7 @@ const GameInterface = () => {
                onClick={onClick}>
             Start
           </div>
-          <div className='text-sm md:text-xl'>Round: {round}/40</div>
+          <div className='text-sm md:text-xl'>Round: {round}/45</div>
           <div className='text-red-500 text-sm md:text-xl'> &hearts; {HealthPoints}</div>
           <div className='text-green-500 text-sm md:text-xl'>{Math.floor(money)}$</div>
           <div className={`p-1 rounded-lg shadow-sm hover:cursor-pointer text-sm md:text-xl

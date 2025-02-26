@@ -287,7 +287,40 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       regen: 0,
       canRegen: false,
       isArmored: true,
-    }
+    },
+    ARMOREDSPEEDYMEGATANK: {
+      src: 'armoredspeedyMegaTank.png',
+      hp: 3500,
+      damage: 1000,
+      type: 'armoredultratank',
+      speed: 0.5,    
+      baseSpeed: 0.5, 
+      regen: 0,
+      canRegen: false,
+      isArmored: true,
+    },
+    SPEEDYMEGATANK: {
+      src: 'speedyMegaTank.png',
+      hp: 3000,
+      damage: 1000,
+      type: 'armoredultratank',
+      speed: 0.5,    
+      baseSpeed: 0.5, 
+      regen: 0,
+      canRegen: false,
+      isArmored: true,
+    },
+    MEGABOSS: {
+      src: 'boss.png',
+      hp: 100000,
+      damage: 1000,
+      type: 'boss',
+      speed: 0.25,    
+      baseSpeed: 0.25, 
+      regen: 1500,
+      canRegen: true,
+      isArmored: false,
+    },
   };
 
 // Add this near ENEMY_TYPES constant
@@ -518,7 +551,7 @@ useEffect(() => {
   if (!isPageVisible || isPaused) return; // Add isPaused check
   const spawnEnemies = () => {
     // Check for game over first
-    if (round > 40 && enemies.length === 0) {
+    if (round > 45 && enemies.length === 0) {
       alert('Congratulations! You won!');
       resetGame();
       return;
@@ -578,13 +611,27 @@ useEffect(() => {
     }
     else if (round > 32 && round <= 39) {
       if (enemyCount < 15 * round) {  // Changed from 15 * round to fixed 45
-        const enemyType = enemyCount % 2 === 0 ? 'ARMOREDULTRATANK' 
+        const enemyType = enemyCount % 50 === 0 ?  'BOSS' :
+                          enemyCount % 2 === 0 ?'ARMOREDULTRATANK' 
                         : 'ULTRATANKS';
       setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
         setEnemyCount(prev => prev + 3);
       }
     }
     else if (round === 40) {
+      if (enemyCount < 15 * round) {  // Changed from 15 * round to fixed 40
+        setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
+        setEnemyCount(prev => prev + 40);
+      }
+    }else if (round > 41 && round <= 44) {
+      if (enemyCount < 15 * round) {  
+        const enemyType = enemyCount % 50 === 0 ?  'BOSS' :
+                          enemyCount % 2 === 0 ?'ARMOREDSPEEDYMEGATANK'
+                          : 'SPEEDYMEGATANK';
+      setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
+        setEnemyCount(prev => prev + 2);
+      }
+    }else if (round === 45) {
       if (enemyCount < 15 * round) {  // Changed from 15 * round to fixed 40
         setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
         setEnemyCount(prev => prev + 40);
