@@ -2809,7 +2809,7 @@ const grantMoneyForKill = useCallback((enemy: Enemy) => {
   if (!processedEnemies.has(enemy.id)) {
     processedEnemies.add(enemy.id);
     const reward = Math.floor(
-      (enemy.maxHp / 6.5) * 
+      (enemy.maxHp / 6.75) * 
       (round >= 33 ? 0.03 : round > 20 ? 0.20 : 1)
     );
     setMoney(prev => prev + reward);
@@ -2854,18 +2854,22 @@ useEffect(() => {
       {[
         { top: '35%', left: '20%', x: 21, y: 36 },
         { top: '35%', left: '10%', x: 11, y: 36 },
-        { top: '60%', left: '66%', x: 66, y: 62.5 },
-        { top: '30%', left: '63%', x: 63, y: 32 },
-        { top: '42.5%', left: '63%', x: 63, y: 44.5 },
-        { top: '30%', left: '85%', x: 85, y: 32 },
-        { top: '65%', left: '2%', x: 2, y: 65 },
+        { top: '60%', left: '66%', x: 66, y: 61 },
+        { top: '58%', left: '60%', x: 60, y: 59 },
+        { top: '30%', left: '63%', x: 63, y: 31 },
+        { top: '42.5%', left: '63%', x: 63, y: 43.5 },
+        { top: '35%', left: '85%', x: 85, y: 36 },
+        { top: '65%', left: '2%', x: 2, y: 66 },
         { top: '65%', left: '25%', x: 25, y: 66 },
         { top: '8%', left: '30%', x: 30, y: 9 },
         { top: '8%', left: '50%', x: 50, y: 9 },
+        { top: '7%', left: '41%', x: 41, y: 8 },
         { top: '40%', left: '41%', x: 41, y: 41 },
         { top: '52.5%', left: '41%', x: 41, y: 53.5 },
+        { top: '57%', left: '35%', x: 35, y: 58 },
         { top: '65%', left: '41%', x: 42, y: 67 },
-        { top: '65%', left: '82%', x: 83, y: 66 }
+        { top: '65%', left: '80%', x: 80, y: 66 },
+        { top: '80%', left: '80%', x: 80, y: 81 }
       ].map((pos, index) => {
         const existingTower = tower.find(t => t.positionX === pos.x && t.positionY === pos.y);
         
