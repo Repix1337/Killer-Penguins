@@ -547,8 +547,11 @@ useEffect(() => {
   }
 }, [hp]);
 
+
+
 useEffect(() => {
-  if (!isPageVisible || isPaused) return; // Add isPaused check
+  if (!isPageVisible || isPaused) return;
+
   const spawnEnemies = () => {
     // Check for game over first
     if (round > 45 && enemies.length === 0) {
@@ -557,101 +560,112 @@ useEffect(() => {
       return;
     }
 
-    // Early rounds - Basic enemies
-    if ((round > 0 && round <= 4) || (round > 5 && round < 10)) {
-      if (enemyCount < 10 * round) {
+    // Pre-warning for stealth enemies
+    if (round === 4 && enemyCount === 0) {
+      alert("!!!Stealth enemies incoming next round!!!");
+    }
+
+    // Stop spawning if we've reached the round limit
+    const roundLimit = round > 22 ? 15 * round : 10 * round;
+    if (enemyCount >= roundLimit) return;
+
+    switch (true) {
+      case round === 0:
+        setEnemies([]);
+        break;
+
+      case round <= 4 || (round > 5 && round < 10):
         setEnemies(prev => [...prev, createNewEnemy('BASIC')]);
         setEnemyCount(prev => prev + 1);
-      }
-      if (round === 4 && enemyCount === 0 )
-      {
-        alert("!!!Stealth enemies incoming next round!!!")
-      }
+        break;
+
+      case round === 5:
+        const type5 = enemyCount % 2 === 0 ? 'STEALTH' : 'SPEEDY';
+        setEnemies(prev => [...prev, createNewEnemy(type5)]);
+        setEnemyCount(prev => prev + 1);
+        break;
+
+      case round >= 10 && round <= 15:
+        const type10 = enemyCount % 3 === 0 ? 'STEALTH' : 
+                      enemyCount % 3 === 1 ? 'SPEEDY' : 'ARMOREDBASIC';
+        setEnemies(prev => [...prev, createNewEnemy(type10)]);
+        setEnemyCount(prev => prev + 1);
+        break;
+
+      case round > 15 && round <= 21:
+        const type15 = enemyCount % 3 === 0 ? 'STEALTH' : 
+                      enemyCount % 3 === 1 ? 'SPEEDY' : 'TANK';
+        setEnemies(prev => [...prev, createNewEnemy(type15)]);
+        setEnemyCount(prev => prev + 1);
+        break;
+
+      case round === 22:
+        setEnemies(prev => [...prev, createNewEnemy('REGENTANK')]);
+        setEnemyCount(prev => prev + 1);
+        break;
+
+      case round >= 23 && round <= 25:
+        const type23 = enemyCount % 3 === 0 ? 'STEALTHYTANK' : 
+                      enemyCount % 3 === 1 ? 'STEALTHYSPEEDY' : 'ARMOREDTANK';
+        setEnemies(prev => [...prev, createNewEnemy(type23)]);
+        setEnemyCount(prev => prev + 1);
+        break;
+
+      case round >= 26 && round <= 31:
+        const type26 = enemyCount % 2 === 0 ? 'STEALTHYTANK' : 'SPEEDYREGENTANK';
+        setEnemies(prev => [...prev, createNewEnemy(type26)]);
+        setEnemyCount(prev => prev + 1);
+        break;
+
+      case round === 32:
+        if (enemyCount < 320) {
+          setEnemies(prev => [...prev, createNewEnemy('BOSS')]);
+          setEnemyCount(prev => prev + 80);
+        }
+        break;
+
+      case round > 32 && round <= 39:
+        if (enemyCount < 15 * round) {
+          const type32 = enemyCount % 50 === 0 ? 'BOSS' :
+                        enemyCount % 2 === 0 ? 'ARMOREDULTRATANK' : 'ULTRATANKS';
+          setEnemies(prev => [...prev, createNewEnemy(type32)]);
+          setEnemyCount(prev => prev + 3);
+        }
+        break;
+
+      case round === 40:
+        if (enemyCount < 15 * round) {
+          setEnemies(prev => [...prev, createNewEnemy('BOSS')]);
+          setEnemyCount(prev => prev + 60);
+        }
+        break;
+
+      case round > 41 && round <= 44:
+        if (enemyCount < 15 * round) {
+          const type41 = enemyCount % 50 === 0 ? 'BOSS' :
+                        enemyCount % 2 === 0 ? 'ARMOREDSPEEDYMEGATANK' : 'SPEEDYMEGATANK';
+          setEnemies(prev => [...prev, createNewEnemy(type41)]);
+          setEnemyCount(prev => prev + 2);
+        }
+        break;
+
+      case round === 45:
+        if (enemyCount < 15 * round) {
+          setEnemies(prev => [...prev, createNewEnemy('MEGABOSS')]);
+          setEnemyCount(prev => prev + 40);
+        }
+        break;
     }
-    // Boss round - Stealth enemies
-    else if (round === 5 && enemyCount < 10 * round) {
-      const enemyType = enemyCount % 2 === 0 ? 'STEALTH' : 'SPEEDY';
-      setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
-      setEnemyCount(prev => prev + 1);
-    }
-    // Later rounds - Mixed enemies
-    else if (round >= 10 && round <= 15 && enemyCount < 10 * round) {
-      const enemyType = enemyCount % 3 === 0 ? 'STEALTH' : 
-                       enemyCount % 3 === 1 ? 'SPEEDY' : 'ARMOREDBASIC';
-      setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
-      setEnemyCount(prev => prev + 1);
-    }
-    else if (round > 15 && round <= 21 && enemyCount < 10 * round) {
-      const enemyType = enemyCount % 3 === 0 ? 'STEALTH' : 
-                       enemyCount % 3 === 1 ? 'SPEEDY' : 'TANK';
-      setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
-      setEnemyCount(prev => prev + 1);
-    }
-    else if (round === 22 && enemyCount < 10 * round) {
-      setEnemies(prev => [...prev, createNewEnemy("REGENTANK")]);
-      setEnemyCount(prev => prev + 1);
-    }
-    else if (round >= 23 && round <= 25 && enemyCount < 15 * round) {
-      const enemyType = enemyCount % 3 === 0 ? 'STEALTHYTANK' : 
-                       enemyCount % 3 === 1 ? 'STEALTHYSPEEDY' : 'ARMOREDTANK';
-      setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
-      setEnemyCount(prev => prev + 1);
-    }
-    else if (round >= 26 && round <= 31 && enemyCount < 15 * round) {
-      const enemyType = enemyCount % 2 === 0 ? 'STEALTHYTANK' 
-                        : 'SPEEDYREGENTANK';
-      setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
-      setEnemyCount(prev => prev + 1);
-    }
-    else if (round === 32) {
-      if (enemyCount < 320) {  // Changed from 15 * round to fixed 80
-        setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
-        setEnemyCount(prev => prev + 80);
-      }
-    }
-    else if (round > 32 && round <= 39) {
-      if (enemyCount < 15 * round) {  // Changed from 15 * round to fixed 45
-        const enemyType = enemyCount % 50 === 0 ?  'BOSS' :
-                          enemyCount % 2 === 0 ?'ARMOREDULTRATANK' 
-                        : 'ULTRATANKS';
-      setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
-        setEnemyCount(prev => prev + 3);
-      }
-    }
-    else if (round === 40) {
-      if (enemyCount < 15 * round) {  // Changed from 15 * round to fixed 40
-        setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
-        setEnemyCount(prev => prev + 60);
-      }
-    }else if (round > 41 && round <= 44) {
-      if (enemyCount < 15 * round) {  
-        const enemyType = enemyCount % 50 === 0 ?  'BOSS' :
-                          enemyCount % 2 === 0 ?'ARMOREDSPEEDYMEGATANK'
-                          : 'SPEEDYMEGATANK';
-      setEnemies(prev => [...prev, createNewEnemy(enemyType)]);
-        setEnemyCount(prev => prev + 2);
-      }
-    }else if (round === 45) {
-      if (enemyCount < 15 * round) {  // Changed from 15 * round to fixed 40
-        setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
-        setEnemyCount(prev => prev + 40);
-      }
-    }
-    // Game reset
-else if (round === 0) {
-setEnemies([]);
-}
   };
 
-  const spawnInterval = setInterval(() => {
-    if (round > 0) {
-      spawnEnemies();
-    }
-  }, (round === 32  ? (isSpeedUp ? 2500 : 1250) : Math.max(1000 / round, 50)) / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
+  const spawnInterval = setInterval(
+    spawnEnemies,
+    (round === 32 ? (isSpeedUp ? 2500 : 1250) : Math.max(1000 / round, 50)) / 
+    (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)
+  );
 
-  // Cleanup
   return () => clearInterval(spawnInterval);
-}, [round, enemyCount, enemies.length, isPageVisible, isSpeedUp, isPaused]); 
+  }, [round, enemyCount, enemies.length, isPageVisible, isSpeedUp, isPaused]);
 
 
 useEffect(() => {
@@ -674,14 +688,36 @@ useEffect(() => {
     setCanPause(false); // Disable pausing when round is active
   }
 }, [round]);
-
+const moveEnemy = useCallback(() => {
+  setEnemies(prevEnemies =>
+    prevEnemies
+      .map((enemy) => {
+        if (enemy.positionX < 28) {
+          return { ...enemy, positionX: enemy.positionX + enemy.speed, positionY: enemy.positionY - enemy.speed / 10};
+        } else if (enemy.positionX >= 28 && enemy.positionX < 52 && enemy.positionY > 15) {
+          return { ...enemy, positionY: enemy.positionY - (enemy.speed * 2), positionX: enemy.positionX + enemy.speed / 3 };
+        } else if (enemy.positionY <= 15 && enemy.positionX < 52) {
+          return { ...enemy, positionX: enemy.positionX + enemy.speed };
+        } else if (enemy.positionX >= 52 && enemy.positionX < 75 && enemy.positionY < 87) {
+          return { ...enemy, positionY: enemy.positionY + enemy.speed * 2 };
+        } else if (enemy.positionY >= 87 && enemy.positionX < 75) {
+          return { ...enemy, positionX: enemy.positionX + enemy.speed };
+        } else if (enemy.positionX >= 75 && enemy.positionY > 50) {
+          return { ...enemy, positionY: enemy.positionY - (enemy.speed * 2), positionX: enemy.positionX + enemy.speed / 10};
+        } else {
+          return { ...enemy, positionX: enemy.positionX + enemy.speed };
+        }
+      })
+      .filter((enemy) => enemy.hp > 0)
+  );
+}, []);
   // Enemy movement - updates position every 25ms
   useEffect(() => {
     if (!isPageVisible || round <= 0 || isPaused) return; 
-
-    const interval = setInterval(moveEnemy, 25 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)); // Adjusted for 3x speed
+  
+    const interval = setInterval(moveEnemy, 20 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
     return () => clearInterval(interval);
-  }, [round, isPageVisible, isSpeedUp, isPaused]); // Add isPaused to dependencies
+  }, [isPageVisible, round, isPaused, isSpeedUp, moveEnemy]);
 
   // Heal enemy every second if it has health regeneration
   useEffect(() => {
@@ -1125,38 +1161,7 @@ useEffect(() => {
     }
   };
 
-  // Move enemies by updating their position
-  const moveEnemy = () => {
-    setEnemies((prevEnemies) =>
-      prevEnemies
-        .map((enemy) => {
-          // Define waypoints/checkpoints for the path
-          if (enemy.positionX < 28) {
-            // First segment - Move right until x=30
-            return { ...enemy, positionX: enemy.positionX + enemy.speed, positionY: enemy.positionY - enemy.speed / 10};
-          } else if (enemy.positionX >= 28 && enemy.positionX < 52 && enemy.positionY > 15) {
-            // Second segment - Move up until y=15
-            return { ...enemy, positionY: enemy.positionY - (enemy.speed * 2), positionX: enemy.positionX + enemy.speed / 3 };
-          } else if (enemy.positionY <= 15 && enemy.positionX < 52) {
-            // Third segment - Move right until x=50
-            return { ...enemy, positionX: enemy.positionX + enemy.speed };
-          } else if (enemy.positionX >= 52 && enemy.positionX < 75 && enemy.positionY < 87) {
-            // Fourth segment - Move down until y=85
-            return { ...enemy, positionY: enemy.positionY + enemy.speed * 2 };
-          } else if (enemy.positionY >= 87 && enemy.positionX < 75) {
-            // Fifth segment - Move right until x=70
-            return { ...enemy, positionX: enemy.positionX + enemy.speed };
-          } else if (enemy.positionX >= 75 && enemy.positionY > 50) {
-            // Sixth segment - Move up until y=50
-            return { ...enemy, positionY: enemy.positionY - (enemy.speed * 2), positionX: enemy.positionX + enemy.speed / 10};
-          } else {
-            // Final segment - Move right until end
-            return { ...enemy, positionX: enemy.positionX + enemy.speed };
-          }
-        })
-        .filter((enemy) => enemy.hp > 0)
-    );
-  };
+  
 
   // Reduce player's health points if enemies reach the end
   const damagePlayer = (enemies: Enemy[]) => {
@@ -1390,9 +1395,9 @@ useEffect(() => {
   
               {/* Stats Grid */}
               <div className="grid grid-cols-2 gap-4">
-                <StatBlock label="Attack Damage" value={selectedTower.attack} />
-                <StatBlock label="Attack Speed" value={`${selectedTower.attackInterval}ms`} />
-                <StatBlock label="Range" value={selectedTower.radius} />
+                <StatBlock label="Attack Damage" value={Math.floor(selectedTower.attack)} />
+                <StatBlock label="Attack Speed" value={`${Math.floor(selectedTower.attackInterval)}ms`} />
+                <StatBlock label="Range" value={Math.floor(selectedTower.radius)} />
                 <StatBlock label="Attack Type" value={selectedTower.attackType} />
                 <StatBlock label="Targets Stealth" value={selectedTower.canHitStealth ? "Yes" : "No"} />
                 <StatBlock label="Targets Armored" value={selectedTower.canHitArmored ? "Yes" : "No"} />
@@ -1414,7 +1419,7 @@ useEffect(() => {
                   <>
                     <StatBlock 
                       label="Slow Amount" 
-                      value={`${(1 - selectedTower.slowAmount) * 100}%`} 
+                      value={`${Math.floor((1 - selectedTower.slowAmount) * 100)}%`} 
                     />
                     <StatBlock 
                       label="Slow Duration" 
@@ -1440,7 +1445,7 @@ useEffect(() => {
                 {selectedTower.explosionRadius > 0 && (
                   <StatBlock 
                     label="Explosion Radius" 
-                    value={selectedTower.explosionRadius} 
+                    value={Math.floor(selectedTower.explosionRadius)} 
                   />
                 )}
   
