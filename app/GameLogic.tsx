@@ -605,7 +605,15 @@ useEffect(() => {
         }
         break;
 
-      case round >= 10 && round <= 15:
+      case round >= 10 && round <= 12:
+        if (enemyCount < getEnemyLimit(round)) {
+        const type10 = enemyCount % 3 === 0 ? 'STEALTH' : 
+                      enemyCount % 3 === 1 ? 'SPEEDY' : 'BASIC';
+        setEnemies(prev => [...prev, createEnemyWithAdjustedHP(type10)]);
+        setEnemyCount(prev => prev + 1);
+        }
+        break;
+      case round >= 13 && round <= 15:
         if (enemyCount < getEnemyLimit(round)) {
         const type10 = enemyCount % 3 === 0 ? 'STEALTH' : 
                       enemyCount % 3 === 1 ? 'SPEEDY' : 'ARMOREDBASIC';
