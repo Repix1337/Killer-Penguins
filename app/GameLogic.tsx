@@ -440,8 +440,8 @@ const TOWER_TYPES = {
   },
   MORTAR: {
     src: '/mortar.png',
-    baseAttack: 100,
-    attack: 100,
+    baseAttack: 125,
+    attack: 125,
     baseAttackInterval: 8500,
     attackInterval: 8500,
     price: 1200,
@@ -458,6 +458,7 @@ const TOWER_TYPES = {
     specialUpgradeAvailable: false,
     canStopRegen: false,
     explosionRadius: 20,
+    canHitArmored: true,
     effectSrc: '/sniperAttack.png'
   }
   ,
