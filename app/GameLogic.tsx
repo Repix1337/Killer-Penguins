@@ -442,14 +442,14 @@ const TOWER_TYPES = {
     src: '/mortar.png',
     baseAttack: 100,
     attack: 100,
-    baseAttackInterval: 7000,
-    attackInterval: 7000,
+    baseAttackInterval: 8500,
+    attackInterval: 8500,
     price: 1200,
     towerWorth: 1200,
     type: 'mortar',
     maxDamage: 650,
     maxAttackInterval: 4500,
-    radius: 40,
+    radius: 60,
     attackType: 'explosion',
     canHitStealth: false,
     poisonDamage: 0,
@@ -565,9 +565,22 @@ useEffect(() => {
       alert("!!!Stealth enemies incoming next round!!!");
     }
 
-    // Stop spawning if we've reached the round limit
-    const roundLimit = round > 22 ? 15 * round : 10 * round;
+    // Calculate round limit with reduced enemies after round 30
+    const roundLimit = round > 30 ? 
+      (round > 22 ? Math.ceil(7.5 * round) : Math.ceil(5 * round)) : // Half the enemies after round 30
+      (round > 22 ? 15 * round : 10 * round);
+    
     if (enemyCount >= roundLimit) return;
+
+    // Helper function to create enemy with adjusted HP
+    const createEnemyWithAdjustedHP = (type: keyof typeof ENEMY_TYPES) => {
+      const enemy = createNewEnemy(type);
+      if (round > 30 && type !== 'BOSS' && type !== 'MEGABOSS') {
+        enemy.hp *= 2;
+        enemy.maxHp *= 2;
+      }
+      return enemy;
+    };
 
     switch (true) {
       case round === 0:
@@ -575,51 +588,51 @@ useEffect(() => {
         break;
 
       case round <= 4 || (round > 5 && round < 10):
-        setEnemies(prev => [...prev, createNewEnemy('BASIC')]);
+        setEnemies(prev => [...prev, createEnemyWithAdjustedHP('BASIC')]);
         setEnemyCount(prev => prev + 1);
         break;
 
       case round === 5:
         const type5 = enemyCount % 2 === 0 ? 'STEALTH' : 'SPEEDY';
-        setEnemies(prev => [...prev, createNewEnemy(type5)]);
+        setEnemies(prev => [...prev, createEnemyWithAdjustedHP(type5)]);
         setEnemyCount(prev => prev + 1);
         break;
 
       case round >= 10 && round <= 15:
         const type10 = enemyCount % 3 === 0 ? 'STEALTH' : 
                       enemyCount % 3 === 1 ? 'SPEEDY' : 'ARMOREDBASIC';
-        setEnemies(prev => [...prev, createNewEnemy(type10)]);
+        setEnemies(prev => [...prev, createEnemyWithAdjustedHP(type10)]);
         setEnemyCount(prev => prev + 1);
         break;
 
       case round > 15 && round <= 21:
         const type15 = enemyCount % 3 === 0 ? 'STEALTH' : 
                       enemyCount % 3 === 1 ? 'SPEEDY' : 'TANK';
-        setEnemies(prev => [...prev, createNewEnemy(type15)]);
+        setEnemies(prev => [...prev, createEnemyWithAdjustedHP(type15)]);
         setEnemyCount(prev => prev + 1);
         break;
 
       case round === 22:
-        setEnemies(prev => [...prev, createNewEnemy('REGENTANK')]);
+        setEnemies(prev => [...prev, createEnemyWithAdjustedHP('REGENTANK')]);
         setEnemyCount(prev => prev + 1);
         break;
 
       case round >= 23 && round <= 25:
         const type23 = enemyCount % 3 === 0 ? 'STEALTHYTANK' : 
                       enemyCount % 3 === 1 ? 'STEALTHYSPEEDY' : 'ARMOREDTANK';
-        setEnemies(prev => [...prev, createNewEnemy(type23)]);
+        setEnemies(prev => [...prev, createEnemyWithAdjustedHP(type23)]);
         setEnemyCount(prev => prev + 1);
         break;
 
       case round >= 26 && round <= 31:
         const type26 = enemyCount % 2 === 0 ? 'STEALTHYTANK' : 'SPEEDYREGENTANK';
-        setEnemies(prev => [...prev, createNewEnemy(type26)]);
+        setEnemies(prev => [...prev, createEnemyWithAdjustedHP(type26)]);
         setEnemyCount(prev => prev + 1);
         break;
 
       case round === 32:
         if (enemyCount < 320) {
-          setEnemies(prev => [...prev, createNewEnemy('BOSS')]);
+          setEnemies(prev => [...prev, createNewEnemy('BOSS')]); // Boss HP unchanged
           setEnemyCount(prev => prev + 80);
         }
         break;
@@ -628,30 +641,34 @@ useEffect(() => {
         if (enemyCount < 15 * round) {
           const type32 = enemyCount % 50 === 0 ? 'BOSS' :
                         enemyCount % 2 === 0 ? 'ARMOREDULTRATANK' : 'ULTRATANKS';
-          setEnemies(prev => [...prev, createNewEnemy(type32)]);
+          setEnemies(prev => [...prev, 
+            type32 === 'BOSS' ? createNewEnemy(type32) : createEnemyWithAdjustedHP(type32)
+          ]);
           setEnemyCount(prev => prev + 3);
         }
         break;
 
       case round === 40:
         if (enemyCount < 15 * round) {
-          setEnemies(prev => [...prev, createNewEnemy('BOSS')]);
+          setEnemies(prev => [...prev, createNewEnemy('BOSS')]); // Boss HP unchanged
           setEnemyCount(prev => prev + 60);
         }
         break;
 
-      case round > 41 && round <= 44:
+      case round >= 41 && round <= 44:
         if (enemyCount < 15 * round) {
           const type41 = enemyCount % 50 === 0 ? 'BOSS' :
                         enemyCount % 2 === 0 ? 'ARMOREDSPEEDYMEGATANK' : 'SPEEDYMEGATANK';
-          setEnemies(prev => [...prev, createNewEnemy(type41)]);
+          setEnemies(prev => [...prev, 
+            type41 === 'BOSS' ? createNewEnemy(type41) : createEnemyWithAdjustedHP(type41)
+          ]);
           setEnemyCount(prev => prev + 2);
         }
         break;
 
       case round === 45:
         if (enemyCount < 15 * round) {
-          setEnemies(prev => [...prev, createNewEnemy('MEGABOSS')]);
+          setEnemies(prev => [...prev, createNewEnemy('MEGABOSS')]); // Boss HP unchanged
           setEnemyCount(prev => prev + 40);
         }
         break;
@@ -665,7 +682,7 @@ useEffect(() => {
   );
 
   return () => clearInterval(spawnInterval);
-  }, [round, enemyCount, enemies.length, isPageVisible, isSpeedUp, isPaused]);
+}, [round, enemyCount, enemies.length, isPageVisible, isSpeedUp, isPaused]);
 
 
 useEffect(() => {
@@ -789,7 +806,7 @@ const moveEnemy = useCallback(() => {
       
           if (isInExplosion) {
             // Calculate damage based on whether it's the primary target or splash damage
-            const damage = enemy.id === primaryTarget.id ? tower.attack : tower.attack / 2;
+            const damage = enemy.id === primaryTarget.id ? tower.attack : tower.attack / 3.5;
             const actualDamage = Math.min(damage, enemy.hp);
             explosionDamageTotal += actualDamage;
       
@@ -857,7 +874,8 @@ const moveEnemy = useCallback(() => {
           // Find nearest enemy within chain range that hasn't been hit
           const nextTarget = prevEnemies.find(enemy => {
             if (enemy.hp <= 0 || chainedEnemies.has(enemy.id)) return false;
-      
+            const actualDamage = Math.min(tower.attack * chainsLeft, enemy.hp);
+            totalDamageDealt += actualDamage;
             const dx = enemy.positionX - currentTarget.positionX;
             const dy = enemy.positionY - currentTarget.positionY;
             const distance = Math.sqrt(dx * dx + dy * dy);
@@ -883,10 +901,11 @@ const moveEnemy = useCallback(() => {
             timestamp: Date.now()
           }]);
         }
+        
         // Update enemies with chain damage
         updatedEnemies = prevEnemies.map(enemy => {
           if (!chainedEnemies.has(enemy.id)) return enemy;
-      
+          
           const newHp = Math.max(enemy.hp - tower.attack, 0);
           if (newHp <= 0 && enemy.hp > 0) {
             grantMoneyForKill(enemy);
@@ -2703,7 +2722,7 @@ const grantMoneyForKill = useCallback((enemy: Enemy) => {
     processedEnemies.add(enemy.id);
     const reward = Math.floor(
       (enemy.maxHp / 7.5) * 
-      (round >= 33 ? 0.15 : round > 20 ? 0.3 : 1)
+      (round >= 33 ? 0.05 : round > 20 ? 0.25 : 1)
     );
     setMoney(prev => prev + reward);
   }
