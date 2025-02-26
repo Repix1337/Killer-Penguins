@@ -564,7 +564,7 @@ useEffect(() => {
 
   const spawnEnemies = () => {
     // Check for game over first
-    if (round > 45 && enemies.length === 0) {
+    if (round > 50 && enemies.length === 0) {
       alert('Congratulations! You won!');
       resetGame();
       return;
@@ -694,9 +694,24 @@ useEffect(() => {
       case round === 45:
         if (enemyCount < getEnemyLimit(round)) {
           setEnemies(prev => [...prev, createNewEnemy('MEGABOSS')]); 
-          setEnemyCount(prev => prev + 40);
+          setEnemyCount(prev => prev + 50);
         }
         break;
+        case round >= 46 && round <= 49:
+          if (enemyCount < getEnemyLimit(round)) {
+            const type46 = enemyCount % 100 === 0 ? 'MEGABOSS' :
+                          enemyCount % 2 === 0 ? 'ARMOREDSPEEDYMEGATANK' : 'SPEEDYMEGATANK';
+            setEnemies(prev => [...prev, 
+              type46 === 'MEGABOSS' ? createNewEnemy(type46) : createEnemyWithAdjustedHP(type46)
+            ]);
+            setEnemyCount(prev => prev + 2);
+          }
+        break;
+        case round === 50:
+          if (enemyCount < getEnemyLimit(round)) {
+            setEnemies(prev => [...prev, createNewEnemy('MEGABOSS')]); 
+            setEnemyCount(prev => prev + 25);
+          }
     }
   };
 

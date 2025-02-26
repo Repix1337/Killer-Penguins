@@ -287,7 +287,7 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
                 <p className="text-gray-300">• Press Start to begin the game</p>
                 <p className="text-gray-300">• Speed up button doubles game speed</p>
                 <p className="text-gray-300">• Pause button freezes the game (only between rounds)</p>
-                <p className="text-gray-300">• 40 rounds to complete</p>
+                <p className="text-gray-300">• 50 rounds to complete</p>
             </div>
         </div>
     );
