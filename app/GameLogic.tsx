@@ -549,10 +549,14 @@ useEffect(() => {
 
 
 const getEnemyLimit = (round: number) => {
-  if (round > 30) {
-    return Math.ceil((round > 22 ? 15 * round : 10 * round) / 2);
+  switch (true) {
+    case round <= 26:
+      return 10 * round;
+    case round > 30:
+      return Math.ceil((15 * round) / 2); // Half enemies after round 30
+    default:
+      return 15 * round;
   }
-  return round > 22 ? 15 * round : 10 * round;
 };
 useEffect(() => {
   if (!isPageVisible || isPaused) return;
@@ -586,46 +590,60 @@ useEffect(() => {
         break;
 
       case round <= 4 || (round > 5 && round < 10):
+        if (enemyCount < getEnemyLimit(round)) {
         setEnemies(prev => [...prev, createEnemyWithAdjustedHP('BASIC')]);
         setEnemyCount(prev => prev + 1);
+        }
         break;
 
       case round === 5:
+        if (enemyCount < getEnemyLimit(round)) {
         const type5 = enemyCount % 2 === 0 ? 'STEALTH' : 'SPEEDY';
         setEnemies(prev => [...prev, createEnemyWithAdjustedHP(type5)]);
         setEnemyCount(prev => prev + 1);
+        }
         break;
 
       case round >= 10 && round <= 15:
+        if (enemyCount < getEnemyLimit(round)) {
         const type10 = enemyCount % 3 === 0 ? 'STEALTH' : 
                       enemyCount % 3 === 1 ? 'SPEEDY' : 'ARMOREDBASIC';
         setEnemies(prev => [...prev, createEnemyWithAdjustedHP(type10)]);
         setEnemyCount(prev => prev + 1);
+        }
         break;
 
       case round > 15 && round <= 21:
+        if (enemyCount < getEnemyLimit(round)) {
         const type15 = enemyCount % 3 === 0 ? 'STEALTH' : 
                       enemyCount % 3 === 1 ? 'SPEEDY' : 'TANK';
         setEnemies(prev => [...prev, createEnemyWithAdjustedHP(type15)]);
         setEnemyCount(prev => prev + 1);
+        }
         break;
 
       case round === 22:
+        if (enemyCount < getEnemyLimit(round)) {
         setEnemies(prev => [...prev, createEnemyWithAdjustedHP('REGENTANK')]);
         setEnemyCount(prev => prev + 1);
+        }
         break;
 
       case round >= 23 && round <= 25:
+        if (enemyCount < getEnemyLimit(round)) {
         const type23 = enemyCount % 3 === 0 ? 'STEALTHYTANK' : 
                       enemyCount % 3 === 1 ? 'STEALTHYSPEEDY' : 'ARMOREDTANK';
         setEnemies(prev => [...prev, createEnemyWithAdjustedHP(type23)]);
         setEnemyCount(prev => prev + 1);
+        }
         break;
 
       case round >= 26 && round <= 31:
+        if (enemyCount < getEnemyLimit(round)) {
         const type26 = enemyCount % 2 === 0 ? 'STEALTHYTANK' : 'SPEEDYREGENTANK';
         setEnemies(prev => [...prev, createEnemyWithAdjustedHP(type26)]);
         setEnemyCount(prev => prev + 1);
+        }
         break;
 
       case round === 32:
