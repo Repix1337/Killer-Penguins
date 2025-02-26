@@ -531,7 +531,7 @@ const createNewEnemy = (type: keyof typeof ENEMY_TYPES) => {
   return {
     id: uuidv4(),
     positionX: -6,
-    positionY: 54,
+    positionY: 56,
     isTargeted: false,
     isSlowed: false,
     isPoisoned: false,
@@ -736,9 +736,9 @@ const moveEnemy = useCallback(() => {
       .map((enemy) => {
         if (enemy.positionX < 28) {
           return { ...enemy, positionX: enemy.positionX + enemy.speed, positionY: enemy.positionY - enemy.speed / 10};
-        } else if (enemy.positionX >= 28 && enemy.positionX < 52 && enemy.positionY > 15) {
+        } else if (enemy.positionX >= 28 && enemy.positionX < 52 && enemy.positionY > 18) {
           return { ...enemy, positionY: enemy.positionY - (enemy.speed * 2), positionX: enemy.positionX + enemy.speed / 3 };
-        } else if (enemy.positionY <= 15 && enemy.positionX < 52) {
+        } else if (enemy.positionY <= 18 && enemy.positionX < 52) {
           return { ...enemy, positionX: enemy.positionX + enemy.speed };
         } else if (enemy.positionX >= 52 && enemy.positionX < 75 && enemy.positionY < 87) {
           return { ...enemy, positionY: enemy.positionY + enemy.speed * 2 };
@@ -1199,7 +1199,7 @@ useEffect(() => {
             transform: 'translateY(-50%)',
             zIndex: 10,
           }}
-          className='w-12 h-12'
+          className='w-10 h-10'
         />
       ));
     }
@@ -2746,7 +2746,7 @@ const grantMoneyForKill = useCallback((enemy: Enemy) => {
   if (!processedEnemies.has(enemy.id)) {
     processedEnemies.add(enemy.id);
     const reward = Math.floor(
-      (enemy.maxHp / 7.5) * 
+      (enemy.maxHp / 6) * 
       (round >= 33 ? 0.05 : round > 20 ? 0.25 : 1)
     );
     setMoney(prev => prev + reward);
@@ -2789,14 +2789,16 @@ useEffect(() => {
   {round > 0 && (
     <>
       {[
-        { top: '30%', left: '20%', x: 21, y: 32 },
-        { top: '30%', left: '10%', x: 11, y: 32 },
+        { top: '35%', left: '20%', x: 21, y: 36 },
+        { top: '35%', left: '10%', x: 11, y: 36 },
         { top: '60%', left: '66%', x: 66, y: 62.5 },
         { top: '30%', left: '63%', x: 63, y: 32 },
         { top: '42.5%', left: '63%', x: 63, y: 44.5 },
         { top: '30%', left: '85%', x: 85, y: 32 },
         { top: '65%', left: '2%', x: 2, y: 65 },
         { top: '65%', left: '25%', x: 25, y: 66 },
+        { top: '8%', left: '30%', x: 30, y: 9 },
+        { top: '8%', left: '50%', x: 50, y: 9 },
         { top: '40%', left: '41%', x: 41, y: 41 },
         { top: '52.5%', left: '41%', x: 41, y: 53.5 },
         { top: '65%', left: '41%', x: 42, y: 67 },
