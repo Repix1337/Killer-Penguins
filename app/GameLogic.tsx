@@ -179,7 +179,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     },
     SPEEDY: {
       src: 'speedy.png',
-      hp: 50,
+      hp: 40,
       damage: 35,
       type: 'speedy',
       speed: 1.5,    // from 1.0 * 1.5
@@ -257,7 +257,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     },
     ARMOREDBASIC: {
       src: 'armoredbasicEnemy.png',
-      hp: 150,
+      hp: 125,
       damage: 30,
       type: 'armoredbasic',
       speed: 0.2,    
