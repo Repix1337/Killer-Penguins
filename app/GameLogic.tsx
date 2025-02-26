@@ -312,7 +312,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     },
     MEGABOSS: {
       src: 'megaBoss.png',
-      hp: 100000,
+      hp: 950000,
       damage: 1000,
       type: 'boss',
       speed: 0.275,    
@@ -712,7 +712,7 @@ useEffect(() => {
 
 useEffect(() => {
   if (isPaused) return;
-  if (enemies.length === 0 && enemyCount >= getEnemyLimit(round)) {
+  if (enemies.length === 0 && enemyCount >= getEnemyLimit(round) && round !== 0) {
     setCanPause(true); // Allow pausing when round is over
     
     const roundTimeout = setTimeout(() => {
@@ -731,6 +731,8 @@ useEffect(() => {
   }
 }, [round]);
 const moveEnemy = useCallback(() => {
+  if (!isPageVisible || isPaused) return;
+  
   setEnemies(prevEnemies =>
     prevEnemies
       .map((enemy) => {
@@ -752,7 +754,7 @@ const moveEnemy = useCallback(() => {
       })
       .filter((enemy) => enemy.hp > 0)
   );
-}, []);
+}, [isPageVisible, isPaused]);
   // Enemy movement - updates position every 25ms
   useEffect(() => {
     if (!isPageVisible || round <= 0 || isPaused) return; 
@@ -787,225 +789,7 @@ const moveEnemy = useCallback(() => {
   
     let totalDamageDealt = 0;
   
-    setEnemies((prevEnemies) => {
-      let updatedEnemies;
-      // Calculate critical hit if tower has that ability
-      const isCriticalHit = tower.hasCritical && 
-                           tower.criticalChance && 
-                           Math.random() < tower.criticalChance;
-      const damageMultiplier = isCriticalHit ? (tower.criticalMultiplier || 1) : 1;
-  
-      if (tower.attackType === 'explosion') {
-        const primaryTarget = targets[0];
-        
-        // First, just find enemies in radius without granting money
-        const enemiesInExplosionRadius = prevEnemies.filter(enemy => {
-          if (enemy.hp <= 0 || enemy.id === primaryTarget.id) return false;
-          const dx = enemy.positionX - primaryTarget.positionX;
-          const dy = enemy.positionY - primaryTarget.positionY;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          return distance <= tower.explosionRadius;
-        });
-      
-        // Add explosion effect
-        setExplosionEffects(prev => [...prev, {
-          id: uuidv4(),
-          positionX: primaryTarget.positionX,
-          positionY: primaryTarget.positionY,
-          timestamp: Date.now()
-        }]);
-      
-        // Remove explosion effect after animation
-        setTimeout(() => {
-          setExplosionEffects(prev =>
-            prev.filter(effect => effect.positionX !== primaryTarget.positionX)
-          );
-        }, 300);
-      
-        let explosionDamageTotal = 0;
-        updatedEnemies = prevEnemies.map(enemy => {
-          if (enemy.hp <= 0) return enemy;
-      
-          const isInExplosion = enemy.id === primaryTarget.id || 
-                               enemiesInExplosionRadius.some(e => e.id === enemy.id);
-      
-          if (isInExplosion) {
-            // Calculate damage based on whether it's the primary target or splash damage
-            const damage = enemy.id === primaryTarget.id ? tower.attack : tower.attack / 3.5;
-            const actualDamage = Math.min(damage, enemy.hp);
-            explosionDamageTotal += actualDamage;
-      
-            // Calculate new HP first
-            const newHp = enemy.isArmored && !tower.canHitArmored ? 
-              enemy.hp : 
-              Math.max(enemy.hp - actualDamage, 0);
-      
-            let updatedEnemy = { ...enemy, hp: newHp };
-      
-            // Grant money only if the enemy dies and hasn't been processed
-            if (newHp <= 0 && enemy.hp > 0) {
-              grantMoneyForKill(enemy);
-            }
-      
-            // Apply other effects after HP calculation
-            if (tower.canStun) {
-              updatedEnemy = {
-                ...updatedEnemy,
-                isStunned: true,
-                stunSourceId: tower.id,
-                stunStartTime: Date.now(),
-                speed: 0
-              };
-            }
-      
-            if (tower.slowAmount) {
-              updatedEnemy = {
-                ...updatedEnemy,
-                isSlowed: true,
-                slowSourceId: tower.id,
-                slowStartTime: Date.now(),
-                slowValue: tower.slowAmount,
-                speed: !updatedEnemy.isStunned ?
-                  round < 30 ? Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount):
-                   Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * 0.6) :
-                  0
-              };
-            }
-            if (tower.poisonDamage > 0) {
-              updatedEnemy = {
-                ...updatedEnemy,
-                isPoisoned: true,
-                poisonSourceId: tower.id,
-                poisonStartTime: Date.now(),
-                canRegen: tower.canStopRegen ? false : true};
-            }
-            
-            updatedEnemy.isTargeted = true;
-            return updatedEnemy;
-          }
-          
-          return enemy;
-        });
-        totalDamageDealt = explosionDamageTotal;
-      
-      }else if (tower.attackType === 'chain') {
-        // Get initial target
-        const chainedEnemies = new Set([targets[0].id]);
-        let currentTarget = targets[0];
-        let chainsLeft = tower.chainCount || 1;
-      
-        // Chain lightning effect
-        while (chainsLeft > 1) {
-          // Find nearest enemy within chain range that hasn't been hit
-          const nextTarget = prevEnemies.find(enemy => {
-            if (enemy.hp <= 0 || chainedEnemies.has(enemy.id)) return false;
-            const actualDamage = Math.min(tower.attack * chainsLeft, enemy.hp);
-            totalDamageDealt += actualDamage;
-            const dx = enemy.positionX - currentTarget.positionX;
-            const dy = enemy.positionY - currentTarget.positionY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-      
-            return distance <= (tower.chainRange || 15);
-          });
-      
-          if (!nextTarget) break;
-      
-          // Add new chain target
-          chainedEnemies.add(nextTarget.id);
-          currentTarget = nextTarget;
-          chainsLeft--;
-      
-          // Create chain lightning effect
-          setAttackEffects(prev => [...prev, {
-            id: uuidv4(),
-            towerPositionX: currentTarget.positionX,
-            towerPositionY: currentTarget.positionY,
-            enemyPositionX: nextTarget.positionX,
-            enemyPositionY: nextTarget.positionY,
-            effectSrc: '/chainLightning.png', // Create this asset
-            timestamp: Date.now()
-          }]);
-        }
-        
-        // Update enemies with chain damage
-        updatedEnemies = prevEnemies.map(enemy => {
-          if (!chainedEnemies.has(enemy.id)) return enemy;
-          
-          const newHp = Math.max(enemy.hp - tower.attack, 0);
-          if (newHp <= 0 && enemy.hp > 0) {
-            grantMoneyForKill(enemy);
-          }
-      
-          return {
-            ...enemy,
-            hp: newHp,
-            isTargeted: true
-          };
-        });
-      } else {
-        // Non-explosion attack logic
-        updatedEnemies = prevEnemies.map((enemy) => {
-          const isTargeted = targets.some(target => target.id === enemy.id);
-          if (!isTargeted) return enemy;
-        
-          // Update damage calculation to include critical hits
-          const actualDamage = Math.min(tower.attack * damageMultiplier, enemy.hp);
-          totalDamageDealt += actualDamage;
-          let updatedEnemy = { ...enemy };
-      
-          // Apply stun effect if tower has it
-          if (tower.canStun && Math.random() < (tower.criticalChance || 0)) {
-            updatedEnemy = {
-              ...updatedEnemy,
-              isStunned: true,
-              stunSourceId: tower.id,
-              stunStartTime: Date.now(),
-              speed: 0
-            };
-          }
-      
-          // Apply slow effect if tower has it
-          if (tower.slowAmount) {
-            updatedEnemy = {
-              ...updatedEnemy,
-              isSlowed: true,
-              slowSourceId: tower.id,
-              slowStartTime: Date.now(),
-              slowValue: tower.slowAmount,
-              speed: !updatedEnemy.isStunned ?
-                  round < 30 ? Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount):
-                   Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * 0.6) :
-                  0
-            };
-          }
-      
-          // Apply other effects (poison, etc.)
-          if (tower.type === "gasspitter") {
-            updatedEnemy = {
-              ...updatedEnemy,
-              isPoisoned: true,
-              poisonSourceId: tower.id,
-              poisonStartTime: Date.now(),
-              canRegen: tower.canStopRegen ? false : true
-            };
-          }
-      
-          // Apply damage based on armor
-          updatedEnemy.hp = enemy.isArmored && !tower.canHitArmored ? 
-            enemy.hp : 
-            Math.max(enemy.hp - actualDamage, 0);
-      
-          // Then check for kill and grant money
-          if (updatedEnemy.hp <= 0 && enemy.hp > 0) {
-            grantMoneyForKill(enemy);
-          }
-      
-          updatedEnemy.isTargeted = true;
-          return updatedEnemy;
-        });
-      }
-      return updatedEnemies;
-    });
+    
 
    
     
@@ -1021,33 +805,316 @@ const moveEnemy = useCallback(() => {
       effectSrc: tower.effectSrc
     }));
   
-    setAttackEffects((prevEffects) => [...prevEffects, ...newEffects]);
-    const timeoutId = setTimeout(() => {
-      if (!isPaused) {
-        setAttackEffects((prevEffects) => 
-          prevEffects.filter((effect) => !newEffects.find(e => e.id === effect.id))
-        );
+    // Batch state updates together
+    const updateStates = () => {
+      // Mark tower as attacking
+      setTower(prevTowers =>
+        prevTowers.map(t =>
+          t.id === tower.id ? { ...t, isAttacking: true } : t
+        )
+      );
   
-        setTower((prevTowers) =>
-          prevTowers.map((t) =>
-            t.id === tower.id ? { 
-              ...t, 
-              isAttacking: false, 
-              damageDone: t.damageDone + totalDamageDealt /2 // Add damage only once
-            } : t
-          )
-        );
-        setEnemies((prevEnemies) =>
-          prevEnemies.map((enemy) => {
-            const wasTargeted = targets.some(target => target.id === enemy.id);
-            return wasTargeted ? { ...enemy, isTargeted: false } : enemy;
-          })
-        );
+      // Add new effects
+      setAttackEffects(prevEffects => [...prevEffects, ...newEffects]);
+  
+      // Handle enemy updates and damage
+      setEnemies(prevEnemies => {
+          let updatedEnemies;
+          // Calculate critical hit if tower has that ability
+          const isCriticalHit = tower.hasCritical && 
+                               tower.criticalChance && 
+                               Math.random() < tower.criticalChance;
+          const damageMultiplier = isCriticalHit ? (tower.criticalMultiplier || 1) : 1;
+      
+          if (tower.attackType === 'explosion') {
+            const primaryTarget = targets[0];
+            
+            // First, just find enemies in radius without granting money
+            const enemiesInExplosionRadius = prevEnemies.filter(enemy => {
+              if (enemy.hp <= 0 || enemy.id === primaryTarget.id) return false;
+              const dx = enemy.positionX - primaryTarget.positionX;
+              const dy = enemy.positionY - primaryTarget.positionY;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              return distance <= tower.explosionRadius;
+            });
+          
+            // Add explosion effect
+            setExplosionEffects(prev => [...prev, {
+              id: uuidv4(),
+              positionX: primaryTarget.positionX,
+              positionY: primaryTarget.positionY,
+              timestamp: Date.now()
+            }]);
+          
+            // Remove explosion effect after animation
+            setTimeout(() => {
+              setExplosionEffects(prev =>
+                prev.filter(effect => effect.positionX !== primaryTarget.positionX)
+              );
+            }, 300);
+          
+            let explosionDamageTotal = 0;
+            updatedEnemies = prevEnemies.map(enemy => {
+              if (enemy.hp <= 0) return enemy;
+          
+              const isInExplosion = enemy.id === primaryTarget.id || 
+                                   enemiesInExplosionRadius.some(e => e.id === enemy.id);
+          
+              if (isInExplosion) {
+                // Calculate damage based on whether it's the primary target or splash damage
+                const damage = enemy.id === primaryTarget.id ? tower.attack : tower.attack / 3.5;
+                const actualDamage = Math.min(damage, enemy.hp);
+                explosionDamageTotal += actualDamage;
+          
+                // Calculate new HP first
+                const newHp = enemy.isArmored && !tower.canHitArmored ? 
+                  enemy.hp : 
+                  Math.max(enemy.hp - actualDamage, 0);
+          
+                let updatedEnemy = { ...enemy, hp: newHp };
+          
+                // Grant money only if the enemy dies and hasn't been processed
+                if (newHp <= 0 && enemy.hp > 0) {
+                  grantMoneyForKill(enemy);
+                }
+          
+                // Apply other effects after HP calculation
+                if (tower.canStun) {
+                  updatedEnemy = {
+                    ...updatedEnemy,
+                    isStunned: true,
+                    stunSourceId: tower.id,
+                    stunStartTime: Date.now(),
+                    speed: 0
+                  };
+                }
+          
+                if (tower.slowAmount) {
+                  updatedEnemy = {
+                    ...updatedEnemy,
+                    isSlowed: true,
+                    slowSourceId: tower.id,
+                    slowStartTime: Date.now(),
+                    slowValue: tower.slowAmount,
+                    speed: !updatedEnemy.isStunned ?
+                      round < 30 ? Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount):
+                       Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * 0.6) :
+                      0
+                  };
+                }
+                if (tower.poisonDamage > 0) {
+                  updatedEnemy = {
+                    ...updatedEnemy,
+                    isPoisoned: true,
+                    poisonSourceId: tower.id,
+                    poisonStartTime: Date.now(),
+                    canRegen: tower.canStopRegen ? false : true};
+                }
+                
+                updatedEnemy.isTargeted = true;
+                return updatedEnemy;
+              }
+              
+              return enemy;
+            });
+            totalDamageDealt = explosionDamageTotal;
+          
+          }else if (tower.attackType === 'chain') {
+            // Get initial target
+            const chainEffects: {
+              id: string;
+              towerPositionX: number;
+              towerPositionY: number;
+              enemyPositionX: number;
+              enemyPositionY: number;
+              effectSrc: string;
+              timestamp: number;
+            }[] = [];
+          
+            let currentTarget = targets[0];
+            let chainsLeft = tower.chainCount || 1;
+            const chainedEnemies = new Set([targets[0].id]);
+            let chainDamage = 0;
+          
+            // Create the first chain effect
+            chainEffects.push({
+              id: uuidv4(),
+              towerPositionX: tower.positionX,
+              towerPositionY: tower.positionY,
+              enemyPositionX: currentTarget.positionX,
+              enemyPositionY: currentTarget.positionY,
+              effectSrc: '/chainLightning.png',
+              timestamp: Date.now()
+            });
+          
+            while (chainsLeft > 1) {
+              const nextTarget = prevEnemies.find(enemy => {
+                if (enemy.hp <= 0 || chainedEnemies.has(enemy.id)) return false;
+                const dx = enemy.positionX - currentTarget.positionX;
+                const dy = enemy.positionY - currentTarget.positionY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                return distance <= (tower.chainRange || 15);
+              });
+          
+              if (!nextTarget) break;
+          
+              chainedEnemies.add(nextTarget.id);
+              
+              // Create chain effect between previous and next target
+              chainEffects.push({
+                id: uuidv4(),
+                towerPositionX: currentTarget.positionX,
+                towerPositionY: currentTarget.positionY,
+                enemyPositionX: nextTarget.positionX,
+                enemyPositionY: nextTarget.positionY,
+                effectSrc: '/chainLightning.png',
+                timestamp: Date.now()
+              });
+          
+              currentTarget = nextTarget;
+              chainsLeft--;
+            }
+          
+            // Add all chain effects at once
+            setAttackEffects(prev => [...prev, ...chainEffects]);
+          
+            // Set a single cleanup timeout for all chain effects
+            const effectIds = chainEffects.map(effect => effect.id);
+            setTimeout(() => {
+              if (!isPaused) {
+                setAttackEffects(prev => 
+                  prev.filter(effect => !effectIds.includes(effect.id))
+                );
+              }
+            }, Math.min(tower.attackInterval, 500) / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
+          
+            // Handle chain damage
+            updatedEnemies = prevEnemies.map(enemy => {
+              if (chainedEnemies.has(enemy.id)) {
+                const damage = Math.min(tower.attack, enemy.hp);
+                chainDamage += damage;
+                return {
+                  ...enemy,
+                  hp: enemy.hp - damage,
+                  isTargeted: true
+                };
+              }
+              return enemy;
+            });
+            
+            totalDamageDealt = chainDamage;
+          } else {
+            // Non-explosion attack logic
+            updatedEnemies = prevEnemies.map((enemy) => {
+              const isTargeted = targets.some(target => target.id === enemy.id);
+              if (!isTargeted) return enemy;
+            
+              // Update damage calculation to include critical hits
+              const actualDamage = Math.min(tower.attack * damageMultiplier, enemy.hp);
+              totalDamageDealt += actualDamage;
+              let updatedEnemy = { ...enemy };
+          
+              // Apply stun effect if tower has it
+              if (tower.canStun && Math.random() < (tower.criticalChance || 0)) {
+                updatedEnemy = {
+                  ...updatedEnemy,
+                  isStunned: true,
+                  stunSourceId: tower.id,
+                  stunStartTime: Date.now(),
+                  speed: 0
+                };
+              }
+          
+              // Apply slow effect if tower has it
+              if (tower.slowAmount) {
+                updatedEnemy = {
+                  ...updatedEnemy,
+                  isSlowed: true,
+                  slowSourceId: tower.id,
+                  slowStartTime: Date.now(),
+                  slowValue: tower.slowAmount,
+                  speed: !updatedEnemy.isStunned ?
+                      round < 30 ? Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount):
+                       Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * 0.6) :
+                      0
+                };
+              }
+          
+              // Apply other effects (poison, etc.)
+              if (tower.type === "gasspitter") {
+                updatedEnemy = {
+                  ...updatedEnemy,
+                  isPoisoned: true,
+                  poisonSourceId: tower.id,
+                  poisonStartTime: Date.now(),
+                  canRegen: tower.canStopRegen ? false : true
+                };
+              }
+          
+              // Apply damage based on armor
+              updatedEnemy.hp = enemy.isArmored && !tower.canHitArmored ? 
+                enemy.hp : 
+                Math.max(enemy.hp - actualDamage, 0);
+          
+              // Then check for kill and grant money
+              if (updatedEnemy.hp <= 0 && enemy.hp > 0) {
+                grantMoneyForKill(enemy);
+              }
+          
+              updatedEnemy.isTargeted = true;
+              return updatedEnemy;
+            });
+          }
+          return updatedEnemies;
+        });
+    }
+    
+  
+    // Execute updates
+    updateStates();
+  
+    // Clean up effects after animation
+    const cleanupTimeout = setTimeout(() => {
+      if (!isPaused) {
+        // Create a cleanup batch to avoid multiple state updates
+        const batchedUpdates = () => {
+          const effectsToRemove = newEffects.map(e => e.id);
+          const targetIds = targets.map(t => t.id);
+          
+          // Single state update for attack effects
+          setAttackEffects(prevEffects => 
+            prevEffects.filter(effect => !effectsToRemove.includes(effect.id))
+          );
+  
+          // Single state update for towers
+          setTower(prevTowers =>
+            prevTowers.map(t =>
+              t.id === tower.id ? { 
+                ...t, 
+                isAttacking: false,
+                damageDone: t.damageDone + totalDamageDealt / 2
+              } : t
+            )
+          );
+  
+          // Single state update for enemies
+          setEnemies(prevEnemies =>
+            prevEnemies.map(enemy => 
+              targetIds.includes(enemy.id) ? 
+                { ...enemy, isTargeted: false } : 
+                enemy
+            )
+          );
+        };
+  
+        // Execute all updates in one batch
+        batchedUpdates();
       }
     }, tower.attackInterval / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
   
-    return () => clearTimeout(timeoutId);
-  
+    return () => {
+      clearTimeout(cleanupTimeout);
+    };
   }, [isSpeedUp, isPaused]);
   
 // Get the furthest enemy within a certain radius from the tower
@@ -1365,7 +1432,7 @@ useEffect(() => {
   }, [enemies, tower, isPageVisible, isSpeedUp, isPaused, setMoney]);
   // Buy towers and place them on the map
   const buyTowers = (event: React.MouseEvent<HTMLImageElement>, positionX: number, positionY: number) => {
-    if (round > 0 && selectedTowerType && (event.target as HTMLImageElement).src.includes('buildingSite')) {
+    if (selectedTowerType && (event.target as HTMLImageElement).src.includes('buildingSite')) {
       const newTowerId = `tower-${uuidv4()}`; // Add 'tower-' prefix
       (event.target as HTMLImageElement).id = newTowerId;
       
@@ -1377,7 +1444,7 @@ useEffect(() => {
         setMoney((prevMoney) => prevMoney - towerConfig.price);
         setTower((prevTower) => [...prevTower, createNewTower(selectedTowerType.toUpperCase() as keyof typeof TOWER_TYPES, positionX, positionY, newTowerId)]);
       }
-    } else if (round > 0 && !(event.target as HTMLImageElement).src.includes('buildingSite')) {
+    } else if (!(event.target as HTMLImageElement).src.includes('buildingSite')) {
       setShowUpgradeMenu(true);
       setSelectedTowerID((event.target as HTMLImageElement).id);
     }
@@ -1837,14 +1904,12 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
     {
       name: "Nuclear Strike",
       cost: 30000,
-      description: "Devastating explosion with stun effect",
+      description: "Devastating explosion",
       requires: 4,
       path: 2,
       effect: (tower) => ({
         explosionRadius: tower.explosionRadius * 1.4,
         attack: tower.attack * 1.5,
-        canStun: true,
-        stunDuration: 150,
         towerWorth: tower.towerWorth + 30000,
         path: 2
       })
@@ -1872,7 +1937,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       description: "20% chance to stun enemies",
       effect: (tower) => ({
         canStun: true,
-        stunDuration: 150,
+        stunDuration: 75, // Reduced from 150
         criticalChance: 0.2,
         towerWorth: tower.towerWorth + 2500,
         path: 1
@@ -1900,7 +1965,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       effect: (tower) => ({
         attack: tower.attack * 2,
         criticalChance: 0.4,
-        stunDuration: 300,
+        stunDuration: 150, // Reduced from 300
         src: '/sniperSpecial.png',
         towerWorth: tower.towerWorth + 12000,
         path: 1
@@ -1915,7 +1980,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       effect: (tower) => ({
         attack: tower.attack * 2.5,
         criticalChance: 1.0,
-        stunDuration: 500,
+        stunDuration: 250, // Reduced from 500
         towerWorth: tower.towerWorth + 25000,
         path: 1
       })
@@ -2184,7 +2249,7 @@ slower: [
     description: "Massive slow effect in larger area",
     effect: (tower) => ({
       explosionRadius: 20,
-      slowAmount: tower.slowAmount ? tower.slowAmount * 0.5: 0.5,
+      slowAmount: tower.slowAmount ? tower.slowAmount * 0.6: 0.6,
       slowDuration: 4000,
       towerWorth: tower.towerWorth + 8000,
       path: 1
@@ -2198,8 +2263,7 @@ slower: [
     description: "Ultimate time manipulation",
     effect: (tower) => ({
       explosionRadius: 25,
-      slowAmount: tower.slowAmount ? tower.slowAmount * 0.4 : 0.4,
-      slowDuration: 5000,
+      slowAmount: tower.slowAmount ? tower.slowAmount * 0.6 : 0.6,
       canHitStealth: true,
       towerWorth: tower.towerWorth + 15000,
       path: 1
@@ -2254,7 +2318,7 @@ slower: [
     effect: (tower) => ({
       attackType: 'quadruple',
       canStun: true,
-      stunDuration: 200,
+      stunDuration: 100, // Reduced from 200
       attack: tower.attack + 30,
       towerWorth: tower.towerWorth + 12000,
       path: 2
@@ -2268,7 +2332,7 @@ slower: [
     description: "Maximum freeze potential",
     effect: (tower) => ({
       attack: tower.attack * 2,
-      stunDuration: 400,
+      stunDuration: 200, // Reduced from 400
       radius: tower.radius * 1.5,
       towerWorth: tower.towerWorth + 20000,
       path: 2
@@ -2557,7 +2621,6 @@ mortar: [
       explosionRadius: tower.explosionRadius * 1.5,
       attack: tower.attack * 1.5,
       slowAmount: 0.4,
-      stunDuration: 700,
       slowDuration: 4000,
       canHitStealth: true,
       towerWorth: tower.towerWorth + 20000,
@@ -2699,7 +2762,7 @@ cannon: [
       attack: tower.attack * 1.5,
       attackInterval: tower.attackInterval - 400,
       canStun: true,
-      stunDuration: 150,
+      stunDuration: 75, // Reduced from 150
       towerWorth: tower.towerWorth + 20000
     })
   }
@@ -2746,8 +2809,8 @@ const grantMoneyForKill = useCallback((enemy: Enemy) => {
   if (!processedEnemies.has(enemy.id)) {
     processedEnemies.add(enemy.id);
     const reward = Math.floor(
-      (enemy.maxHp / 6) * 
-      (round >= 33 ? 0.05 : round > 20 ? 0.25 : 1)
+      (enemy.maxHp / 6.5) * 
+      (round >= 33 ? 0.03 : round > 20 ? 0.20 : 1)
     );
     setMoney(prev => prev + reward);
   }
@@ -2786,7 +2849,7 @@ useEffect(() => {
         <RangeIndicator key={`range-${t.id}`} tower={t} />
       ))}
       <div>
-  {round > 0 && (
+  {(
     <>
       {[
         { top: '35%', left: '20%', x: 21, y: 36 },
