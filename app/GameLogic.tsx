@@ -621,7 +621,7 @@ useEffect(() => {
     else if (round === 40) {
       if (enemyCount < 15 * round) {  // Changed from 15 * round to fixed 40
         setEnemies(prev => [...prev, createNewEnemy("BOSS")]);
-        setEnemyCount(prev => prev + 40);
+        setEnemyCount(prev => prev + 60);
       }
     }else if (round > 41 && round <= 44) {
       if (enemyCount < 15 * round) {  
@@ -2698,7 +2698,7 @@ const grantMoneyForKill = useCallback((enemy: Enemy) => {
     processedEnemies.add(enemy.id);
     const reward = Math.floor(
       (enemy.maxHp / 7.5) * 
-      (round >= 33 ? 0.2 : round > 20 ? 0.4 : 1)
+      (round >= 33 ? 0.15 : round > 20 ? 0.3 : 1)
     );
     setMoney(prev => prev + reward);
   }
