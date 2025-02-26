@@ -548,7 +548,12 @@ useEffect(() => {
 }, [hp]);
 
 
-
+const getEnemyLimit = (round: number) => {
+  if (round > 30) {
+    return Math.ceil((round > 22 ? 15 * round : 10 * round) / 2);
+  }
+  return round > 22 ? 15 * round : 10 * round;
+};
 useEffect(() => {
   if (!isPageVisible || isPaused) return;
 
@@ -564,14 +569,6 @@ useEffect(() => {
     if (round === 4 && enemyCount === 0) {
       alert("!!!Stealth enemies incoming next round!!!");
     }
-
-    // Calculate round limit with reduced enemies after round 30
-    const getEnemyLimit = (round: number) => {
-      if (round > 30) {
-        return Math.ceil((round > 22 ? 15 * round : 10 * round) / 2);
-      }
-      return round > 22 ? 15 * round : 10 * round;
-    };
 
     // Helper function to create enemy with adjusted HP
     const createEnemyWithAdjustedHP = (type: keyof typeof ENEMY_TYPES) => {
@@ -687,15 +684,15 @@ useEffect(() => {
 
 
 useEffect(() => {
-  if (isPaused) return; // Add isPaused check
-  if (enemies.length === 0 && (enemyCount >= 10 * round || enemyCount >= 15 * round)) {
+  if (isPaused) return;
+  if (enemies.length === 0 && enemyCount >= getEnemyLimit(round)) {
     setCanPause(true); // Allow pausing when round is over
     
     const roundTimeout = setTimeout(() => {
       setRound(prev => prev + 1);
       setEnemyCount(0);
       setCanPause(false); // Disable pausing when new round starts
-      }, 4000 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
+    }, 4000 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
 
     return () => clearTimeout(roundTimeout);
   }
