@@ -566,11 +566,12 @@ useEffect(() => {
     }
 
     // Calculate round limit with reduced enemies after round 30
-    const roundLimit = round > 30 ? 
-      (round > 22 ? Math.ceil(7.5 * round) : Math.ceil(5 * round)) : // Half the enemies after round 30
-      (round > 22 ? 15 * round : 10 * round);
-    
-    if (enemyCount >= roundLimit) return;
+    const getEnemyLimit = (round: number) => {
+      if (round > 30) {
+        return Math.ceil((round > 22 ? 15 * round : 10 * round) / 2);
+      }
+      return round > 22 ? 15 * round : 10 * round;
+    };
 
     // Helper function to create enemy with adjusted HP
     const createEnemyWithAdjustedHP = (type: keyof typeof ENEMY_TYPES) => {
@@ -638,7 +639,7 @@ useEffect(() => {
         break;
 
       case round > 32 && round <= 39:
-        if (enemyCount < 15 * round) {
+        if (enemyCount < getEnemyLimit(round)) {
           const type32 = enemyCount % 50 === 0 ? 'BOSS' :
                         enemyCount % 2 === 0 ? 'ARMOREDULTRATANK' : 'ULTRATANKS';
           setEnemies(prev => [...prev, 
@@ -649,14 +650,14 @@ useEffect(() => {
         break;
 
       case round === 40:
-        if (enemyCount < 15 * round) {
+        if (enemyCount < getEnemyLimit(round)) {
           setEnemies(prev => [...prev, createNewEnemy('BOSS')]); // Boss HP unchanged
           setEnemyCount(prev => prev + 60);
         }
         break;
 
       case round >= 41 && round <= 44:
-        if (enemyCount < 15 * round) {
+        if (enemyCount < getEnemyLimit(round)) {
           const type41 = enemyCount % 50 === 0 ? 'BOSS' :
                         enemyCount % 2 === 0 ? 'ARMOREDSPEEDYMEGATANK' : 'SPEEDYMEGATANK';
           setEnemies(prev => [...prev, 
@@ -667,8 +668,8 @@ useEffect(() => {
         break;
 
       case round === 45:
-        if (enemyCount < 15 * round) {
-          setEnemies(prev => [...prev, createNewEnemy('MEGABOSS')]); // Boss HP unchanged
+        if (enemyCount < getEnemyLimit(round)) {
+          setEnemies(prev => [...prev, createNewEnemy('MEGABOSS')]); 
           setEnemyCount(prev => prev + 40);
         }
         break;
