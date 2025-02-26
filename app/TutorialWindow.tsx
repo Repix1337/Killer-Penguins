@@ -271,7 +271,7 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
                         <p className="text-gray-300">• Regenerating - Recovers HP over time</p>
                     </div>
                     <div className="flex items-center gap-4">
-                        <img src="/armoredBasicEnemy.png" alt="Armored Enemy" className="w-8 h-8"/>
+                        <img src="/armoredbasicEnemy.png" alt="Armored Enemy" className="w-8 h-8"/>
                         <p className="text-gray-300">• Armored - immune to non explosive attacks</p>
                     </div>
                     <div className="flex items-center gap-4">
