@@ -877,7 +877,8 @@ const moveEnemy = useCallback(() => {
           
               if (isInExplosion) {
                 // Calculate damage based on whether it's the primary target or splash damage
-                const damage = enemy.id === primaryTarget.id ? tower.attack : tower.attack / 3.5;
+                const baseDamage = enemy.id === primaryTarget.id ? tower.attack : tower.attack / 3.5;
+                const damage = baseDamage * damageMultiplier;
                 const actualDamage = Math.min(damage, enemy.hp);
                 explosionDamageTotal += actualDamage;
           
@@ -1006,7 +1007,7 @@ const moveEnemy = useCallback(() => {
             // Handle chain damage
             updatedEnemies = prevEnemies.map(enemy => {
               if (chainedEnemies.has(enemy.id)) {
-                const damage = Math.min(tower.attack, enemy.hp);
+                const damage = Math.min(tower.attack * damageMultiplier, enemy.hp);
                 chainDamage += damage;
                 return {
                   ...enemy,
@@ -2436,13 +2437,13 @@ gasspitter: [
     })
   },
   {
-    name: "Double Nozzle",
+    name: "Faster Attack",
     cost: 2000,
     requires: 1,
     path: 2,
-    description: "Can target two enemies",
+    description: "Reduces attack interval",
     effect: (tower) => ({
-      attackType: 'double',
+      attackInterval: tower.attackInterval - 200,
       radius: tower.radius * 1.2,
       towerWorth: tower.towerWorth + 2000,
       path: 2
