@@ -1051,7 +1051,7 @@ const moveEnemy = useCallback(() => {
                   slowValue: tower.slowAmount,
                   speed: !updatedEnemy.isStunned ?
                       round < 30 ? Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount):
-                       Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * 0.6) :
+                       Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * 0.45) :
                       0
                 };
               }
