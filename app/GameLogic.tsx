@@ -570,10 +570,6 @@ useEffect(() => {
       return;
     }
 
-    // Pre-warning for stealth enemies
-    if (round === 4 && enemyCount === 0) {
-      alert("!!!Stealth enemies incoming next round!!!");
-    }
 
     // Helper function to create enemy with adjusted HP
     const createEnemyWithAdjustedHP = (type: keyof typeof ENEMY_TYPES) => {
