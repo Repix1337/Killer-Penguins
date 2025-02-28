@@ -2849,6 +2849,13 @@ useEffect(() => {
   });
 }, [enemies, grantMoneyForKill]);
 
+// Add a helper function to calculate rotation
+const getTowerRotation = (tower: Tower, target: Enemy) => {
+  if (!target) return '';
+  const shootingRight = target.positionX > tower.positionX;
+  return shootingRight ? 'scaleX(-1)' : '';
+};
+
   return (
     <>
    <div 
@@ -2899,7 +2906,12 @@ useEffect(() => {
             id={existingTower?.id || `building-site-${index}`}
             src={existingTower ? existingTower.src : '/buildingSite.png'}
             className='absolute w-14 h-14 z-10 hover:opacity-75 transition-opacity'
-            style={{ top: pos.top, left: pos.left }}
+            style={{ 
+              top: pos.top, 
+              left: pos.left,
+              transform: existingTower?.furthestEnemyInRange?.[0] ? 
+                getTowerRotation(existingTower, existingTower.furthestEnemyInRange[0]) : ''
+            }}
             onClick={(event) => buyTowers(event, pos.x, pos.y)}
           />
         ) : null;
