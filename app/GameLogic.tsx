@@ -906,18 +906,25 @@ const moveEnemy = useCallback(() => {
                 }
           
                 if (tower.slowAmount) {
+                const newSlowAmount = tower.slowAmount;
+                const currentSlowAmount = updatedEnemy.slowValue || 1;
+              
+                // Only apply new slow if it's stronger (lower value = stronger slow)
+                if (newSlowAmount < currentSlowAmount) {
                   updatedEnemy = {
                     ...updatedEnemy,
                     isSlowed: true,
                     slowSourceId: tower.id,
                     slowStartTime: Date.now(),
-                    slowValue: tower.slowAmount,
+                    slowValue: newSlowAmount,
                     speed: !updatedEnemy.isStunned ?
-                      round < 30 ? Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount):
-                       Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * 0.6) :
+                      round < 30 ? 
+                        Math.max(enemy.baseSpeed * newSlowAmount, enemy.baseSpeed * 0.2) :
+                        Math.max(enemy.baseSpeed * newSlowAmount, enemy.baseSpeed * 0.45) :
                       0
                   };
                 }
+              }
                 if (tower.poisonDamage > 0) {
                   updatedEnemy = {
                     ...updatedEnemy,
@@ -1043,17 +1050,24 @@ const moveEnemy = useCallback(() => {
           
               // Apply slow effect if tower has it
               if (tower.slowAmount) {
-                updatedEnemy = {
-                  ...updatedEnemy,
-                  isSlowed: true,
-                  slowSourceId: tower.id,
-                  slowStartTime: Date.now(),
-                  slowValue: tower.slowAmount,
-                  speed: !updatedEnemy.isStunned ?
-                      round < 30 ? Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * tower.slowAmount):
-                       Math.max(enemy.speed * tower.slowAmount, enemy.baseSpeed * 0.45) :
+                const newSlowAmount = tower.slowAmount;
+                const currentSlowAmount = updatedEnemy.slowValue || 1;
+              
+                // Only apply new slow if it's stronger (lower value = stronger slow)
+                if (newSlowAmount < currentSlowAmount) {
+                  updatedEnemy = {
+                    ...updatedEnemy,
+                    isSlowed: true,
+                    slowSourceId: tower.id,
+                    slowStartTime: Date.now(),
+                    slowValue: newSlowAmount,
+                    speed: !updatedEnemy.isStunned ?
+                      round < 30 ? 
+                        Math.max(enemy.baseSpeed * newSlowAmount, enemy.baseSpeed * 0.2) :
+                        Math.max(enemy.baseSpeed * newSlowAmount, enemy.baseSpeed * 0.45) :
                       0
-                };
+                  };
+                }
               }
           
               // Apply other effects (poison, etc.)
