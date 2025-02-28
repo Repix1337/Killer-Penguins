@@ -1457,6 +1457,7 @@ useEffect(() => {
       const towerConfig = TOWER_TYPES[selectedTowerType.toUpperCase() as keyof typeof TOWER_TYPES];
       if (towerConfig && money >= towerConfig.price) {
         (event.target as HTMLImageElement).src = towerConfig.src;
+        (event.target as HTMLImageElement).className = 'absolute w-16 h-16 z-10 hover:opacity-75 transition-opacity';
         setMoney((prevMoney) => prevMoney - towerConfig.price);
         setTower((prevTower) => [...prevTower, createNewTower(selectedTowerType.toUpperCase() as keyof typeof TOWER_TYPES, positionX, positionY, newTowerId)]);
       }
