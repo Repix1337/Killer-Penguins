@@ -2825,7 +2825,7 @@ const grantMoneyForKill = useCallback((enemy: Enemy) => {
     processedEnemies.add(enemy.id);
     const reward = Math.floor(
       (enemy.maxHp / 6.75) * 
-      (round >= 33 ? 0.03 : round > 20 ? 0.25 : 1)
+      (round >= 33 ? 0.03 : round > 20 ? 0.3 : 1)
     );
     setMoney(prev => prev + reward);
   }
