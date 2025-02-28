@@ -2869,7 +2869,7 @@ const getTowerRotation = (tower: Tower, target: Enemy) => {
   return (
     <>
    <div 
-      className='relative min-h-[75vh] w-full border border-white overflow-hidden' 
+      className='relative min-h-[72vh] w-full overflow-hidden' 
       suppressHydrationWarning
       onClick={handleOutsideClick}
     >

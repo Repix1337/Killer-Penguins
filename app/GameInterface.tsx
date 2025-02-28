@@ -42,30 +42,65 @@ const GameInterface = () => {
     return !renderMenu ? (
       <div className="flex flex-col justify-center min-h-[15vh] items-center text-white w-full">
         {/* Top Game Controls Bar */}
-        <div className='flex flex-wrap justify-center items-center gap-2 w-full p-2 text-base md:text-xl bg-slate-700 min-h-[7vh] shadow-lg border border-blue-400'>
-          <div className='bg-slate-800 p-1 rounded-lg shadow-sm hover:cursor-pointer text-sm md:text-xl' 
-               onClick={onClick}>
-            Start
-          </div>
-          <div className='text-sm md:text-xl'>Round: {round}/50</div>
-          <div className='text-red-500 text-sm md:text-xl'> &hearts; {HealthPoints}</div>
-          <div className='text-green-500 text-sm md:text-xl'>{Math.floor(money)}$</div>
-          <div className={`p-1 rounded-lg shadow-sm hover:cursor-pointer text-sm md:text-xl
-                          ${isSpeedUp === 2 ? 'bg-blue-800' : isSpeedUp ? 'bg-blue-600' : 'bg-blue-400'}`}
-               onClick={handleSpeedUp}>
-             Speed {isSpeedUp === 2 ? '3x' : isSpeedUp === 1 ? '2x' : '1x'}
-          </div>
-          <div className={`p-1 rounded-lg shadow-sm text-sm md:text-xl
-                          ${canPause ? 'hover:cursor-pointer' : 'opacity-50 cursor-not-allowed'}
-                          ${isPaused ? 'bg-yellow-600' : 'bg-yellow-400'}`}
-               onClick={handlePause}>
-            {isPaused ? 'Resume' : 'Pause'}
-          </div>
-          <div className='px-2 py-1 rounded-lg shadow-sm hover:cursor-pointer bg-red-500 text-sm md:text-xl'
-               onClick={() => setRenderMenu(true)}>
-            Exit
-          </div>
-        </div>
+        <div className='flex flex-wrap justify-center items-center gap-3 w-full p-3 
+text-base md:text-xl bg-gradient-to-r from-slate-800 to-slate-700 
+min-h-[7vh] shadow-lg border-b-2 border-blue-500/50'>
+  <button 
+    className={`px-4 py-2 rounded-lg shadow-md transition-all duration-200
+    ${round < 1 ? 'bg-green-500 hover:bg-green-600 animate-pulse' : 'bg-slate-600'}`}
+    onClick={onClick}
+  >
+    {round < 1 ? 'Start Game' : 'Started'}
+  </button>
+
+  <div className='flex items-center gap-2 bg-slate-800/50 px-3 py-1 rounded-lg'>
+    <span className='text-gray-300'>Round:</span>
+    <span className='font-bold text-blue-400'>{round}</span>
+    <span className='text-gray-400'>/ 50</span>
+  </div>
+
+  <div className='flex items-center gap-1 bg-slate-800/50 px-3 py-1 rounded-lg'>
+    <span className='text-red-500 text-2xl'>&hearts;</span>
+    <span className={`font-bold ${HealthPoints < 30 ? 'text-red-500 animate-pulse' : 
+    'text-red-400'}`}>
+      {HealthPoints}
+    </span>
+  </div>
+
+  <div className='flex items-center gap-1 bg-slate-800/50 px-3 py-1 rounded-lg'>
+    <span className='text-green-500'>💰</span>
+    <span className='font-bold text-green-400'>{Math.floor(money)}$</span>
+  </div>
+
+  <button 
+    className={`px-4 py-2 rounded-lg shadow-md transition-all duration-200
+    ${isSpeedUp === 2 ? 'bg-blue-700' : isSpeedUp === 1 ? 'bg-blue-600' : 'bg-blue-500'}`}
+    onClick={handleSpeedUp}
+  >
+    <div className='flex items-center gap-2'>
+      <span>Speed</span>
+      <span className='font-bold'>{isSpeedUp === 2 ? '3x ⚡' : isSpeedUp === 1 ? '2x ▶' : '1x ▶'}</span>
+    </div>
+  </button>
+
+  <button 
+    className={`px-4 py-2 rounded-lg shadow-md transition-all duration-200
+    ${!canPause ? 'opacity-50 cursor-not-allowed' : ''}
+    ${isPaused ? 'bg-yellow-600' : 'bg-yellow-500 hover:bg-yellow-600'}`}
+    onClick={handlePause}
+    disabled={!canPause}
+  >
+    {isPaused ? '▶ Resume' : '⏸ Pause'}
+  </button>
+
+  <button 
+    className='px-4 py-2 rounded-lg shadow-md transition-all duration-200
+    bg-red-500 hover:bg-red-600'
+    onClick={() => setRenderMenu(true)}
+  >
+    Exit Game
+  </button>
+</div>
 
         {/* Game Board */}
         <Spawn 
@@ -82,9 +117,11 @@ const GameInterface = () => {
         />
         
         {/* Tower Selection Panel */}
-        <div className='bg-slate-800 flex flex-col items-center p-2 shadow-lg border border-blue-400 w-full'>
-  <h1 className="text-lg font-bold mb-2">Tower Select Panel</h1>
-  <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-1 w-full max-w-3xl px-1 justify-items-center'>
+        <div className='bg-gradient-to-b from-slate-800 to-slate-900 flex flex-col items-center p-4 
+shadow-lg border-t-2 border-blue-500/50 w-full'>
+  <h1 className="text-xl font-bold mb-4 text-blue-400">Available Towers</h1>
+  <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-3 w-full max-w-4xl 
+  px-2 justify-items-center'>
             <TowerButton
               type="basic"
               src="/basic.png"
@@ -168,16 +205,34 @@ interface TowerButtonProps {
 
 const TowerButton = ({ type, src, price, isSelected, onClick, label }: TowerButtonProps) => (
   <div 
-    className={`hover:scale-105 transition-all cursor-pointer bg-slate-700 rounded-lg p-1 
-                w-full max-w-[96px] ${isSelected ? 'ring-2 ring-blue-400' : ''}`}
+    className={`group hover:scale-105 transition-all cursor-pointer rounded-lg p-1
+    ${isSelected 
+      ? 'bg-gradient-to-br from-blue-600 to-blue-800 ring-2 ring-blue-400' 
+      : 'bg-gradient-to-br from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700'}
+    shadow-lg w-full max-w-[100px]`}
     onClick={onClick}
   >
-    <div className="flex justify-center">
-      <img src={src} className='w-6 h-6 md:w-8 md:h-8' alt={type} />
+    <div className="flex justify-center mb-1">
+      <div className="relative">
+        <img 
+          src={src} 
+          className='w-8 h-8 md:w-10 md:h-10 transition-transform duration-300 
+          group-hover:rotate-12' 
+          alt={type}
+        />
+        {isSelected && (
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full 
+          animate-pulse" />
+        )}
+      </div>
     </div>
-    <div className="text-center text-[10px] md:text-xs mt-0.5">
-      <p className="text-green-400">{price}$</p>
-      <p className="whitespace-normal leading-tight">{label || type}</p>
+    <div className="text-center">
+      <p className="text-green-400 font-semibold text-sm md:text-base mb-0.5">
+        {price}$
+      </p>
+      <p className="text-xs md:text-sm text-gray-200 font-medium">
+        {label || type}
+      </p>
     </div>
   </div>
 );
