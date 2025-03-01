@@ -846,7 +846,7 @@ const moveEnemy = useCallback(() => {
   useEffect(() => {
     if (!isPageVisible || round <= 0 || isPaused) return; 
   
-    const interval = setInterval(moveEnemy, 20 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
+    const interval = setInterval(moveEnemy, 22.5 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
     return () => clearInterval(interval);
   }, [isPageVisible, round, isPaused, isSpeedUp, moveEnemy]);
 
