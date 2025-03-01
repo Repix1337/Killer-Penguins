@@ -839,13 +839,13 @@ const moveEnemy = useCallback(() => {
           return { ...enemy, positionX: enemy.positionX + enemy.speed, positionY: enemy.positionY - enemy.speed / 10};
         } else if (enemy.positionX >= 28 && enemy.positionX < 52 && enemy.positionY > 20) {
           return { ...enemy, positionY: enemy.positionY - (enemy.speed * 2), positionX: enemy.positionX + enemy.speed / 3 };
-        } else if (enemy.positionY <= 20 && enemy.positionX < 52) {
+        } else if (enemy.positionY <= 20 && enemy.positionX < 53) {
           return { ...enemy, positionX: enemy.positionX + enemy.speed };
-        } else if (enemy.positionX >= 52 && enemy.positionX < 75 && enemy.positionY < 87) {
+        } else if (enemy.positionX >= 53 && enemy.positionX < 75 && enemy.positionY < 87) {
           return { ...enemy, positionY: enemy.positionY + enemy.speed * 2 };
-        } else if (enemy.positionY >= 87 && enemy.positionX < 75) {
+        } else if (enemy.positionY >= 87 && enemy.positionX < 76.5) {
           return { ...enemy, positionX: enemy.positionX + enemy.speed };
-        } else if (enemy.positionX >= 75 && enemy.positionY > 50) {
+        } else if (enemy.positionX >= 76.5 && enemy.positionY > 51) {
           return { ...enemy, positionY: enemy.positionY - (enemy.speed * 2), positionX: enemy.positionX + enemy.speed / 10};
         } else {
           return { ...enemy, positionX: enemy.positionX + enemy.speed };
