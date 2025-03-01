@@ -312,12 +312,12 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     },
     MEGABOSS: {
       src: 'megaBoss.png',
-      hp: 950000,
+      hp: 125000,
       damage: 1000,
       type: 'boss',
       speed: 0.2,    
       baseSpeed: 0.2, 
-      regen: 1500,
+      regen: 5000,
       canRegen: true,
       isArmored: false,
     },
@@ -655,7 +655,7 @@ useEffect(() => {
           const type32 = enemyCount % 50 === 0 ? 'BOSS' :
                         enemyCount % 2 === 0 ? 'ARMOREDULTRATANK' : 'ULTRATANKS';
           setEnemies(prev => [...prev, createNewEnemy(type32)]);
-          setEnemyCount(prev => prev + 3);
+          setEnemyCount(prev => prev + 2);
         }
         break;
 
@@ -673,7 +673,7 @@ useEffect(() => {
           setEnemies(prev => [...prev, 
             type41 === 'BOSS' ? createNewEnemy(type41) : createNewEnemy(type41)
           ]);
-          setEnemyCount(prev => prev + 2);
+          setEnemyCount(prev => prev + 1);
         }
         break;
 
@@ -690,7 +690,7 @@ useEffect(() => {
             setEnemies(prev => [...prev, 
               type46 === 'MEGABOSS' ? createNewEnemy(type46) : createNewEnemy(type46)
             ]);
-            setEnemyCount(prev => prev + 2);
+            setEnemyCount(prev => prev + 1);
           }
         break;
         case round === 50:
@@ -1732,7 +1732,7 @@ useEffect(() => {
         <img
           src={effect.effectSrc}
           key={effect.id}
-          className='z-20 animate-slide h-6 w-6 absolute text-red-500'
+          className='z-[5] animate-slide h-6 w-6 absolute text-red-500'
           style={{
             '--tower-positionX': `${effect.towerPositionX + 1}%`,
             '--tower-positionY': `${effect.towerPositionY + 2.5}%`,
@@ -1780,7 +1780,7 @@ useEffect(() => {
       return (
         <div
           key={effect.id}
-          className="absolute rounded-full animate-explosion z-30"
+          className="absolute rounded-full animate-explosion z-[5]"
           style={{
             left: `${effect.positionX}%`,
             top: `${effect.positionY}%`,
@@ -2829,7 +2829,7 @@ const grantMoneyForKill = useCallback((enemy: Enemy) => {
     processedEnemies.add(enemy.id);
     const reward = Math.floor(
       (enemy.maxHp / 6.5) * 
-      (round >= 33 ? 0.1 : round > 22 ? 0.45 : 1)
+      (round >= 33 ? 0.04 : round > 22 ? 0.45 : 1)
     );
     setMoney(prev => prev + reward);
   }
