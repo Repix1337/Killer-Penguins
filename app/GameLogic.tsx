@@ -707,7 +707,7 @@ useEffect(() => {
         case round === 50:
           if (enemyCount < getEnemyLimit(round)) {
             setEnemies(prev => [...prev, createNewEnemy('MEGABOSS')]); 
-            setEnemyCount(prev => prev + 25);
+            setEnemyCount(prev => prev + 35);
           }
     }
   };
@@ -3008,7 +3008,7 @@ const grantMoneyForKill = useCallback((enemy: Enemy) => {
     processedEnemies.add(enemy.id);
     const reward = Math.floor(
       (enemy.maxHp / 6.5) * 
-      (round >= 33 ? 0.04 : round > 22 ? 0.45 : 1)
+      (round >= 33 ? 0.02 : round > 22 ? 0.4 : 1)
     );
     setMoney(prev => prev + reward);
   }
