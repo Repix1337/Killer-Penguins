@@ -938,7 +938,7 @@ const moveEnemy = useCallback(() => {
               setExplosionEffects(prev =>
                 prev.filter(effect => effect.positionX !== primaryTarget.positionX)
               );
-            }, 300);
+            }, 250);
           
             let explosionDamageTotal = 0;
             updatedEnemies = prevEnemies.map(enemy => {
@@ -967,7 +967,11 @@ const moveEnemy = useCallback(() => {
                   enemy.hp : 
                   Math.max(enemy.hp - actualDamage, 0);
           
-                let updatedEnemy = { ...enemy, hp: newHp };
+                let updatedEnemy = { ...enemy,
+                                     src: enemy.isArmored ? enemy.src.replace('armored', '') : enemy.src,
+                                     isArmored: false,
+                                     hp: newHp 
+                                    };
           
                 // Grant money only if the enemy dies and hasn't been processed
                 if (newHp <= 0 && enemy.hp > 0) {
