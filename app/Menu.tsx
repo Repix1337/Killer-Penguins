@@ -36,13 +36,13 @@ const Menu = () => {
                     <img src="/sniper.png" alt="Sniper Penguin" className="w-full h-full object-contain" />
                 </div>
                 <div className="w-24 h-24 md:w-32 md:h-32 animate-bounce-slow" style={{ animationDelay: '0.4s' }}>
-                    <img src="/rapidshooter.png" alt="Rapid Shooter Penguin" className="w-full h-full object-contain" />
+                    <img src="/rapidShooter.png" alt="Rapid Shooter Penguin" className="w-full h-full object-contain" />
                 </div>
                 <div className="w-24 h-24 md:w-32 md:h-32 animate-bounce-slow" style={{ animationDelay: '0.6s' }}>
                     <img src="/slower.png" alt="Slower Penguin" className="w-full h-full object-contain" />
                 </div>
                 <div className="w-24 h-24 md:w-32 md:h-32 animate-bounce-slow" style={{ animationDelay: '0.8s' }}>
-                    <img src="/gasspitter.png" alt="Gas Spitter Penguin" className="w-full h-full object-contain" />
+                    <img src="/gasSpitter.png" alt="Gas Spitter Penguin" className="w-full h-full object-contain" />
                 </div>
                 <div className="w-24 h-24 md:w-32 md:h-32 animate-bounce-slow" style={{ animationDelay: '1s' }}>
                     <img src="/mortar.png" alt="Mortar Penguin" className="w-full h-full object-contain" />
