@@ -1110,7 +1110,7 @@ const moveEnemy = useCallback(() => {
               t.id === tower.id ? { 
                 ...t, 
                 isAttacking: false,
-                damageDone: t.damageDone + totalDamageDealt / 2
+                damageDone: t.damageDone + totalDamageDealt
               } : t
             )
           );
