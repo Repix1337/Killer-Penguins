@@ -34,8 +34,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [showHealthBars, setShowHealthBarsState] = useState(() => 
     getLocalStorageItem('showHealthBars') === 'true'
   );
-  const [autoStartRounds, setAutoStartRoundsState] = useState(() => 
-    getLocalStorageItem('autoStartRounds') === 'true'
+  const [autoStartRounds, setAutoStartRoundsState] = useState(() => {
+    const stored = getLocalStorageItem('autoStartRounds');
+    return stored === null ? true : stored === 'true'; 
+  }
   );
   const [confirmTowerSell, setConfirmTowerSellState] = useState(() => 
     getLocalStorageItem('confirmTowerSell') === 'true'
