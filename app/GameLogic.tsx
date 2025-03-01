@@ -13,6 +13,7 @@ interface SpawnProps {
   setRound: React.Dispatch<React.SetStateAction<number>>;
   hp: number;
   isSpeedUp: number;  
+  setIsPaused: React.Dispatch<React.SetStateAction<boolean>>;
   isPaused: boolean;
   setCanPause: React.Dispatch<React.SetStateAction<boolean>>;
   selectedTowerType: string;
@@ -100,7 +101,7 @@ interface Tower {
   path: number;
 }
 
-const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp, isSpeedUp, isPaused, setCanPause, selectedTowerType }) => {
+const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp, isSpeedUp,setIsPaused, isPaused, setCanPause, selectedTowerType }) => {
   // Game state
   const [enemies, setEnemies] = useState<Enemy[]>([]);
   const [tower, setTower] = useState<Tower[]>([]);
@@ -134,7 +135,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     y: number;
     timestamp: number;
   }>>([]);
-  const { showDamageNumbers, showRangeIndicators, showHealthBars, confirmTowerSell } = useSettings();
+  const { showDamageNumbers, showRangeIndicators, showHealthBars, confirmTowerSell, autoStartRounds } = useSettings();
   // Add this new useEffect for visibility tracking
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -724,21 +725,46 @@ useEffect(() => {
   if (enemies.length === 0 && enemyCount >= getEnemyLimit(round) && round !== 0) {
     setCanPause(true); // Allow pausing when round is over
     
-    const roundTimeout = setTimeout(() => {
-      setRound(prev => prev + 1);
-      setEnemyCount(0);
-      setCanPause(false); // Disable pausing when new round starts
-    }, 4000 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
-
-    return () => clearTimeout(roundTimeout);
+    // Only auto-advance if autorounds is enabled
+    if (autoStartRounds) {
+      const roundTimeout = setTimeout(() => {
+        setRound(prev => prev + 1);
+        setEnemies([]);
+        setEnemyCount(0);
+        setCanPause(false); // Disable pausing when new round starts
+      }, 4000 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
+      return () => clearTimeout(roundTimeout);
+    } else {
+      // If autorounds is disabled, pause the game
+      setIsPaused(true);
+    }
   }
-}, [enemies.length, enemyCount, round, isSpeedUp, isPaused]);
+}, [enemies.length, enemyCount, round, isSpeedUp, isPaused, autoStartRounds]);
 
+// Modify the round change effect to handle round starts
 useEffect(() => {
   if (round > 0) {
-    setCanPause(false); // Disable pausing when round is active
+    if (!autoStartRounds) {
+      // When autorounds is off, allow manual resume
+      setCanPause(true);
+    } else {
+      // When autorounds is on, disable pause at round start
+      setCanPause(false);
+    }
   }
-}, [round]);
+}, [round, autoStartRounds]);
+
+// Add a new effect to handle manual round advancement
+useEffect(() => {
+  if (!isPaused && round > 0 && !autoStartRounds) {
+    if (enemies.length === 0 && enemyCount >= getEnemyLimit(round)) {
+      setRound(prev => prev + 1);
+      setEnemies([]);
+      setEnemyCount(0);
+    }
+  }
+}, [isPaused]);
+
 const moveEnemy = useCallback(() => {
   if (!isPageVisible || isPaused) return;
   
@@ -875,7 +901,15 @@ const moveEnemy = useCallback(() => {
                 const damage = baseDamage * damageMultiplier;
                 const actualDamage = Math.min(damage, enemy.hp);
                 explosionDamageTotal += actualDamage;
-          
+                if (showDamageNumbers) {  // Add this check
+                  setDamageNumbers(prev => [...prev, {
+                    id: uuidv4(),
+                    damage: actualDamage,
+                    x: enemy.positionX,
+                    y: enemy.positionY,
+                    timestamp: Date.now()
+                  }]);
+                }
                 // Calculate new HP first
                 const newHp = enemy.isArmored && !tower.canHitArmored ? 
                   enemy.hp : 
@@ -1017,6 +1051,15 @@ const moveEnemy = useCallback(() => {
                   isTargeted: true
                 };
               }
+              if (showDamageNumbers) {  // Add this check
+                setDamageNumbers(prev => [...prev, {
+                  id: uuidv4(),
+                  damage: chainDamage,
+                  x: enemy.positionX,
+                  y: enemy.positionY,
+                  timestamp: Date.now()
+                }]);
+              }
               return enemy;
             });
             
@@ -1076,7 +1119,15 @@ const moveEnemy = useCallback(() => {
                   canRegen: tower.canStopRegen ? false : true
                 };
               }
-          
+              if (showDamageNumbers) {  // Add this check
+                setDamageNumbers(prev => [...prev, {
+                  id: uuidv4(),
+                  damage: actualDamage,
+                  x: enemy.positionX,
+                  y: enemy.positionY,
+                  timestamp: Date.now()
+                }]);
+              }
               // Apply damage based on armor
               updatedEnemy.hp = enemy.isArmored && !tower.canHitArmored ? 
                 enemy.hp : 
@@ -1091,6 +1142,7 @@ const moveEnemy = useCallback(() => {
               return updatedEnemy;
             });
           }
+          
           return updatedEnemies;
         });
     }
@@ -1297,18 +1349,25 @@ useEffect(() => {
   };
 
   const DamageNumber = ({ damage, x, y }: { damage: number; x: number; y: number }) => {
-    
     if (!showDamageNumbers) return null;
-  
+    
+    // Add randomness to prevent overlap
+    const random = Math.random();
+    
     return (
       <div
-        className="absolute animate-float-up pointer-events-none font-bold text-sm z-50"
+        className="animate-float-up"
         style={{ 
           left: `${x}%`, 
-          top: `${y}%`,
-          color: damage >= 100 ? '#ff4444' : '#ffffff',
-          textShadow: '0 1px 0 rgba(0,0,0,0.8)'
-        }}
+          top: `${y - 2}%`,
+          '--random': random,
+          color: damage >= 100 ? '#ff4444' : 
+                 damage >= 50 ? '#ff8844' : 
+                 '#ffffff',
+          textShadow: '0 2px 0 rgba(0,0,0,0.8)',
+          fontSize: damage >= 100 ? '1.25rem' : '1rem',
+          fontWeight: 'bold'
+        } as React.CSSProperties}
       >
         {Math.floor(damage)}
       </div>
@@ -1317,30 +1376,39 @@ useEffect(() => {
 
   useEffect(() => {
     if (damageNumbers.length > 0) {
-      const now = Date.now();
-      setDamageNumbers(prev => 
-        prev.filter(num => now - num.timestamp < 1000)
-      );
+      const cleanupTimeout = setTimeout(() => {
+        const now = Date.now();
+        setDamageNumbers(prev => 
+          prev.filter(num => now - num.timestamp < 1000)
+        );
+      }, 500); // Run cleanup every second
+  
+      return () => clearTimeout(cleanupTimeout);
     }
   }, [damageNumbers]);
   // Create enemy elements
   const createEnemy = () => {
     if (round > 0) {
       return enemies.map((enemy) => (
-        <div key={enemy.id} >
+        <div 
+          key={enemy.id} 
+          className="absolute"
+          style={{
+            top: `${enemy.positionY}%`,
+            left: `${enemy.positionX}%`,
+            transform: 'translate(-50%, -50%)',
+            zIndex: 10,
+          }}
+        >
+          <div className="absolute" style={{ width: '40px' }}>
+            <HealthBar enemy={enemy} />
+          </div>
           <img
             src={enemy.src}
             alt='enemy'
-            style={{
-              position: 'absolute',
-              top: `${enemy.positionY}%`,
-              left: `${enemy.positionX}%`,
-              transform: 'translateY(-50%)',
-              zIndex: 10,
-            }}
             className='w-10 h-10'
           />
-          <HealthBar enemy={enemy} />
+          
         </div>
       ));
     }

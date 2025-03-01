@@ -25,21 +25,47 @@ interface SettingsContextType {
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [showDamageNumbers, setShowDamageNumbers] = useState(() => 
+  const [showDamageNumbers, setShowDamageNumbersState] = useState(() => 
     getLocalStorageItem('showDamageNumbers') === 'true'
   );
-  const [showRangeIndicators, setShowRangeIndicators] = useState(() => 
+  const [showRangeIndicators, setShowRangeIndicatorsState] = useState(() => 
     getLocalStorageItem('showRangeIndicators') === 'true'
   );
-  const [showHealthBars, setShowHealthBars] = useState(() => 
+  const [showHealthBars, setShowHealthBarsState] = useState(() => 
     getLocalStorageItem('showHealthBars') === 'true'
   );
-  const [autoStartRounds, setAutoStartRounds] = useState(() => 
+  const [autoStartRounds, setAutoStartRoundsState] = useState(() => 
     getLocalStorageItem('autoStartRounds') === 'true'
   );
-  const [confirmTowerSell, setConfirmTowerSell] = useState(() => 
+  const [confirmTowerSell, setConfirmTowerSellState] = useState(() => 
     getLocalStorageItem('confirmTowerSell') === 'true'
   );
+
+  // Create wrapper functions to update both state and localStorage
+  const setShowDamageNumbers = (value: boolean) => {
+    setShowDamageNumbersState(value);
+    localStorage.setItem('showDamageNumbers', value.toString());
+  };
+
+  const setShowRangeIndicators = (value: boolean) => {
+    setShowRangeIndicatorsState(value);
+    localStorage.setItem('showRangeIndicators', value.toString());
+  };
+
+  const setShowHealthBars = (value: boolean) => {
+    setShowHealthBarsState(value);
+    localStorage.setItem('showHealthBars', value.toString());
+  };
+
+  const setAutoStartRounds = (value: boolean) => {
+    setAutoStartRoundsState(value);
+    localStorage.setItem('autoStartRounds', value.toString());
+  };
+
+  const setConfirmTowerSell = (value: boolean) => {
+    setConfirmTowerSellState(value);
+    localStorage.setItem('confirmTowerSell', value.toString());
+  };
 
   return (
     <SettingsContext.Provider value={{

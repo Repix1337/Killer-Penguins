@@ -112,6 +112,7 @@ min-h-[7vh] shadow-lg border-b-2 border-blue-500/50'>
           setRound={setRound} 
           hp={HealthPoints}
           isSpeedUp={isSpeedUp}
+          setIsPaused={setIsPaused}
           isPaused={isPaused}
           setCanPause={setCanPause}
           selectedTowerType={selectedTowerType}
