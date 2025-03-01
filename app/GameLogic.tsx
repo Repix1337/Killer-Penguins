@@ -2361,7 +2361,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       description: "Maximum attack speed and damage",
       effect: (tower) => ({
-        attackInterval: tower.attackInterval - 100,
+        attackInterval: tower.attackInterval - 65,
         attack: tower.attack * 1.6,
         towerWorth: tower.towerWorth + 25000,
         path: 1
@@ -3056,7 +3056,7 @@ const grantMoneyForKill = useCallback((enemy: Enemy) => {
     processedEnemies.add(enemy.id);
     const reward = Math.floor(
       (enemy.maxHp / 6.5) * 
-      (round >= 33 ? 0.06 : round > 22 ? 0.325 : 1)
+      (round >= 33 ? 0.055 : round > 22 ? 0.325 : 1)
     );
     setMoney(prev => prev + reward);
   }
