@@ -220,6 +220,7 @@ const Menu: React.FC = () => {
                     </h4>
                     <div className="grid grid-cols-2 gap-3 text-sm">
                         <KeybindItem action="Pause Game" bind="Space" />
+                        <KeybindItem action="Basic Speed" bind="1" />
                         <KeybindItem action="Speed Up" bind="2" />
                         <KeybindItem action="Super Speed" bind="3" />
                         <KeybindItem action="Sell Tower" bind="Delete" />

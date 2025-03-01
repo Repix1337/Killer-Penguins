@@ -13,8 +13,10 @@ interface SpawnProps {
   setRound: React.Dispatch<React.SetStateAction<number>>;
   hp: number;
   isSpeedUp: number;  
+  setIsSpeedUp: React.Dispatch<React.SetStateAction<number>>;
   setIsPaused: React.Dispatch<React.SetStateAction<boolean>>;
   isPaused: boolean;
+  canPause: boolean;
   setCanPause: React.Dispatch<React.SetStateAction<boolean>>;
   selectedTowerType: string;
 }
@@ -101,7 +103,7 @@ interface Tower {
   path: number;
 }
 
-const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp, isSpeedUp,setIsPaused, isPaused, setCanPause, selectedTowerType }) => {
+const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp,setIsSpeedUp, isSpeedUp,setIsPaused,canPause, isPaused, setCanPause, selectedTowerType }) => {
   // Game state
   const [enemies, setEnemies] = useState<Enemy[]>([]);
   const [tower, setTower] = useState<Tower[]>([]);
@@ -764,7 +766,57 @@ useEffect(() => {
     }
   }
 }, [isPaused]);
+useEffect(() => {
+  const handleKeyPress = (event: KeyboardEvent) => {
+    if (!isPageVisible) return;
 
+    switch (event.code) {
+      case 'Space':
+        event.preventDefault(); // Prevent page scroll
+        if (canPause) {
+          setIsPaused(prev => !prev);
+          if (isSpeedUp) {
+            setIsSpeedUp(0);
+          }
+        }
+        break;
+        case 'Digit1':
+          if (!isPaused) {
+            setIsSpeedUp(3);
+          }
+          break;
+      case 'Digit2':
+        if (!isPaused) {
+          setIsSpeedUp(1);
+        }
+        break;
+      case 'Digit3':
+        if (!isPaused) {
+          setIsSpeedUp(2);
+        }
+        break;
+      case 'Delete':
+      case 'Backspace':
+        if (selectedTowerID && confirmTowerSell) {
+          const selectedTower = tower.find(t => t.id === selectedTowerID);
+          if (selectedTower) {
+            if (window.confirm('Are you sure you want to sell this tower?')) {
+              sellTower(selectedTower.towerWorth);
+            }
+          }
+        } else if (selectedTowerID) {
+          const selectedTower = tower.find(t => t.id === selectedTowerID);
+          if (selectedTower) {
+            sellTower(selectedTower.towerWorth);
+          }
+        }
+        break;
+    }
+  };
+
+  window.addEventListener('keydown', handleKeyPress);
+  return () => window.removeEventListener('keydown', handleKeyPress);
+}, [isPageVisible, canPause, isPaused, isSpeedUp, selectedTowerID, tower]);
 const moveEnemy = useCallback(() => {
   if (!isPageVisible || isPaused) return;
   
