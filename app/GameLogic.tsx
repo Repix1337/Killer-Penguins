@@ -134,8 +134,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     y: number;
     timestamp: number;
   }>>([]);
-  const { showDamageNumbers, showRangeIndicators, confirmTowerSell } = useSettings();
-
+  const { showDamageNumbers, showRangeIndicators, showHealthBars, confirmTowerSell } = useSettings();
   // Add this new useEffect for visibility tracking
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -1279,9 +1278,26 @@ useEffect(() => {
   }, [tower, towerAttack, isPageVisible, isPaused]); // Add isPaused to dependencies
 
 
- 
+  const HealthBar = ({ enemy }: { enemy: Enemy }) => {
+    if (!showHealthBars) return null;
+  
+    const healthPercentage = (enemy.hp / enemy.maxHp) * 100;
+    const barColor = healthPercentage > 50 ? 'bg-green-500' : 
+                    healthPercentage > 25 ? 'bg-yellow-500' : 
+                    'bg-red-500';
+  
+    return (
+      <div className="absolute -top-2 left-0 w-full h-1.5 bg-gray-800/50 rounded overflow-hidden">
+        <div 
+          className={`h-full ${barColor} transition-all duration-200`}
+          style={{ width: `${healthPercentage}%` }}
+        />
+      </div>
+    );
+  };
 
   const DamageNumber = ({ damage, x, y }: { damage: number; x: number; y: number }) => {
+    
     if (!showDamageNumbers) return null;
   
     return (
@@ -1290,11 +1306,8 @@ useEffect(() => {
         style={{ 
           left: `${x}%`, 
           top: `${y}%`,
-          color: damage >= 100 ? '#ff4444' : 
-                 damage >= 50 ? '#ffff00' : 
-                 '#ffffff',
-          textShadow: '0 2px 2px rgba(0,0,0,0.5)',
-          transform: 'translate(-50%, -50%)'
+          color: damage >= 100 ? '#ff4444' : '#ffffff',
+          textShadow: '0 1px 0 rgba(0,0,0,0.8)'
         }}
       >
         {Math.floor(damage)}
@@ -1310,19 +1323,11 @@ useEffect(() => {
       );
     }
   }, [damageNumbers]);
-  useEffect(() => {
-    const cleanupInterval = setInterval(() => {
-      const now = Date.now();
-      setDamageNumbers(prev => prev.filter(num => now - num.timestamp < 1000));
-    }, 100);
-  
-    return () => clearInterval(cleanupInterval);
-  }, []);
   // Create enemy elements
   const createEnemy = () => {
     if (round > 0) {
       return enemies.map((enemy) => (
-        <div key={enemy.id} className="relative">
+        <div key={enemy.id} >
           <img
             src={enemy.src}
             alt='enemy'
@@ -1335,6 +1340,7 @@ useEffect(() => {
             }}
             className='w-10 h-10'
           />
+          <HealthBar enemy={enemy} />
         </div>
       ));
     }
@@ -1763,8 +1769,6 @@ useEffect(() => {
   }
   
   const sellTower = (towerPrice: number) => {
-    const { confirmTowerSell } = useSettings();
-
     if (confirmTowerSell) {
       const confirmed = window.confirm('Are you sure you want to sell this tower?');
       if (!confirmed) return;
@@ -2844,7 +2848,6 @@ cannon: [
 };
 // Add this new component near your other components
 const RangeIndicator = ({ tower }: { tower: Tower }) => {
-  const { showRangeIndicators } = useSettings();
 
   if (!showRangeIndicators) return null;
   

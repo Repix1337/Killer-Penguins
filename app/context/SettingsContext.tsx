@@ -4,10 +4,12 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 interface SettingsContextType {
   showDamageNumbers: boolean;
   showRangeIndicators: boolean;
+  showHealthBars: boolean;
   autoStartRounds: boolean;
   confirmTowerSell: boolean;
   setShowDamageNumbers: (value: boolean) => void;
   setShowRangeIndicators: (value: boolean) => void;
+  setShowHealthBars: (value: boolean) => void;
   setAutoStartRounds: (value: boolean) => void;
   setConfirmTowerSell: (value: boolean) => void;
 }
@@ -21,7 +23,9 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [showRangeIndicators, setShowRangeIndicators] = useState(() => 
     localStorage.getItem('showRangeIndicators') === 'true'
   );
-  
+  const [showHealthBars, setShowHealthBars] = useState(() => 
+    localStorage.getItem('showHealthBars') === 'true'
+  );
   const [autoStartRounds, setAutoStartRounds] = useState(() => 
     localStorage.getItem('autoStartRounds') === 'true'
   );
@@ -33,10 +37,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     <SettingsContext.Provider value={{
       showDamageNumbers,
       showRangeIndicators,
+      showHealthBars,
       autoStartRounds,
       confirmTowerSell,
       setShowDamageNumbers,
       setShowRangeIndicators,
+      setShowHealthBars,
       setAutoStartRounds,
       setConfirmTowerSell,
     }}>
