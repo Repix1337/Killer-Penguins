@@ -1,6 +1,14 @@
 'use client'
 import React, { createContext, useContext, useState} from 'react';
 
+// Add helper function to safely access localStorage
+const getLocalStorageItem = (key: string): string | null => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(key);
+  }
+  return null;
+};
+
 interface SettingsContextType {
   showDamageNumbers: boolean;
   showRangeIndicators: boolean;
@@ -18,19 +26,19 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [showDamageNumbers, setShowDamageNumbers] = useState(() => 
-    localStorage.getItem('showDamageNumbers') === 'true'
+    getLocalStorageItem('showDamageNumbers') === 'true'
   );
   const [showRangeIndicators, setShowRangeIndicators] = useState(() => 
-    localStorage.getItem('showRangeIndicators') === 'true'
+    getLocalStorageItem('showRangeIndicators') === 'true'
   );
   const [showHealthBars, setShowHealthBars] = useState(() => 
-    localStorage.getItem('showHealthBars') === 'true'
+    getLocalStorageItem('showHealthBars') === 'true'
   );
   const [autoStartRounds, setAutoStartRounds] = useState(() => 
-    localStorage.getItem('autoStartRounds') === 'true'
+    getLocalStorageItem('autoStartRounds') === 'true'
   );
   const [confirmTowerSell, setConfirmTowerSell] = useState(() => 
-    localStorage.getItem('confirmTowerSell') === 'true'
+    getLocalStorageItem('confirmTowerSell') === 'true'
   );
 
   return (
