@@ -55,6 +55,7 @@ interface Enemy {
   isStunned: boolean;
   stunSourceId?: string;
   stunStartTime?: number;
+  canSpawn?: boolean;
 }
 
 // Define the Tower interface
@@ -332,6 +333,18 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       canRegen: true,
       isArmored: false,
     },
+    SPAWNER: {
+      src: 'boss.png',
+      hp: 2000,
+      damage: 100,
+      type: 'spawner',
+      speed: 0.2,    
+      baseSpeed: 0.2, 
+      regen: 0,
+      canRegen: false,
+      isArmored: false,
+      canSpawn: true,
+    }
   };
 
 // Add this near ENEMY_TYPES constant
@@ -451,8 +464,8 @@ const TOWER_TYPES = {
   },
   MORTAR: {
     src: '/mortar.png',
-    baseAttack: 125,
-    attack: 125,
+    baseAttack: 1755,
+    attack: 175,
     baseAttackInterval: 8500,
     attackInterval: 8500,
     price: 1200,
@@ -537,21 +550,20 @@ const createNewTower = (type: keyof typeof TOWER_TYPES, positionX: number, posit
 });
 
 // Then, create helper function for spawning enemies
-const createNewEnemy = (type: keyof typeof ENEMY_TYPES) => {
+const createNewEnemy = (type: keyof typeof ENEMY_TYPES, positionX?: number, positionY?: number) => {
   const enemyStats = ENEMY_TYPES[type];
   return {
     id: uuidv4(),
-    positionX: -6,
-    positionY: 56,
+    positionX: positionX ?? -6, // Use provided X or default to -6
+    positionY: positionY ?? 56, // Use provided Y or default to 56
     isTargeted: false,
     isSlowed: false,
     isPoisoned: false,
     isStunned: false,
-    maxHp: enemyStats.hp, // Add this line
+    maxHp: enemyStats.hp,
     ...enemyStats
   };
 };
-
 useEffect(() => {
   if (hp <= 0) {
     alert('Game Over! You lost!');
@@ -697,7 +709,7 @@ useEffect(() => {
         case round >= 46 && round <= 49:
           if (enemyCount < getEnemyLimit(round)) {
             const type46 = enemyCount % 100 === 0 ? 'MEGABOSS' :
-                          enemyCount % 2 === 0 ? 'ARMOREDSPEEDYMEGATANK' : 'SPEEDYMEGATANK';
+                          enemyCount % 2 === 0 ? 'SPAWNER' : 'SPEEDYMEGATANK';
             setEnemies(prev => [...prev, 
               type46 === 'MEGABOSS' ? createNewEnemy(type46) : createNewEnemy(type46)
             ]);
@@ -949,7 +961,7 @@ const moveEnemy = useCallback(() => {
           
               if (isInExplosion) {
                 // Calculate damage based on whether it's the primary target or splash damage
-                const baseDamage = enemy.id === primaryTarget.id ? tower.attack : tower.attack / 3.5;
+                const baseDamage = enemy.id === primaryTarget.id ? tower.attack : tower.attack / 4;
                 const damage = baseDamage * damageMultiplier;
                 const actualDamage = Math.min(damage, enemy.hp);
                 explosionDamageTotal += actualDamage;
@@ -975,6 +987,16 @@ const moveEnemy = useCallback(() => {
           
                 // Grant money only if the enemy dies and hasn't been processed
                 if (newHp <= 0 && enemy.hp > 0) {
+                  if(enemy.canSpawn){
+                    const spawnBatch = async () => {
+                      for (let i = 0; i < 5; i++){
+                        // Add a small delay between spawns
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                        setEnemies(prev => [...prev, createNewEnemy('SPEEDYMEGATANK', enemy.positionX, enemy.positionY)]);
+                      }
+                    };
+                    spawnBatch();
+                  }
                   grantMoneyForKill(enemy);
                 }
           
@@ -1191,6 +1213,16 @@ const moveEnemy = useCallback(() => {
           
               // Then check for kill and grant money
               if (updatedEnemy.hp <= 0 && enemy.hp > 0) {
+                if(enemy.canSpawn){
+                  const spawnBatch = async () => {
+                    for (let i = 0; i < 5; i++){
+                      // Add a small delay between spawns
+                      await new Promise(resolve => setTimeout(resolve, 50));
+                      setEnemies(prev => [...prev, createNewEnemy('SPEEDYMEGATANK', enemy.positionX, enemy.positionY)]);
+                    }
+                  };
+                  spawnBatch();
+                }
                 grantMoneyForKill(enemy);
               }
           
@@ -1605,6 +1637,17 @@ useEffect(() => {
           const newHp = enemy.hp - actualPoisonDamage;
           // Only grant money if the poison damage kills the enemy
           if (newHp <= 0 && enemy.hp > 0) {
+            if(enemy.canSpawn){
+              const spawnBatch = async () => {
+                for (let i = 0; i < 5; i++){
+                  // Add a small delay between spawns
+                  await new Promise(resolve => setTimeout(resolve, 50));
+                  setEnemies(prev => [...prev, createNewEnemy('SPEEDYMEGATANK', enemy.positionX, enemy.positionY)]);
+                  setEnemyCount(prev => prev + 1);
+                }
+              };
+              spawnBatch();
+            }
             grantMoneyForKill(enemy);
           }
   
@@ -2180,7 +2223,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       description: "Massive damage and guaranteed stun",
       effect: (tower) => ({
-        attack: tower.attack * 2.5,
+        attack: tower.attack * 3,
         criticalChance: 1.0,
         stunDuration: 250, // Reduced from 500
         towerWorth: tower.towerWorth + 25000,
@@ -2249,7 +2292,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       description: "Quadruple shot with insane speed",
       effect: (tower) => ({
         attackType: 'quadruple',
-        attackInterval: tower.attackInterval - 300,
+        attackInterval: tower.attackInterval - 350,
         attack: tower.attack * 1.5,
         towerWorth: tower.towerWorth + 25000,
         path: 2
@@ -2284,26 +2327,26 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Double Shot",
+      name: "Triple Shot",
       cost: 3500,
       requires: 2,
       path: 1,
-      description: "Can target two enemies at once",
+      description: "Can target three enemies at once",
       effect: (tower) => ({
-        attackType: 'double',
+        attackType: 'triple',
         attackInterval: tower.attackInterval - 25,
         towerWorth: tower.towerWorth + 3500,
         path: 1
       })
     },
     {
-      name: "Triple Shot",
+      name: "Quad Shot",
       cost: 8000,
       requires: 3,
       path: 1,
-      description: "Three targets and enhanced speed",
+      description: "Four targets and enhanced speed",
       effect: (tower) => ({
-        attackType: 'triple',
+        attackType: 'quadruple',
         attackInterval: tower.attackInterval - 50,
         attack: tower.attack + 10,
         src: '/rapidShooterSpecial1.png',
@@ -2313,15 +2356,14 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
     },
     {
       name: "Bullet Storm",
-      cost: 15000,
+      cost: 25000,
       requires: 4,
       path: 1,
-      description: "Four targets with maximum speed",
+      description: "Maximum attack speed and damage",
       effect: (tower) => ({
-        attackType: 'quadruple',
-        attackInterval: tower.attackInterval - 75,
-        attack: tower.attack * 1.5,
-        towerWorth: tower.towerWorth + 15000,
+        attackInterval: tower.attackInterval - 100,
+        attack: tower.attack * 1.6,
+        towerWorth: tower.towerWorth + 25000,
         path: 1
       })
     },
@@ -2381,6 +2423,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
         chainCount: 3,
         chainRange: 25,
         attack: tower.attack * 1.4,
+        attackInterval: tower.attackInterval - 25,
         src: '/rapidShooterSpecial2.png',
         towerWorth: tower.towerWorth + 12000,
         path: 2
@@ -2388,7 +2431,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
     },
     {
       name: "Lightning Master",
-      cost: 20000,
+      cost: 25000,
       requires: 4,
       path: 2,
       description: "Maximum chain potential and massive damage",
@@ -2396,7 +2439,8 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
         chainCount: 4,
         chainRange: 30,
         attack: tower.attack * 2,
-        towerWorth: tower.towerWorth + 20000,
+        attackInterval: tower.attackInterval - 50,
+        towerWorth: tower.towerWorth + 25000,
         path: 2
       })
     }
@@ -2459,7 +2503,7 @@ slower: [
   },
   {
     name: "Time Lord",
-    cost: 15000,
+    cost: 20000,
     requires: 4,
     path: 1,
     description: "Ultimate time manipulation",
@@ -2467,7 +2511,7 @@ slower: [
       explosionRadius: 25,
       slowAmount: tower.slowAmount ? tower.slowAmount * 0.6 : 0.6,
       canHitStealth: true,
-      towerWorth: tower.towerWorth + 15000,
+      towerWorth: tower.towerWorth + 20000,
       path: 1
     })
   },
@@ -2534,7 +2578,7 @@ slower: [
     description: "Maximum freeze potential",
     effect: (tower) => ({
       attack: tower.attack * 2,
-      stunDuration: 200, // Reduced from 400
+      stunDuration: 250, // Reduced from 400
       radius: tower.radius * 1.5,
       towerWorth: tower.towerWorth + 20000,
       path: 2
@@ -2564,7 +2608,6 @@ gasspitter: [
     description: "Longer lasting poison",
     effect: (tower) => ({
       poisonDamage: tower.poisonDamage + 30,
-      canStopRegen: true,
       towerWorth: tower.towerWorth + 1200,
       path: 1
     })
@@ -2586,10 +2629,11 @@ gasspitter: [
     cost: 8000,
     requires: 3,
     path: 1,
-    description: "Extreme poison damage",
+    description: "Extreme poison damage, Can stop regen and hit stealth",
     effect: (tower) => ({
       poisonDamage: tower.poisonDamage * 2.5,
       canHitStealth: true,
+      canStopRegen: true,
       towerWorth: tower.towerWorth + 8000,
       path: 1
     })
@@ -2688,7 +2732,7 @@ mortar: [
     path: 1,
     description: "More powerful explosions",
     effect: (tower) => ({
-      attack: tower.attack + 150,
+      attack: tower.attack + 100,
       explosionRadius: tower.explosionRadius * 1.1,
       towerWorth: tower.towerWorth + 800,
       path: 1
@@ -2737,7 +2781,7 @@ mortar: [
   },
   {
     name: "Nuclear Artillery",
-    cost: 15000,
+    cost: 30000,
     requires: 4,
     path: 1,
     description: "Ultimate destruction",
@@ -2747,7 +2791,7 @@ mortar: [
       attackInterval: tower.attackInterval * 1.5, // Slower but more powerful
       criticalChance: 0.3,
       criticalMultiplier: 2,
-      towerWorth: tower.towerWorth + 15000,
+      towerWorth: tower.towerWorth + 30000,
       path: 1
     })
   },
@@ -2806,7 +2850,7 @@ mortar: [
       explosionRadius: tower.explosionRadius * 1.4,
       slowAmount: 0.5,
       slowDuration: 3000,
-      stunDuration: 500,
+      stunDuration: 400,
       attack: tower.attack + 100,
       src: '/mortarSpecial2.png',
       towerWorth: tower.towerWorth + 12000,
@@ -2815,7 +2859,7 @@ mortar: [
   },
   {
     name: "Strategic Command",
-    cost: 20000,
+    cost: 25000,
     requires: 4,
     path: 2,
     description: "Ultimate battlefield control",
@@ -2888,7 +2932,7 @@ cannon: [
   },
   {
     name: "Siege Breaker",
-    cost: 15000,
+    cost: 25000,
     requires: 4,
     path: 1,
     description: "Ultimate anti-armor capabilities",
@@ -2897,7 +2941,7 @@ cannon: [
       criticalChance: 0.5,
       criticalMultiplier: 4,
       canHitStealth: true,
-      towerWorth: tower.towerWorth + 15000
+      towerWorth: tower.towerWorth + 25000
     })
   },
 
@@ -2960,7 +3004,7 @@ cannon: [
     path: 2,
     description: "Ultimate area destruction",
     effect: (tower) => ({
-      explosionRadius: tower.explosionRadius * 2,
+      explosionRadius: tower.explosionRadius * 1.2,
       attack: tower.attack * 1.5,
       attackInterval: tower.attackInterval - 400,
       canStun: true,
