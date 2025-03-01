@@ -136,9 +136,9 @@ const Menu: React.FC = () => {
                     </button>
 
                     {showSettings && (
-    <div className="absolute bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="absolute bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 w-2/3">
         <div className="animate-scaleUp bg-gradient-to-b from-sky-900 to-blue-900 p-6 rounded-xl 
-        shadow-lg w-full max-w-md border border-cyan-500/30">
+        shadow-lg w-full max-w-full border border-cyan-500/30 ">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
                 <h3 className="text-2xl font-bold bg-gradient-to-r from-cyan-300 to-blue-400 
@@ -153,7 +153,7 @@ const Menu: React.FC = () => {
                 </button>
             </div>
             
-            <div className="space-y-6">
+            <div className="space-x-2 flex">
                 {/* Visual Settings */}
                 <div className="setting-section">
                     <h4 className="setting-header">
