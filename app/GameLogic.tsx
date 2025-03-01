@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback} from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { useSettings } from './context/SettingsContext';
 
 
 
@@ -126,6 +127,14 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   
   // Add this new state near other state declarations
   const [isPageVisible, setIsPageVisible] = useState(true);
+  const [damageNumbers, setDamageNumbers] = useState<Array<{
+    id: string;
+    damage: number;
+    x: number;
+    y: number;
+    timestamp: number;
+  }>>([]);
+  const { showDamageNumbers, showRangeIndicators, confirmTowerSell } = useSettings();
 
   // Add this new useEffect for visibility tracking
   useEffect(() => {
@@ -1090,7 +1099,7 @@ const moveEnemy = useCallback(() => {
   
     // Execute updates
     updateStates();
-  
+    
     // Clean up effects after animation
     const cleanupTimeout = setTimeout(() => {
       if (!isPaused) {
@@ -1269,23 +1278,64 @@ useEffect(() => {
     });
   }, [tower, towerAttack, isPageVisible, isPaused]); // Add isPaused to dependencies
 
+
+ 
+
+  const DamageNumber = ({ damage, x, y }: { damage: number; x: number; y: number }) => {
+    if (!showDamageNumbers) return null;
+  
+    return (
+      <div
+        className="absolute animate-float-up pointer-events-none font-bold text-sm z-50"
+        style={{ 
+          left: `${x}%`, 
+          top: `${y}%`,
+          color: damage >= 100 ? '#ff4444' : 
+                 damage >= 50 ? '#ffff00' : 
+                 '#ffffff',
+          textShadow: '0 2px 2px rgba(0,0,0,0.5)',
+          transform: 'translate(-50%, -50%)'
+        }}
+      >
+        {Math.floor(damage)}
+      </div>
+    );
+  };
+
+  useEffect(() => {
+    if (damageNumbers.length > 0) {
+      const now = Date.now();
+      setDamageNumbers(prev => 
+        prev.filter(num => now - num.timestamp < 1000)
+      );
+    }
+  }, [damageNumbers]);
+  useEffect(() => {
+    const cleanupInterval = setInterval(() => {
+      const now = Date.now();
+      setDamageNumbers(prev => prev.filter(num => now - num.timestamp < 1000));
+    }, 100);
+  
+    return () => clearInterval(cleanupInterval);
+  }, []);
   // Create enemy elements
   const createEnemy = () => {
     if (round > 0) {
       return enemies.map((enemy) => (
-        <img
-          key={enemy.id}
-          src={enemy.src}
-          alt='enemy'
-          style={{
-            position: 'absolute',
-            top: `${enemy.positionY}%`,
-            left: `${enemy.positionX}%`,
-            transform: 'translateY(-50%)',
-            zIndex: 10,
-          }}
-          className='w-10 h-10'
-        />
+        <div key={enemy.id} className="relative">
+          <img
+            src={enemy.src}
+            alt='enemy'
+            style={{
+              position: 'absolute',
+              top: `${enemy.positionY}%`,
+              left: `${enemy.positionX}%`,
+              transform: 'translateY(-50%)',
+              zIndex: 10,
+            }}
+            className='w-10 h-10'
+          />
+        </div>
       ));
     }
   };
@@ -1713,19 +1763,24 @@ useEffect(() => {
   }
   
   const sellTower = (towerPrice: number) => {
-    setMoney((prevMoney) => prevMoney + towerPrice / 1.5); // Add money back (changed from subtract)
-    setTower((prevTower) => 
-        prevTower.filter((t) => t.id !== selectedTowerID) // Filter out the selected tower
-    );
-    
-    // Reset the building site image
-    const towerElement = document.getElementById(selectedTowerID) as HTMLImageElement;
-    if (towerElement) {
-        towerElement.src = '/buildingSite.png';
+    const { confirmTowerSell } = useSettings();
+
+    if (confirmTowerSell) {
+      const confirmed = window.confirm('Are you sure you want to sell this tower?');
+      if (!confirmed) return;
     }
     
-    setShowUpgradeMenu(false); // Close the upgrade menu after selling
-};
+    setMoney((prevMoney) => prevMoney + towerPrice / 1.5);
+    setTower((prevTower) => prevTower.filter((t) => t.id !== selectedTowerID));
+    
+    const towerElement = document.getElementById(selectedTowerID) as HTMLImageElement;
+    if (towerElement) {
+      towerElement.src = '/buildingSite.png';
+      towerElement.id = `building-site-${uuidv4()}`;
+    }
+    
+    setShowUpgradeMenu(false);
+  };
   // Component for attack animation
   const attackAnimation = () => {
     return attackEffects.map((effect) => (
@@ -2789,15 +2844,16 @@ cannon: [
 };
 // Add this new component near your other components
 const RangeIndicator = ({ tower }: { tower: Tower }) => {
-  const gameAreaWidth = 100; // Adjust this value based on your game area width
-  const gameAreaHeight = 100; // Adjust this value based on your game area height
+  const { showRangeIndicators } = useSettings();
 
+  if (!showRangeIndicators) return null;
+  
   return showUpgradeMenu && tower.id === selectedTowerID && (
     <div
       className="absolute rounded-full border-2 border-blue-400 pointer-events-none"
       style={{
-        width: `${(tower.radius * 2) / gameAreaWidth * 100}%`,    // Adjusted for game area width
-        height: `${(tower.radius * 2) / gameAreaHeight * 100}%`,   // Adjusted for game area height
+        width: `${(tower.radius * 2)}%`,
+        height: `${(tower.radius * 2)}%`,
         left: `${tower.positionX}%`,
         top: `${tower.positionY}%`,
         transform: 'translate(-50%, -50%)',
@@ -2805,7 +2861,7 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
         zIndex: 5,
       }}
     />
-  )
+  );
 }
 
 // Add this function near your other event handlers
@@ -2922,7 +2978,14 @@ const getTowerRotation = (tower: Tower, target: Enemy) => {
   )}
 </div>
       {createEnemy()}
-      
+      {damageNumbers.map(num => (
+  <DamageNumber
+    key={num.id}
+    damage={num.damage}
+    x={num.x}
+    y={num.y}
+  />
+))}
       {attackAnimation()}
       {renderExplosions()}
     </div>

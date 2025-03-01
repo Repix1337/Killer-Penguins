@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import GameInterface from './GameInterface'
 import TutorialWindow from './TutorialWindow'
 
@@ -6,7 +6,6 @@ const Menu = () => {
     const [renderGame, setRenderGame] = React.useState(false)
     const [showTutorial, setShowTutorial] = React.useState(false)
     const [showSettings, setShowSettings] = React.useState(false)
-    const [volume, setVolume] = React.useState(100)
 
     return !renderGame ? (
         <div className='relative flex flex-col min-h-screen min-w-[100vw] text-white
@@ -112,19 +111,114 @@ const Menu = () => {
                     </button>
 
                     {showSettings && (
-                        <div className="animate-fadeIn bg-sky-900/90 p-6 rounded-lg shadow-lg w-full sm:w-72 md:w-64">
-                            <h3 className="text-xl mb-4">Settings</h3>
-                            <div className="space-y-4">
+                        <div className="animate-fadeIn bg-sky-900/90 p-6 rounded-lg shadow-lg w-full sm:w-96">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-xl font-bold">Settings</h3>
+                                <button 
+                                    onClick={() => setShowSettings(false)}
+                                    className="text-gray-400 hover:text-white"
+                                >
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <div className="space-y-6">
+                                {/* Visual Settings */}
                                 <div className="space-y-2">
-                                    <label className="text-sm">Volume: {volume}%</label>
-                                    <input 
-                                        type="range" 
-                                        min="0" 
-                                        max="100" 
-                                        value={volume} 
-                                        onChange={(e) => setVolume(parseInt(e.target.value))}
-                                        className="w-full accent-cyan-500"
-                                    />
+                                    <h4 className="text-sm font-semibold text-cyan-300">Visual Settings</h4>
+                                    <div className="flex flex-col gap-2">
+                                        <label className="flex items-center gap-2 text-sm">
+                                            <input 
+                                                type="checkbox" 
+                                                className="form-checkbox rounded bg-sky-800 border-sky-600"
+                                                onChange={(e) => localStorage.setItem('showDamageNumbers', e.target.checked.toString())}
+                                                defaultChecked={localStorage.getItem('showDamageNumbers') === 'true'}
+                                            />
+                                            Show Damage Numbers
+                                        </label>
+                                        <label className="flex items-center gap-2 text-sm">
+                                            <input 
+                                                type="checkbox" 
+                                                className="form-checkbox rounded bg-sky-800 border-sky-600"
+                                                onChange={(e) => localStorage.setItem('showRangeIndicators', e.target.checked.toString())}
+                                                defaultChecked={localStorage.getItem('showRangeIndicators') === 'true'}
+                                            />
+                                            Show Tower Range Indicators
+                                        </label>
+                                        <label className="flex items-center gap-2 text-sm">
+                                            <input 
+                                                type="checkbox" 
+                                                className="form-checkbox rounded bg-sky-800 border-sky-600"
+                                                onChange={(e) => localStorage.setItem('showHealthBars', e.target.checked.toString())}
+                                                defaultChecked={localStorage.getItem('showHealthBars') === 'true'}
+                                            />
+                                            Show Enemy Health Bars
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {/* Gameplay Settings */}
+                                <div className="space-y-2">
+                                    <h4 className="text-sm font-semibold text-cyan-300">Gameplay Settings</h4>
+                                    <div className="flex flex-col gap-2">
+                                        <label className="flex items-center gap-2 text-sm">
+                                            <input 
+                                                type="checkbox" 
+                                                className="form-checkbox rounded bg-sky-800 border-sky-600"
+                                                onChange={(e) => localStorage.setItem('autoStartRounds', e.target.checked.toString())}
+                                                defaultChecked={localStorage.getItem('autoStartRounds') === 'true'}
+                                            />
+                                            Auto-start Next Round
+                                        </label>
+                                        <label className="flex items-center gap-2 text-sm">
+                                            <input 
+                                                type="checkbox" 
+                                                className="form-checkbox rounded bg-sky-800 border-sky-600"
+                                                onChange={(e) => localStorage.setItem('confirmTowerSell', e.target.checked.toString())}
+                                                defaultChecked={localStorage.getItem('confirmTowerSell') === 'true'}
+                                            />
+                                            Confirm Tower Selling
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {/* Control Settings */}
+                                <div className="space-y-2">
+                                    <h4 className="text-sm font-semibold text-cyan-300">Control Settings</h4>
+                                    <div className="flex flex-col gap-2 text-sm">
+                                        <div className="flex justify-between items-center">
+                                            <span>Pause Game</span>
+                                            <kbd className="px-2 py-1 bg-sky-800 rounded">Space</kbd>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span>Speed Up</span>
+                                            <kbd className="px-2 py-1 bg-sky-800 rounded">2</kbd>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span>Super Speed</span>
+                                            <kbd className="px-2 py-1 bg-sky-800 rounded">3</kbd>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span>Sell Tower</span>
+                                            <kbd className="px-2 py-1 bg-sky-800 rounded">Delete</kbd>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Reset Settings */}
+                                <div className="pt-4 border-t border-sky-800">
+                                    <button 
+                                        onClick={() => {
+                                            localStorage.clear();
+                                            window.location.reload();
+                                        }}
+                                        className="w-full px-4 py-2 bg-red-600/80 hover:bg-red-700/80 
+                                        rounded-lg transition-colors duration-200 text-sm"
+                                    >
+                                        Reset All Settings
+                                    </button>
                                 </div>
                             </div>
                         </div>
