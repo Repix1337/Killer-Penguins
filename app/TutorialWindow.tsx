@@ -150,7 +150,7 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
         return (
             <div className="space-y-6">
                 {Object.entries(towerData).map(([key, tower]) => (
-                    <div key={key} className="bg-slate-700 p-4 rounded-lg hover:bg-slate-600 transition-all">
+                    <div key={key} className="tower-card">
                         <div 
                             className="flex items-center gap-4 mb-4 cursor-pointer group"
                             onClick={() => setSelectedTowerInfo(selectedTowerInfo === key ? null : key)}
@@ -159,9 +159,9 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
                                 <img 
                                     src={`/${key}.png`} 
                                     alt={tower.name} 
-                                    className="w-16 h-16 border-2 border-blue-400 rounded-lg"
+                                    className="tower-image w-32 h-32 object-contain"  // Added fixed dimensions
                                 />
-                                <span className="absolute -top-2 -right-2 bg-blue-500 text-white px-2 py-1 rounded-full text-sm">
+                                <span className="absolute -top-2 -right-20 tower-cost">
                                     {tower.cost}$
                                 </span>
                             </div>
@@ -179,11 +179,11 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
                                 <div className="grid grid-cols-2 gap-6">
                                     {/* Path 1 */}
                                     <div className="space-y-2">
-                                        <h4 className="text-lg text-red-400 font-bold mb-3">{tower.path1}</h4>
+                                        <h4 className="upgrade-path-1">{tower.path1}</h4>
                                         {tower.upgrades.slice(0, 5).map((upgrade, index) => (
                                             <div 
                                                 key={index} 
-                                                className="bg-slate-800 p-2 rounded border border-red-400/30 hover:border-red-400 transition-all"
+                                                className="upgrade-item"
                                             >
                                                 <p className="text-red-300">{upgrade}</p>
                                             </div>
@@ -191,11 +191,11 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
                                     </div>
                                     {/* Path 2 */}
                                     <div className="space-y-2">
-                                        <h4 className="text-lg text-blue-400 font-bold mb-3">{tower.path2}</h4>
+                                        <h4 className="upgrade-path-2">{tower.path2}</h4>
                                         {tower.upgrades.slice(5, 10).map((upgrade, index) => (
                                             <div 
                                                 key={index} 
-                                                className="bg-slate-800 p-2 rounded border border-blue-400/30 hover:border-blue-400 transition-all"
+                                                className="upgrade-item"
                                             >
                                                 <p className="text-blue-300">{upgrade}</p>
                                             </div>
@@ -218,7 +218,7 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
     const renderMechanicsContent = () => (
         <div className="space-y-6">
             {/* Tower Upgrades section update */}
-            <div className="bg-slate-700 p-4 rounded-lg">
+            <div className="bg-sky-800/80 p-4 rounded-lg border border-cyan-400/30">
                 <h3 className="text-xl text-white mb-2">Tower Upgrades System</h3>
                 <p className="text-gray-300">• Each tower has two upgrade paths</p>
                 <p className="text-gray-300">• Path 1 (Red) and Path 2 (Blue) offer different specializations</p>
@@ -229,7 +229,7 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
             </div>
     
             {/* Update the Tower Placement section */}
-            <div className="bg-slate-700 p-4 rounded-lg">
+            <div className="bg-sky-800/80 p-4 rounded-lg border border-cyan-400/30">
                 <h3 className="text-xl text-white mb-2">Tower Placement & Management</h3>
                 <p className="text-gray-300">• Place towers on building sites marked on the map</p>
                 <p className="text-gray-300">• Click a tower to open upgrade menu</p>
@@ -238,7 +238,7 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
                 <p className="text-gray-300">• Switch targeting between First, Last, and Highest HP</p>
             </div>
 
-            <div className="bg-slate-700 p-4 rounded-lg">
+            <div className="bg-sky-800/80 p-4 rounded-lg border border-cyan-400/30">
                 <h3 className="text-xl text-white mb-2">Targeting Options</h3>
                 <p className="text-gray-300">• First - Targets enemy furthest along the path</p>
                 <p className="text-gray-300">• Last - Targets enemy closest to start</p>
@@ -247,7 +247,7 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
             </div>
 
             {/* Enemy Types */}
-            <div className="bg-slate-700 p-4 rounded-lg">
+            <div className="bg-sky-800/80 p-4 rounded-lg border border-cyan-400/30">
                 <h3 className="text-xl text-white mb-2">Enemy Types</h3>
                 <div className="space-y-2">
                     <div className="flex items-center gap-4">
@@ -282,7 +282,7 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
             </div>
 
             {/* Game Controls */}
-            <div className="bg-slate-700 p-4 rounded-lg">
+            <div className="bg-sky-800/80 p-4 rounded-lg border border-cyan-400/30">
                 <h3 className="text-xl text-white mb-2">Game Controls</h3>
                 <p className="text-gray-300">• Press Start to begin the game</p>
                 <p className="text-gray-300">• Speed up button doubles game speed</p>
@@ -293,13 +293,15 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
     );
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-slate-800 p-6 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto border border-blue-400">
+        <div className="fixed inset-0 bg-sky-900/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-gradient-to-br from-sky-900 via-blue-900 to-cyan-900 p-6 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto border-2 border-cyan-400/50 shadow-lg shadow-cyan-500/30">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-white">Game Guide</h2>
+                    <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-500">
+                        Game Guide
+                    </h2>
                     <button 
                         onClick={onClose}
-                        className="text-gray-400 hover:text-white"
+                        className="text-cyan-400 hover:text-cyan-300 transition-colors"
                     >
                         ✕
                     </button>
@@ -311,8 +313,8 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
                         onClick={() => setActiveTab('towers')}
                         className={`px-4 py-2 rounded-lg transition-all ${
                             activeTab === 'towers'
-                                ? 'bg-blue-500 text-white'
-                                : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
+                                ? 'bg-cyan-600/80 text-white shadow-lg shadow-cyan-500/30'
+                                : 'bg-sky-800/80 text-gray-300 hover:bg-sky-700/80'
                         }`}
                     >
                         Towers
@@ -321,16 +323,42 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
                         onClick={() => setActiveTab('mechanics')}
                         className={`px-4 py-2 rounded-lg transition-all ${
                             activeTab === 'mechanics'
-                                ? 'bg-blue-500 text-white'
-                                : 'bg-slate-700 text-gray-300 hover:bg-slate-600'
+                                ? 'bg-cyan-600/80 text-white shadow-lg shadow-cyan-500/30'
+                                : 'bg-sky-800/80 text-gray-300 hover:bg-sky-700/80'
                         }`}
                     >
                         Game Mechanics
                     </button>
                 </div>
 
-                {/* Content */}
-                {activeTab === 'towers' ? renderTowerContent() : renderMechanicsContent()}
+                {/* Update tower card styles */}
+                <style jsx>{`
+                    .tower-card {
+                        @apply bg-sky-800/80 p-4 rounded-lg hover:bg-sky-700/80 transition-all 
+                        border border-cyan-400/30 hover:border-cyan-400/60 ; 
+                    }
+                    .tower-image {
+                        @apply border-2 border-cyan-400/50 rounded-lg ;
+                    }
+                    .tower-cost {
+                        @apply bg-cyan-600/80 text-white;
+                    }
+                    .upgrade-path-1 {
+                        @apply text-cyan-300 font-bold mb-3;
+                    }
+                    .upgrade-path-2 {
+                        @apply text-blue-300 font-bold mb-3;
+                    }
+                    .upgrade-item {
+                        @apply bg-sky-900/80 p-2 rounded border border-cyan-400/30 
+                        hover:border-cyan-400/60 transition-all;
+                    }
+                `}</style>
+
+                {/* Apply new styles to existing content */}
+                <div className="space-y-6">
+                    {activeTab === 'towers' ? renderTowerContent() : renderMechanicsContent()}
+                </div>
             </div>
         </div>
     );

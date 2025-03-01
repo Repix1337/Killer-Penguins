@@ -238,8 +238,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       hp: 50000,
       damage: 1000,
       type: 'boss',
-      speed: 0.175,    
-      baseSpeed: 0.175, 
+      speed: 0.15,    
+      baseSpeed: 0.15, 
       regen: 1200,
       canRegen: true,
       isArmored: false,
@@ -315,8 +315,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       hp: 950000,
       damage: 1000,
       type: 'boss',
-      speed: 0.275,    
-      baseSpeed: 0.275, 
+      speed: 0.2,    
+      baseSpeed: 0.2, 
       regen: 1500,
       canRegen: true,
       isArmored: false,
@@ -571,15 +571,7 @@ useEffect(() => {
     }
 
 
-    // Helper function to create enemy with adjusted HP
-    const createEnemyWithAdjustedHP = (type: keyof typeof ENEMY_TYPES) => {
-      const enemy = createNewEnemy(type);
-      if (round > 30 && type !== 'BOSS' && type !== 'MEGABOSS') {
-        enemy.hp *= 2;
-        enemy.maxHp *= 2;
-      }
-      return enemy;
-    };
+    
 
     switch (true) {
       case round === 0:
@@ -588,16 +580,16 @@ useEffect(() => {
 
       case round <= 4 || (round > 5 && round < 10):
         if (enemyCount < getEnemyLimit(round)) {
-        setEnemies(prev => [...prev, createEnemyWithAdjustedHP('BASIC')]);
-        setEnemyCount(prev => prev + 1);
+          setEnemies(prev => [...prev, createNewEnemy('BASIC')]);
+          setEnemyCount(prev => prev + 1);
         }
         break;
 
       case round === 5:
         if (enemyCount < getEnemyLimit(round)) {
-        const type5 = enemyCount % 2 === 0 ? 'STEALTH' : 'SPEEDY';
-        setEnemies(prev => [...prev, createEnemyWithAdjustedHP(type5)]);
-        setEnemyCount(prev => prev + 1);
+          const type5 = enemyCount % 2 === 0 ? 'STEALTH' : 'SPEEDY';
+          setEnemies(prev => [...prev, createNewEnemy(type5)]);
+          setEnemyCount(prev => prev + 1);
         }
         break;
 
@@ -605,7 +597,7 @@ useEffect(() => {
         if (enemyCount < getEnemyLimit(round)) {
         const type10 = enemyCount % 3 === 0 ? 'STEALTH' : 
                       enemyCount % 3 === 1 ? 'SPEEDY' : 'BASIC';
-        setEnemies(prev => [...prev, createEnemyWithAdjustedHP(type10)]);
+        setEnemies(prev => [...prev, createNewEnemy(type10)]);
         setEnemyCount(prev => prev + 1);
         }
         break;
@@ -613,7 +605,7 @@ useEffect(() => {
         if (enemyCount < getEnemyLimit(round)) {
         const type10 = enemyCount % 3 === 0 ? 'STEALTH' : 
                       enemyCount % 3 === 1 ? 'SPEEDY' : 'ARMOREDBASIC';
-        setEnemies(prev => [...prev, createEnemyWithAdjustedHP(type10)]);
+        setEnemies(prev => [...prev, createNewEnemy(type10)]);
         setEnemyCount(prev => prev + 1);
         }
         break;
@@ -622,14 +614,14 @@ useEffect(() => {
         if (enemyCount < getEnemyLimit(round)) {
         const type15 = enemyCount % 3 === 0 ? 'STEALTH' : 
                       enemyCount % 3 === 1 ? 'SPEEDY' : 'TANK';
-        setEnemies(prev => [...prev, createEnemyWithAdjustedHP(type15)]);
+        setEnemies(prev => [...prev, createNewEnemy(type15)]);
         setEnemyCount(prev => prev + 1);
         }
         break;
 
       case round === 22:
         if (enemyCount < getEnemyLimit(round)) {
-        setEnemies(prev => [...prev, createEnemyWithAdjustedHP('REGENTANK')]);
+        setEnemies(prev => [...prev, createNewEnemy('REGENTANK')]);
         setEnemyCount(prev => prev + 1);
         }
         break;
@@ -638,7 +630,7 @@ useEffect(() => {
         if (enemyCount < getEnemyLimit(round)) {
         const type23 = enemyCount % 3 === 0 ? 'STEALTHYTANK' : 
                       enemyCount % 3 === 1 ? 'STEALTHYSPEEDY' : 'ARMOREDTANK';
-        setEnemies(prev => [...prev, createEnemyWithAdjustedHP(type23)]);
+        setEnemies(prev => [...prev, createNewEnemy(type23)]);
         setEnemyCount(prev => prev + 1);
         }
         break;
@@ -646,7 +638,7 @@ useEffect(() => {
       case round >= 26 && round <= 31:
         if (enemyCount < getEnemyLimit(round)) {
         const type26 = enemyCount % 2 === 0 ? 'STEALTHYTANK' : 'SPEEDYREGENTANK';
-        setEnemies(prev => [...prev, createEnemyWithAdjustedHP(type26)]);
+        setEnemies(prev => [...prev, createNewEnemy(type26)]);
         setEnemyCount(prev => prev + 1);
         }
         break;
@@ -662,9 +654,7 @@ useEffect(() => {
         if (enemyCount < getEnemyLimit(round)) {
           const type32 = enemyCount % 50 === 0 ? 'BOSS' :
                         enemyCount % 2 === 0 ? 'ARMOREDULTRATANK' : 'ULTRATANKS';
-          setEnemies(prev => [...prev, 
-            type32 === 'BOSS' ? createNewEnemy(type32) : createEnemyWithAdjustedHP(type32)
-          ]);
+          setEnemies(prev => [...prev, createNewEnemy(type32)]);
           setEnemyCount(prev => prev + 3);
         }
         break;
@@ -681,7 +671,7 @@ useEffect(() => {
           const type41 = enemyCount % 50 === 0 ? 'BOSS' :
                         enemyCount % 2 === 0 ? 'ARMOREDSPEEDYMEGATANK' : 'SPEEDYMEGATANK';
           setEnemies(prev => [...prev, 
-            type41 === 'BOSS' ? createNewEnemy(type41) : createEnemyWithAdjustedHP(type41)
+            type41 === 'BOSS' ? createNewEnemy(type41) : createNewEnemy(type41)
           ]);
           setEnemyCount(prev => prev + 2);
         }
@@ -698,7 +688,7 @@ useEffect(() => {
             const type46 = enemyCount % 100 === 0 ? 'MEGABOSS' :
                           enemyCount % 2 === 0 ? 'ARMOREDSPEEDYMEGATANK' : 'SPEEDYMEGATANK';
             setEnemies(prev => [...prev, 
-              type46 === 'MEGABOSS' ? createNewEnemy(type46) : createEnemyWithAdjustedHP(type46)
+              type46 === 'MEGABOSS' ? createNewEnemy(type46) : createNewEnemy(type46)
             ]);
             setEnemyCount(prev => prev + 2);
           }
@@ -902,24 +892,25 @@ const moveEnemy = useCallback(() => {
                 }
           
                 if (tower.slowAmount) {
-                const newSlowAmount = tower.slowAmount;
-                const currentSlowAmount = updatedEnemy.slowValue || 1;
-              
-                // Only apply new slow if it's stronger (lower value = stronger slow)
-                if (newSlowAmount < currentSlowAmount) {
-                  updatedEnemy = {
-                    ...updatedEnemy,
-                    isSlowed: true,
-                    slowSourceId: tower.id,
-                    slowStartTime: Date.now(),
-                    slowValue: newSlowAmount,
-                    speed: !updatedEnemy.isStunned ?
-                      round < 30 ? 
-                        Math.max(enemy.baseSpeed * newSlowAmount, enemy.baseSpeed * 0.2) :
-                        Math.max(enemy.baseSpeed * newSlowAmount, enemy.baseSpeed * 0.45) :
-                      0
-                  };
-                }
+                  const newSlowAmount = tower.slowAmount;
+                  const currentSlowAmount = updatedEnemy.slowValue || 1;
+                
+                  // Only apply new slow if it's stronger or there's no current slow
+                  if (!updatedEnemy.isSlowed || newSlowAmount < currentSlowAmount) {
+                      const minimumSpeed = round < 30 ? 0.15 : 0.4;
+                      const calculatedSpeed = enemy.baseSpeed * newSlowAmount;
+                      
+                      updatedEnemy = {
+                          ...updatedEnemy,
+                          isSlowed: true,
+                          slowSourceId: tower.id,
+                          slowStartTime: Date.now(),
+                          slowValue: newSlowAmount,
+                          speed: !updatedEnemy.isStunned ? 
+                              Math.max(calculatedSpeed, enemy.baseSpeed * minimumSpeed) : 
+                              0
+                      };
+                  }
               }
                 if (tower.poisonDamage > 0) {
                   updatedEnemy = {
@@ -1049,22 +1040,23 @@ const moveEnemy = useCallback(() => {
                 const newSlowAmount = tower.slowAmount;
                 const currentSlowAmount = updatedEnemy.slowValue || 1;
               
-                // Only apply new slow if it's stronger (lower value = stronger slow)
-                if (newSlowAmount < currentSlowAmount) {
-                  updatedEnemy = {
-                    ...updatedEnemy,
-                    isSlowed: true,
-                    slowSourceId: tower.id,
-                    slowStartTime: Date.now(),
-                    slowValue: newSlowAmount,
-                    speed: !updatedEnemy.isStunned ?
-                      round < 30 ? 
-                        Math.max(enemy.baseSpeed * newSlowAmount, enemy.baseSpeed * 0.2) :
-                        Math.max(enemy.baseSpeed * newSlowAmount, enemy.baseSpeed * 0.45) :
-                      0
-                  };
+                // Only apply new slow if it's stronger or there's no current slow
+                if (!updatedEnemy.isSlowed || newSlowAmount < currentSlowAmount) {
+                    const minimumSpeed = round < 30 ? 0.15 : 0.4;
+                    const calculatedSpeed = enemy.baseSpeed * newSlowAmount;
+                    
+                    updatedEnemy = {
+                        ...updatedEnemy,
+                        isSlowed: true,
+                        slowSourceId: tower.id,
+                        slowStartTime: Date.now(),
+                        slowValue: newSlowAmount,
+                        speed: !updatedEnemy.isStunned ? 
+                            Math.max(calculatedSpeed, enemy.baseSpeed * minimumSpeed) : 
+                            0
+                    };
                 }
-              }
+            }
           
               // Apply other effects (poison, etc.)
               if (tower.type === "gasspitter") {
@@ -2897,7 +2889,7 @@ const getTowerRotation = (tower: Tower, target: Enemy) => {
         { top: '65%', left: '25%', x: 25, y: 66 },
         { top: '8%', left: '30%', x: 30, y: 9 },
         { top: '8%', left: '50%', x: 50, y: 9 },
-        { top: '7%', left: '41%', x: 41, y: 8 },
+        { top: '5%', left: '41%', x: 41, y: 6 },
         { top: '40%', left: '41%', x: 41, y: 41 },
         { top: '52.5%', left: '41%', x: 41, y: 53.5 },
         { top: '57%', left: '35%', x: 35, y: 58 },

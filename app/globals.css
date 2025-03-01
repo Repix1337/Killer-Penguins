@@ -11,7 +11,6 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
-  }
 }
 
 body {
@@ -85,4 +84,62 @@ body {
 
 .animate-slideUp {
   animation: slideUp 1s ease forwards;
+}
+@keyframes float {
+  0% {
+      transform: translateY(0) scale(1);
+      opacity: 0;
+  }
+  50% {
+      opacity: 0.8;
+  }
+  100% {
+      transform: translateY(-100vh) scale(0);
+      opacity: 0;
+  }
+}
+
+.animate-float {
+  animation: float linear infinite;
+}
+
+.menu-button {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    font-size: 1.25rem;
+    transition: all 0.2s;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+  }
+  @media (min-width: 640px) {
+    .menu-button {
+      width: 18rem;
+    }
+  }
+  @media (min-width: 768px) {
+    .menu-button {
+      width: 16rem;
+      padding: 1rem 2rem;
+      font-size: 1.5rem;
+    }
+  }
+}
+@keyframes snowfall {
+  0% {
+      transform: translateY(-10vh) translateX(-10px);
+      opacity: 0;
+  }
+  50% {
+      opacity: 1;
+  }
+  100% {
+      transform: translateY(110vh) translateX(10px);
+      opacity: 0;
+  }
+}
+
+.animate-snowfall {
+  animation: snowfall linear infinite;
 }

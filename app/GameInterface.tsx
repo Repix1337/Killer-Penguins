@@ -49,6 +49,7 @@ min-h-[7vh] shadow-lg border-b-2 border-blue-500/50'>
     className={`px-4 py-2 rounded-lg shadow-md transition-all duration-200
     ${round < 1 ? 'bg-green-500 hover:bg-green-600 animate-pulse' : 'bg-slate-600'}`}
     onClick={onClick}
+    disabled={round > 0}
   >
     {round < 1 ? 'Start Game' : 'Started'}
   </button>

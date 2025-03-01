@@ -12,6 +12,17 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      animation: {
+        'snowfall': 'snowfall 10s linear infinite',
+        'bounce-slow': 'bounce 3s infinite',
+      },
+      keyframes: {
+        snowfall: {
+          '0%': { transform: 'translateY(-10vh) translateX(0)', opacity: '0' },
+          '50%': { opacity: '1' },
+          '100%': { transform: 'translateY(100vh) translateX(20px)', opacity: '0' },
+        },
+      },
     },
   },
   plugins: [],
