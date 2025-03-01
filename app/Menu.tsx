@@ -37,19 +37,21 @@ const Menu: React.FC = () => {
         font-bold text-4xl gap-3 overflow-hidden bg-gradient-to-br from-sky-900 via-blue-900 to-cyan-900'>
             {/* Animated snow effect */}
             <div className="absolute inset-0">
-                {[...Array(100)].map((_, i) => (
-                    <div
-                        key={i}
-                        className="absolute h-2 w-2 rounded-full bg-white/70 animate-snowfall"
-                        style={{
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
-                            animationDelay: `${Math.random() * 5}s`,
-                            animationDuration: `${3 + Math.random() * 8}s`
-                        }}
-                    />
-                ))}
-            </div>
+    {[...Array(200)].map((_, i) => (
+        <div
+            key={i}
+            className="absolute h-2 w-2 rounded-full bg-white/70 animate-snowfall"
+            style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 8}s`,
+                animationDuration: `${5 + Math.random() * 10}s`,
+                opacity: Math.random() * 0.7 + 0.3,
+                transform: `scale(${Math.random() * 0.8 + 0.2})`
+            }}
+        />
+    ))}
+</div>
 
             {/* Add penguin character */}
             <div className="absolute bottom-0 w-full flex justify-center items-end gap-4 ">
