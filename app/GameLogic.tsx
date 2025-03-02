@@ -99,9 +99,24 @@ interface Tower {
   stunDuration?: number;
   chainCount?: number;
   chainRange?: number;
+  hasLingering?: boolean;
+  lingeringDamage?: number;
+  lingeringRadius?: number;
+  lingeringDuration?: number;
+  lingeringColor?: string;
   path1Level: number;
   path2Level: number;
   path: number;
+}
+interface LingeringEffect {
+  id: string;
+  positionX: number;
+  positionY: number;
+  damage: number;
+  radius: number;
+  timestamp: number;
+  color: string;
+  duration: number;
 }
 
 const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp,setIsSpeedUp, isSpeedUp,setIsPaused,canPause, isPaused, setCanPause, selectedTowerType }) => {
@@ -138,6 +153,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     y: number;
     timestamp: number;
   }>>([]);
+  const [lingeringEffects, setLingeringEffects] = useState<LingeringEffect[]>([]);
   const { showDamageNumbers, showRangeIndicators, showHealthBars, confirmTowerSell, autoStartRounds } = useSettings();
   // Add this new useEffect for visibility tracking
   useEffect(() => {
@@ -928,7 +944,7 @@ const moveEnemy = useCallback(() => {
           if (tower.attackType === 'explosion') {
             const primaryTarget = targets[0];
             
-            // First, just find enemies in radius without granting money
+            // Find enemies in radius
             const enemiesInExplosionRadius = prevEnemies.filter(enemy => {
               if (enemy.hp <= 0 || enemy.id === primaryTarget.id) return false;
               const dx = enemy.positionX - primaryTarget.positionX;
@@ -945,12 +961,19 @@ const moveEnemy = useCallback(() => {
               timestamp: Date.now()
             }]);
           
-            // Remove explosion effect after animation
-            setTimeout(() => {
-              setExplosionEffects(prev =>
-                prev.filter(effect => effect.positionX !== primaryTarget.positionX)
-              );
-            }, 250);
+            // If tower has lingering effect, create lingering zone
+            if (tower.hasLingering) {
+              setLingeringEffects(prev => [...prev, {
+                id: uuidv4(),
+                positionX: primaryTarget.positionX,
+                positionY: primaryTarget.positionY,
+                damage: tower.lingeringDamage || tower.attack * 0.1,
+                radius: tower.lingeringRadius || 15,
+                timestamp: Date.now(),
+                duration: tower.lingeringDuration || 2000,
+                color: tower.lingeringColor || 'rgba(255, 69, 0, 0.5)'
+              }]);
+            }
           
             let explosionDamageTotal = 0;
             updatedEnemies = prevEnemies.map(enemy => {
@@ -960,12 +983,12 @@ const moveEnemy = useCallback(() => {
                                    enemiesInExplosionRadius.some(e => e.id === enemy.id);
           
               if (isInExplosion) {
-                // Calculate damage based on whether it's the primary target or splash damage
                 const baseDamage = enemy.id === primaryTarget.id ? tower.attack : tower.attack / 4;
                 const damage = baseDamage * damageMultiplier;
                 const actualDamage = Math.min(damage, enemy.hp);
                 explosionDamageTotal += actualDamage;
-                if (showDamageNumbers) {  // Add this check
+          
+                if (showDamageNumbers) {
                   setDamageNumbers(prev => [...prev, {
                     id: uuidv4(),
                     damage: actualDamage,
@@ -974,33 +997,16 @@ const moveEnemy = useCallback(() => {
                     timestamp: Date.now()
                   }]);
                 }
-                // Calculate new HP first
-                const newHp = enemy.isArmored && !tower.canHitArmored ? 
-                  enemy.hp : 
-                  Math.max(enemy.hp - actualDamage, 0);
           
-                let updatedEnemy = { ...enemy,
-                                     src: enemy.isArmored ? enemy.src.replace('armored', '') : enemy.src,
-                                     isArmored: false,
-                                     hp: newHp 
-                                    };
+                let updatedEnemy = {
+                  ...enemy,
+                  hp: enemy.isArmored && !tower.canHitArmored ? 
+                      enemy.hp : 
+                      Math.max(enemy.hp - actualDamage, 0),
+                  isTargeted: true
+                };
           
-                // Grant money only if the enemy dies and hasn't been processed
-                if (newHp <= 0 && enemy.hp > 0) {
-                  if(enemy.canSpawn){
-                    const spawnBatch = async () => {
-                      for (let i = 0; i < 5; i++){
-                        // Add a small delay between spawns
-                        await new Promise(resolve => setTimeout(resolve, 50));
-                        setEnemies(prev => [...prev, createNewEnemy('SPEEDYMEGATANK', enemy.positionX, enemy.positionY)]);
-                      }
-                    };
-                    spawnBatch();
-                  }
-                  grantMoneyForKill(enemy);
-                }
-          
-                // Apply other effects after HP calculation
+                // Apply additional effects like stun/slow
                 if (tower.canStun) {
                   updatedEnemy = {
                     ...updatedEnemy,
@@ -1013,43 +1019,34 @@ const moveEnemy = useCallback(() => {
           
                 if (tower.slowAmount) {
                   const newSlowAmount = tower.slowAmount;
-                  const currentSlowAmount = updatedEnemy.slowValue || 1;
-                
-                  // Only apply new slow if it's stronger or there's no current slow
-                  if (!updatedEnemy.isSlowed || newSlowAmount < currentSlowAmount) {
-                      const minimumSpeed = round < 30 ? 0.15 : 0.4;
-                      const calculatedSpeed = enemy.baseSpeed * newSlowAmount;
-                      
-                      updatedEnemy = {
-                          ...updatedEnemy,
-                          isSlowed: true,
-                          slowSourceId: tower.id,
-                          slowStartTime: Date.now(),
-                          slowValue: newSlowAmount,
-                          speed: !updatedEnemy.isStunned ? 
-                              Math.max(calculatedSpeed, enemy.baseSpeed * minimumSpeed) : 
-                              0
-                      };
+                  if (!updatedEnemy.isSlowed || newSlowAmount < (updatedEnemy.slowValue || 1)) {
+                    updatedEnemy = {
+                      ...updatedEnemy,
+                      isSlowed: true,
+                      slowSourceId: tower.id,
+                      slowStartTime: Date.now(),
+                      slowValue: newSlowAmount,
+                      speed: !updatedEnemy.isStunned ? 
+                          Math.max(enemy.baseSpeed * newSlowAmount, enemy.baseSpeed * 0.4) : 
+                          0
+                    };
                   }
-              }
-                if (tower.poisonDamage > 0) {
-                  updatedEnemy = {
-                    ...updatedEnemy,
-                    isPoisoned: true,
-                    poisonSourceId: tower.id,
-                    poisonStartTime: Date.now(),
-                    canRegen: tower.canStopRegen ? false : true};
                 }
-                
-                updatedEnemy.isTargeted = true;
+          
+                if (updatedEnemy.hp <= 0 && enemy.hp > 0) {
+                  if(enemy.canSpawn) {
+                    // Handle spawner enemy logic
+                  }
+                  grantMoneyForKill(enemy);
+                }
+          
                 return updatedEnemy;
               }
-              
               return enemy;
             });
-            totalDamageDealt = explosionDamageTotal;
           
-          }else if (tower.attackType === 'chain') {
+            totalDamageDealt = explosionDamageTotal;
+          } else if (tower.attackType === 'chain') {
             // Get initial target
             const chainEffects: {
               id: string;
@@ -1142,7 +1139,31 @@ const moveEnemy = useCallback(() => {
             });
             
             totalDamageDealt = chainDamage;
-          } else {
+          }if (tower.attackType === 'lingering') {
+            setLingeringEffects(prev => [...prev, {
+              id: uuidv4(),
+              positionX: targets[0].positionX,
+              positionY: targets[0].positionY,
+              damage: tower.lingeringDamage || tower.attack * 0.1,
+              radius: tower.lingeringRadius || 10,
+              timestamp: Date.now(),
+              duration: tower.lingeringDuration || 2000,
+              color: tower.lingeringColor || 'rgba(144, 238, 144, 0.5)'
+            }]);
+          
+            // Apply initial impact damage
+            updatedEnemies = prevEnemies.map(enemy => {
+              const isTargeted = targets.some(target => target.id === enemy.id);
+              if (!isTargeted) return enemy;
+          
+              const actualDamage = Math.min(tower.attack * damageMultiplier, enemy.hp);
+              return {
+                ...enemy,
+                hp: enemy.hp - actualDamage
+              };
+            });
+          }
+           else {
             // Non-explosion attack logic
             updatedEnemies = prevEnemies.map((enemy) => {
               const isTargeted = targets.some(target => target.id === enemy.id);
@@ -1597,6 +1618,67 @@ useEffect(() => {
   
     return () => clearInterval(stunInterval);
   }, [isPageVisible, isPaused, isSpeedUp, tower]);
+  useEffect(() => {
+    if (!isPageVisible || isPaused) return;
+  
+    const LINGERING_TICK_RATE = 50;
+  
+    const lingeringInterval = setInterval(() => {
+      const currentTime = Date.now();
+  
+      // Remove expired lingering effects
+      setLingeringEffects(prev => prev.filter(effect => 
+        currentTime - effect.timestamp < effect.duration
+      ));
+  
+      // Apply damage to enemies in lingering areas
+      setEnemies(prevEnemies => {
+        let hasChanges = false;
+        const updatedEnemies = prevEnemies.map(enemy => {
+          let totalDamage = 0;
+  
+          // Check each lingering effect
+          lingeringEffects.forEach(effect => {
+            const dx = enemy.positionX - effect.positionX;
+            const dy = enemy.positionY - effect.positionY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+  
+            if (distance <= effect.radius) {
+              totalDamage += effect.damage;
+            }
+          });
+  
+          if (totalDamage > 0) {
+            hasChanges = true;
+            const newHp = Math.max(0, enemy.hp - totalDamage);
+  
+            if (showDamageNumbers) {
+              setDamageNumbers(prev => [...prev, {
+                id: uuidv4(),
+                damage: totalDamage,
+                x: enemy.positionX,
+                y: enemy.positionY,
+                timestamp: currentTime
+              }]);
+            }
+  
+            // Check for kill
+            if (newHp <= 0 && enemy.hp > 0) {
+              grantMoneyForKill(enemy);
+            }
+  
+            return { ...enemy, hp: newHp };
+          }
+  
+          return enemy;
+        });
+  
+        return hasChanges ? updatedEnemies : prevEnemies;
+      });
+    }, LINGERING_TICK_RATE);
+  
+    return () => clearInterval(lingeringInterval);
+  }, [isPageVisible, isPaused, lingeringEffects]);
   useEffect(() => {
     if (!isPageVisible || isPaused) return;
              
@@ -2613,15 +2695,18 @@ gasspitter: [
     })
   },
   {
-    name: "Deadly Concoction",
-    cost: 3500,
+    name: "Acid Pools",
+    cost: 3000,
     requires: 2,
     path: 1,
-    description: "Massively enhanced poison",
+    description: "Creates damaging acid pools on impact",
     effect: (tower) => ({
-      poisonDamage: tower.poisonDamage * 2,
-      towerWorth: tower.towerWorth + 3500,
-      path: 1
+      attackType: 'lingering',
+      lingeringDamage: tower.poisonDamage * 0.05,
+      lingeringRadius: 15,
+      lingeringDuration: 2000,
+      lingeringColor: 'rgba(0, 255, 0, 0.5)',
+      towerWorth: tower.towerWorth + 3000
     })
   },
   {
@@ -2947,68 +3032,74 @@ cannon: [
 
   // Path 2 - Anti-Group Specialist
   {
-    name: "Spread Shot",
+    name: "Wide Shells",
     cost: 1000,
     requires: 0,
     path: 2,
-    description: "Wider explosion radius",
+    description: "Increases explosion radius",
     effect: (tower) => ({
-      explosionRadius: tower.explosionRadius * 1.3,
-      attack: tower.attack + 25,
-      towerWorth: tower.towerWorth + 1000
+      explosionRadius: tower.explosionRadius * 1.2,
+      attack: tower.attack - 15, // Small damage penalty for bigger radius
+      towerWorth: tower.towerWorth + 1000,
     })
   },
   {
-    name: "Shrapnel Shells",
+    name: "Cluster Bombs",
     cost: 2500,
     requires: 1,
     path: 2,
-    description: "Explosions create damaging fragments",
+    description: "Creates multiple small explosions",
     effect: (tower) => ({
-      explosionRadius: tower.explosionRadius * 1.4,
-      attack: tower.attack + 40,
-      towerWorth: tower.towerWorth + 2500
+      explosionRadius: tower.explosionRadius * 1.3,
+      attackInterval: tower.attackInterval - 125, 
+      attack: tower.attack + 15,
+      towerWorth: tower.towerWorth + 2500,
     })
   },
   {
-    name: "Chain Reaction",
+    name: "Inferno Zone",
     cost: 5000,
     requires: 2,
     path: 2,
-    description: "Secondary explosions on impact",
+    description: "Massive burning zones after explosions",
     effect: (tower) => ({
-      explosionRadius: tower.explosionRadius * 1.5,
-      attack: tower.attack + 60,
-      attackInterval: tower.attackInterval - 200,
+      lingeringDamage: tower.attack * 0.05,
+      lingeringRadius: 20,
+      lingeringDuration: 4000,
+      attack: tower.attack + 75,
+      explosionRadius: tower.explosionRadius * 1.3,
       towerWorth: tower.towerWorth + 5000
     })
   },
   {
-    name: "Carpet Bomber",
+    name: "Hellfire Cannon",
     cost: 12000,
     requires: 3,
     path: 2,
-    description: "Massive area coverage",
+    description: "Devastating explosions with intense burning",
     effect: (tower) => ({
-      explosionRadius: tower.explosionRadius * 1.6,
-      attack: tower.attack * 1.3,
-      attackInterval: tower.attackInterval - 300,
+      lingeringDamage: tower.attack * 0.15,
+      lingeringRadius: 25,
+      lingeringDuration: 5000,
+      attack: tower.attack * 1.4,
+      explosionRadius: tower.explosionRadius * 1.4,
       src: '/cannonSpecial2.png',
       towerWorth: tower.towerWorth + 12000
     })
   },
   {
-    name: "Apocalypse Cannon",
+    name: "Solar Inferno",
     cost: 20000,
     requires: 4,
     path: 2,
-    description: "Ultimate area destruction",
+    description: "Ultimate area denial with massive damage",
     effect: (tower) => ({
-      explosionRadius: tower.explosionRadius * 1.2,
-      attack: tower.attack * 1.5,
-      attackInterval: tower.attackInterval - 400,
-      canStun: true,
-      stunDuration: 75, // Reduced from 150
+      lingeringDamage: tower.attack * 0.2,
+      lingeringRadius: 30,
+      lingeringDuration: 6000,
+      attack: tower.attack * 1.6,
+      explosionRadius: tower.explosionRadius * 1.5,
+      canHitArmored: true,
       towerWorth: tower.towerWorth + 20000
     })
   }
@@ -3084,7 +3175,28 @@ const getTowerRotation = (tower: Tower, target: Enemy) => {
   const shootingRight = target.positionX > tower.positionX;
   return shootingRight ? 'scaleX(-1)' : '';
 };
-
+const LingeringEffects = () => {
+  return (
+    <>
+      {lingeringEffects.map(effect => (
+        <div
+          key={effect.id}
+          className="absolute rounded-full pointer-events-none animate-pulse"
+          style={{
+            left: `${effect.positionX}%`,
+            top: `${effect.positionY}%`,
+            width: `${effect.radius * 2.5}%`,
+            height: `${effect.radius * 2.5}%`,
+            transform: 'translate(-50%, -50%)',
+            background: `radial-gradient(circle, ${effect.color} 0%, transparent 50%)`,
+            opacity: 0.5,
+            zIndex: 4
+          }}
+        />
+      ))}
+    </>
+  );
+};
   return (
     <>
    <div 
@@ -3159,6 +3271,7 @@ const getTowerRotation = (tower: Tower, target: Enemy) => {
 ))}
       {attackAnimation()}
       {renderExplosions()}
+      {LingeringEffects()}
     </div>
     {upgradeTower()}
     </>
