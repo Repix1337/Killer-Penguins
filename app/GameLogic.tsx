@@ -794,8 +794,8 @@ useEffect(() => {
                             enemyCount % 2 === 0 ? 'SPEEDYMEGATANK' : 'ARMOREDULTRATANK';
               const enemy = createNewEnemy(type66);
               // Significantly enhanced stats for endless mode
-              enemy.hp *= 2 + (round - 65) * 0.1; // Scales with rounds
-              enemy.maxHp *= 2 + (round - 65) * 0.1;
+              enemy.hp *= 2 + (round - 65) * 0.05; // Scales with rounds
+              enemy.maxHp *= 2 + (round - 65) * 0.05;
               enemy.speed *= 1.3;
               enemy.regen *= 1.5;
               setEnemies(prev => [...prev, enemy]);
