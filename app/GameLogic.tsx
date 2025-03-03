@@ -117,6 +117,7 @@ interface LingeringEffect {
   timestamp: number;
   color: string;
   duration: number;
+  towerId: string; // Add this field
 }
 
 const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp,setIsSpeedUp, isSpeedUp,setIsPaused,canPause, isPaused, setCanPause, selectedTowerType }) => {
@@ -745,15 +746,62 @@ useEffect(() => {
             setEnemies(prev => [...prev, createNewEnemy('MEGABOSS')]); 
             setEnemyCount(prev => prev + 35);
           }
-          case round >= 51:
+         break; 
+          case round >= 51 && round <= 55:
             if (enemyCount < getEnemyLimit(round)) {
-              const type46 = enemyCount % 80 === 0 ? 'MEGABOSS' :
-                            enemyCount % 2 === 0 ? 'SPAWNER' : 'SPEEDYMEGATANK';
-              setEnemies(prev => [...prev, 
-                type46 === 'MEGABOSS' ? createNewEnemy(type46) : createNewEnemy(type46)
-              ]);
-              setEnemyCount(prev => prev + 1);
+              const type51 = enemyCount % 100 === 0 ? 'MEGABOSS' :
+                            enemyCount % 3 === 0 ? 'SPEEDYMEGATANK' :
+                            enemyCount % 2 === 0 ? 'ARMOREDSPEEDYMEGATANK' : 'SPAWNER';
+              setEnemies(prev => [...prev, createNewEnemy(type51)]);
+              setEnemyCount(prev => prev + (type51 === 'MEGABOSS' ? 50 : 1));
             }
+            break;
+          
+          case round >= 56 && round <= 60:
+            if (enemyCount < getEnemyLimit(round)) {
+              // Intense wave of mixed armored and fast enemies
+              const type56 = enemyCount % 150 === 0 ? 'MEGABOSS' :
+                            enemyCount % 4 === 0 ? 'ARMOREDULTRATANK' :
+                            enemyCount % 3 === 0 ? 'SPEEDYMEGATANK' :
+                            enemyCount % 2 === 0 ? 'ARMOREDSPEEDYMEGATANK' : 'SPAWNER';
+              setEnemies(prev => [...prev, createNewEnemy(type56)]);
+              setEnemyCount(prev => prev + (type56 === 'MEGABOSS' ? 75 : 1));
+            }
+            break;
+          
+          case round >= 61 && round <= 65:
+            if (enemyCount < getEnemyLimit(round) * 1.5) { // Increased enemy limit
+              // Super challenging wave with multiple MEGABOSS spawns
+              const type61 = enemyCount % 120 === 0 ? 'MEGABOSS' :
+                            enemyCount % 3 === 0 ? 'ARMOREDSPEEDYMEGATANK' :
+                            enemyCount % 2 === 0 ? 'SPAWNER' : 'SPEEDYMEGATANK';
+              const enemy = createNewEnemy(type61);
+              // Increase base stats for these rounds
+              enemy.hp *= 1.5;
+              enemy.maxHp *= 1.5;
+              enemy.speed *= 1.2;
+              setEnemies(prev => [...prev, enemy]);
+              setEnemyCount(prev => prev + (type61 === 'MEGABOSS' ? 100 : 1));
+            }
+            break;
+          
+          case round >= 66:
+            if (enemyCount < getEnemyLimit(round) * 2) { // Double enemy limit
+              // Ultimate challenge with enhanced enemies
+              const type66 = enemyCount % 100 === 0 ? 'MEGABOSS' :
+                            enemyCount % 4 === 0 ? 'ARMOREDSPEEDYMEGATANK' :
+                            enemyCount % 3 === 0 ? 'SPAWNER' :
+                            enemyCount % 2 === 0 ? 'SPEEDYMEGATANK' : 'ARMOREDULTRATANK';
+              const enemy = createNewEnemy(type66);
+              // Significantly enhanced stats for endless mode
+              enemy.hp *= 2 + (round - 65) * 0.1; // Scales with rounds
+              enemy.maxHp *= 2 + (round - 65) * 0.1;
+              enemy.speed *= 1.3;
+              enemy.regen *= 1.5;
+              setEnemies(prev => [...prev, enemy]);
+              setEnemyCount(prev => prev + (type66 === 'MEGABOSS' ? 150 : 1));
+            }
+            break;
       }
     }
   
@@ -993,7 +1041,8 @@ const moveEnemy = useCallback(() => {
                 radius: tower.lingeringRadius || 15,
                 timestamp: Date.now(),
                 duration: tower.lingeringDuration || 2000,
-                color: tower.lingeringColor || 'rgba(255, 69, 0, 0.5)'
+                color: tower.lingeringColor || 'rgba(255, 69, 0, 0.5)',
+                towerId: tower.id // Add this
               }]);
             }
           
@@ -1187,7 +1236,8 @@ const moveEnemy = useCallback(() => {
               radius: tower.lingeringRadius || 10,
               timestamp: Date.now(),
               duration: tower.lingeringDuration || 2000,
-              color: tower.lingeringColor || 'rgba(144, 238, 144, 0.5)'
+              color: tower.lingeringColor || 'rgba(144, 238, 144, 0.5)',
+              towerId: tower.id // Add this
             }]);
           
             // Apply initial impact damage
@@ -1201,6 +1251,8 @@ const moveEnemy = useCallback(() => {
                 hp: enemy.hp - actualDamage
               };
             });
+            totalDamageDealt = tower.lingeringDamage || tower.attack * 0.1;
+
           }
            else {
             // Non-explosion attack logic
@@ -1670,6 +1722,9 @@ useEffect(() => {
         currentTime - effect.timestamp < effect.duration
       ));
   
+      // Track damage done by each tower
+      const towerDamage: { [key: string]: number } = {};
+  
       // Apply damage to enemies in lingering areas
       setEnemies(prevEnemies => {
         let hasChanges = false;
@@ -1683,7 +1738,14 @@ useEffect(() => {
             const distance = Math.sqrt(dx * dx + dy * dy);
   
             if (distance <= effect.radius) {
-              totalDamage += effect.damage;
+              const damage = effect.damage;
+              totalDamage += damage;
+  
+              // Track damage for each tower
+              if (!towerDamage[effect.towerId]) {
+                towerDamage[effect.towerId] = 0;
+              }
+              towerDamage[effect.towerId] += damage;
             }
           });
   
@@ -1711,6 +1773,14 @@ useEffect(() => {
   
           return enemy;
         });
+  
+        // Update tower damage counters
+        setTower(prevTowers =>
+          prevTowers.map(t => ({
+            ...t,
+            damageDone: t.damageDone + (towerDamage[t.id] || 0)
+          }))
+        );
   
         return hasChanges ? updatedEnemies : prevEnemies;
       });
@@ -3104,6 +3174,7 @@ cannon: [
     path: 2,
     description: "Massive burning zones after explosions",
     effect: (tower) => ({
+      hasLingering: true,
       lingeringDamage: tower.attack * 0.05,
       lingeringRadius: 20,
       lingeringDuration: 4000,
@@ -3119,7 +3190,6 @@ cannon: [
     path: 2,
     description: "Devastating explosions with intense burning",
     effect: (tower) => ({
-      lingeringDamage: tower.attack * 0.15,
       lingeringRadius: 25,
       lingeringDuration: 5000,
       attack: tower.attack * 1.4,
@@ -3130,18 +3200,18 @@ cannon: [
   },
   {
     name: "Solar Inferno",
-    cost: 20000,
+    cost: 25000,
     requires: 4,
     path: 2,
     description: "Ultimate area denial with massive damage",
     effect: (tower) => ({
-      lingeringDamage: tower.attack * 0.2,
+      lingeringDamage: tower.attack * 0.06,
       lingeringRadius: 30,
       lingeringDuration: 6000,
       attack: tower.attack * 1.6,
       explosionRadius: tower.explosionRadius * 1.5,
       canHitArmored: true,
-      towerWorth: tower.towerWorth + 20000
+      towerWorth: tower.towerWorth + 25000
     })
   }
   ]
