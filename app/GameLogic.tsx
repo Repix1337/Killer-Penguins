@@ -619,7 +619,7 @@ useEffect(() => {
 
       case round <= 4 || (round > 5 && round < 10):
         if (enemyCount < getEnemyLimit(round)) {
-          setEnemies(prev => [...prev, createNewEnemy('ARMOREDTANK')]);
+          setEnemies(prev => [...prev, createNewEnemy('BASIC')]);
           setEnemyCount(prev => prev + 1);
         }
         break;
