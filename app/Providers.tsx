@@ -6,7 +6,12 @@ import { SettingsProvider } from './context/SettingsContext'
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
-    <ThemeProvider defaultTheme="dark" attribute="class" enableSystem={false}>
+    <ThemeProvider 
+      forcedTheme="light" 
+      enableSystem={false} 
+      attribute="class"
+      disableTransitionOnChange
+    >
       <SettingsProvider>
         {children}
       </SettingsProvider>

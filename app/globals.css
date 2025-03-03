@@ -7,11 +7,7 @@
   --foreground: #171717;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-}
+
 
 body {
   color: var(--foreground);
@@ -125,7 +121,7 @@ body {
       font-size: 1.5rem;
     }
   }
-}
+
 @keyframes snowfall {
   0% {
       transform: translateY(-10vh) translateX(-10px);

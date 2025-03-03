@@ -33,14 +33,14 @@ const Menu: React.FC = () => {
     } = useSettings();
 
     return !renderGame ? (
-        <div className='relative flex flex-col min-h-screen min-w-[100vw] text-white
-        font-bold text-4xl gap-3 overflow-hidden bg-gradient-to-br from-sky-900 via-blue-900 to-cyan-900'>
+        <div className='relative flex flex-col min-h-screen min-w-[100vw] text-[#FFFFFF]
+        font-bold text-4xl gap-3 overflow-hidden bg-[#0B1D35]'>
             {/* Animated snow effect */}
             <div className="absolute inset-0">
     {[...Array(200)].map((_, i) => (
         <div
             key={i}
-            className="absolute h-2 w-2 rounded-full bg-white/70 animate-snowfall"
+            className="absolute h-2 w-2 rounded-full bg-[#FFFFFF]/70 animate-snowfall"
             style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
@@ -82,8 +82,8 @@ const Menu: React.FC = () => {
             md:p-10 flex flex-col gap-6 md:gap-10 animate-fadeIn'>
                 <h1 className='text-[2.5rem] sm:text-[3.5rem] md:text-[5rem] h-auto md:h-16 
                 flex justify-center items-center text-center text-transparent bg-clip-text 
-                bg-gradient-to-r from-cyan-300 to-blue-500 drop-shadow-lg font-extrabold
-                hover:from-cyan-400 hover:to-blue-600 transition-all duration-300
+                bg-gradient-to-r from-[#67E8F9] to-[#3B82F6] drop-shadow-lg font-extrabold
+                hover:from-[#22D3EE] hover:to-[#2563EB] transition-all duration-300
                 animate-slideDown tracking-wider'>
                     KILLER PENGUINS
                 </h1>
@@ -92,8 +92,8 @@ const Menu: React.FC = () => {
                 md:mt-10 animate-slideUp'>
                     <button 
                         onClick={() => setRenderGame(true)}
-                        className='menu-button bg-cyan-600/80 hover:bg-cyan-700/80 
-                        hover:shadow-cyan-500/50 p-4 rounded-lg'
+                        className='menu-button bg-[#0891B2]/80 hover:bg-[#0E7490]/80 
+                        hover:shadow-[#06B6D4]/50 p-4 rounded-lg'
                     >
                         <span className="relative z-10 flex items-center gap-2">
                             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -108,8 +108,8 @@ const Menu: React.FC = () => {
                     
                     <button 
                         onClick={() => setShowTutorial(true)}
-                        className='menu-button bg-blue-600/80 hover:bg-blue-700/80 
-                        hover:shadow-blue-500/50 p-4 rounded-lg'
+                        className='menu-button bg-[#2563EB]/80 hover:bg-[#1D4ED8]/80 
+                        hover:shadow-[#3B82F6]/50 p-4 rounded-lg'
                     >
                         <span className="relative z-10 flex items-center gap-2">
                             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -123,8 +123,8 @@ const Menu: React.FC = () => {
 
                     <button 
                         onClick={() => setShowSettings(!showSettings)}
-                        className='menu-button bg-sky-600/80 hover:bg-sky-700/80 
-                        hover:shadow-sky-500/50 p-4 rounded-lg'
+                        className='menu-button bg-[#0EA5E9]/80 hover:bg-[#0284C7]/80 
+                        hover:shadow-[#38BDF8]/50 p-4 rounded-lg'
                     >
                         <span className="relative z-10 flex items-center gap-2">
                             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -138,9 +138,9 @@ const Menu: React.FC = () => {
                     </button>
 
                     {showSettings && (
-    <div className="absolute bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 w-2/3">
-        <div className="animate-scaleUp bg-gradient-to-b from-sky-900 to-blue-900 p-6 rounded-xl 
-        shadow-lg w-full max-w-full border border-cyan-500/30 ">
+    <div className="absolute bg-[#000000]/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 w-2/3">
+        <div className="animate-scaleUp bg-gradient-to-b from-[#0B1D35] to-[#1E3A8A] p-6 rounded-xl 
+        shadow-lg w-full max-w-full border border-[#67E8F9]/30">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
                 <h3 className="text-2xl font-bold bg-gradient-to-r from-cyan-300 to-blue-400 

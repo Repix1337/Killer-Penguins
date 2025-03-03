@@ -2058,21 +2058,23 @@ useEffect(() => {
   // Component for attack animation
   const attackAnimation = () => {
     return attackEffects.map((effect) => (
-        <img
-          src={effect.effectSrc}
-          key={effect.id}
-          className='animate-slide h-6 w-6 absolute text-red-500'
-          style={{
-            '--tower-positionX': `${effect.towerPositionX + 1}%`,
-            '--tower-positionY': `${effect.towerPositionY + 2.5}%`,
-            '--enemy-positionX': `${effect.enemyPositionX + 1.5}%`,
-            '--enemy-positionY': `${effect.enemyPositionY}%`,
-            left: `${effect.towerPositionX}%`,
-            animationDuration: `${100 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)}ms`,
-          } as React.CSSProperties}
-        />
-          
-      ));
+      <img
+        src={effect.effectSrc}
+        key={effect.id}
+        className='pointer-events-none animate-slide h-6 w-6 absolute'
+        style={{
+          '--tower-positionX': `${effect.towerPositionX + 1}%`,
+          '--tower-positionY': `${effect.towerPositionY + 2.5}%`,
+          '--enemy-positionX': `${effect.enemyPositionX + 1.5}%`,
+          '--enemy-positionY': `${effect.enemyPositionY}%`,
+          left: `${effect.towerPositionX}%`,
+          animationDuration: `${100 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)}ms`,
+          filter: 'drop-shadow(0 0 2px rgba(0,0,0,1)) brightness(1.2) contrast(1.2)',
+          mixBlendMode: 'normal',
+          zIndex: 20
+        } as React.CSSProperties}
+      />
+    ));
   };
   
   
