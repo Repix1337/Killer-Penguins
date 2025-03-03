@@ -2725,7 +2725,7 @@ gasspitter: [
     description: "Creates damaging acid pools on impact",
     effect: (tower) => ({
       attackType: 'lingering',
-      lingeringDamage: tower.poisonDamage * 0.05,
+      lingeringDamage: tower.poisonDamage * 0.025,
       lingeringRadius: 15,
       lingeringDuration: 2000,
       lingeringColor: 'rgba(0, 255, 0, 0.5)',
@@ -2739,7 +2739,7 @@ gasspitter: [
     path: 1,
     description: "Extreme poison damage, Can stop regen and hit stealth",
     effect: (tower) => ({
-      poisonDamage: tower.poisonDamage * 2.5,
+      poisonDamage: tower.poisonDamage * 2.25,
       canHitStealth: true,
       canStopRegen: true,
       towerWorth: tower.towerWorth + 8000,
@@ -2753,7 +2753,7 @@ gasspitter: [
     path: 1,
     description: "Ultimate poison damage",
     effect: (tower) => ({
-      poisonDamage: tower.poisonDamage * 3,
+      poisonDamage: tower.poisonDamage * 2.75,
       attack: tower.attack * 1.5,
       src: '/gasSpitterSpecial1.png',
       towerWorth: tower.towerWorth + 15000,
@@ -3170,7 +3170,7 @@ const grantMoneyForKill = useCallback((enemy: Enemy) => {
     processedEnemies.add(enemy.id);
     const reward = Math.floor(
       (enemy.maxHp / 6.5) * 
-      (round >= 33 ? 0.055 : round > 22 ? 0.325 : 1)
+      (round >= 33 ? 0.06 : round > 22 ? 0.3 : 1)
     );
     setMoney(prev => prev + reward);
   }

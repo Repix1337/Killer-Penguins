@@ -123,7 +123,7 @@ min-h-[7vh] shadow-lg border-b-2 border-blue-500/50'>
         {/* Tower Selection Panel */}
         <div className='bg-gradient-to-b from-slate-800 to-slate-900 flex flex-col items-center p-4 
 shadow-lg border-t-2 border-blue-500/50 w-full'>
-  <h1 className="text-xl font-bold mb-4 text-blue-400">Available Towers</h1>
+  <h1 className="text-xl font-bold mb-1 text-blue-400">Available Towers</h1>
   <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-3 w-full max-w-4xl 
   px-2 justify-items-center'>
             <TowerButton
