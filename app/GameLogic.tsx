@@ -619,7 +619,7 @@ useEffect(() => {
 
       case round <= 4 || (round > 5 && round < 10):
         if (enemyCount < getEnemyLimit(round)) {
-          setEnemies(prev => [...prev, createNewEnemy('BASIC')]);
+          setEnemies(prev => [...prev, createNewEnemy('ARMOREDTANK')]);
           setEnemyCount(prev => prev + 1);
         }
         break;
@@ -960,7 +960,11 @@ const moveEnemy = useCallback(() => {
               positionY: primaryTarget.positionY,
               timestamp: Date.now()
             }]);
-          
+            setTimeout(() => {
+              setExplosionEffects(prev =>
+                prev.filter(effect => effect.positionX !== primaryTarget.positionX)
+              );
+            }, 250);
             // If tower has lingering effect, create lingering zone
             if (tower.hasLingering) {
               setLingeringEffects(prev => [...prev, {
@@ -987,8 +991,7 @@ const moveEnemy = useCallback(() => {
                 const damage = baseDamage * damageMultiplier;
                 const actualDamage = Math.min(damage, enemy.hp);
                 explosionDamageTotal += actualDamage;
-          
-                if (showDamageNumbers) {
+                if (showDamageNumbers) {  // Add this check
                   setDamageNumbers(prev => [...prev, {
                     id: uuidv4(),
                     damage: actualDamage,
@@ -998,14 +1001,37 @@ const moveEnemy = useCallback(() => {
                   }]);
                 }
           
-                let updatedEnemy = {
-                  ...enemy,
-                  hp: enemy.isArmored && !tower.canHitArmored ? 
-                      enemy.hp : 
-                      Math.max(enemy.hp - actualDamage, 0),
-                  isTargeted: true
-                };
+                const newHp = enemy.isArmored && !tower.canHitArmored ? 
+                  enemy.hp : 
+                  Math.max(enemy.hp - actualDamage, 0);
           
+                  let updatedEnemy = {
+                    ...enemy,
+                    hp: enemy.hp - actualDamage
+                  };
+            
+                  // Remove armor if tower can hit armored enemies
+                  if (tower.canHitArmored && enemy.isArmored) {
+                    updatedEnemy = {
+                      ...updatedEnemy,
+                      isArmored: false,
+                      src: enemy.src.replace('armored', '')
+                    };
+                  }
+                                    console.log(updatedEnemy);
+                if (newHp <= 0 && enemy.hp > 0) {
+                  if(enemy.canSpawn){
+                    const spawnBatch = async () => {
+                      for (let i = 0; i < 5; i++){
+                        // Add a small delay between spawns
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                        setEnemies(prev => [...prev, createNewEnemy('SPEEDYMEGATANK', enemy.positionX, enemy.positionY)]);
+                      }
+                    };
+                    spawnBatch();
+                  }
+                  grantMoneyForKill(enemy);
+                }
                 // Apply additional effects like stun/slow
                 if (tower.canStun) {
                   updatedEnemy = {
@@ -1033,12 +1059,7 @@ const moveEnemy = useCallback(() => {
                   }
                 }
           
-                if (updatedEnemy.hp <= 0 && enemy.hp > 0) {
-                  if(enemy.canSpawn) {
-                    // Handle spawner enemy logic
-                  }
-                  grantMoneyForKill(enemy);
-                }
+                
           
                 return updatedEnemy;
               }
@@ -1139,7 +1160,7 @@ const moveEnemy = useCallback(() => {
             });
             
             totalDamageDealt = chainDamage;
-          }if (tower.attackType === 'lingering') {
+          }else if (tower.attackType === 'lingering') {
             setLingeringEffects(prev => [...prev, {
               id: uuidv4(),
               positionX: targets[0].positionX,
