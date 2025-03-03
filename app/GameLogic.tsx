@@ -2061,7 +2061,7 @@ useEffect(() => {
         <img
           src={effect.effectSrc}
           key={effect.id}
-          className='pointer-events-none animate-slide h-6 w-6 absolute text-red-500'
+          className='animate-slide h-6 w-6 absolute text-red-500'
           style={{
             '--tower-positionX': `${effect.towerPositionX + 1}%`,
             '--tower-positionY': `${effect.towerPositionY + 2.5}%`,
