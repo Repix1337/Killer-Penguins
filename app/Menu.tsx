@@ -93,7 +93,7 @@ const Menu: React.FC = () => {
                     <button 
                         onClick={() => setRenderGame(true)}
                         className='menu-button bg-cyan-600/80 hover:bg-cyan-700/80 
-                        hover:shadow-cyan-500/50'
+                        hover:shadow-cyan-500/50 p-4 rounded-lg'
                     >
                         <span className="relative z-10 flex items-center gap-2">
                             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -109,7 +109,7 @@ const Menu: React.FC = () => {
                     <button 
                         onClick={() => setShowTutorial(true)}
                         className='menu-button bg-blue-600/80 hover:bg-blue-700/80 
-                        hover:shadow-blue-500/50'
+                        hover:shadow-blue-500/50 p-4 rounded-lg'
                     >
                         <span className="relative z-10 flex items-center gap-2">
                             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -124,7 +124,7 @@ const Menu: React.FC = () => {
                     <button 
                         onClick={() => setShowSettings(!showSettings)}
                         className='menu-button bg-sky-600/80 hover:bg-sky-700/80 
-                        hover:shadow-sky-500/50'
+                        hover:shadow-sky-500/50 p-4 rounded-lg'
                     >
                         <span className="relative z-10 flex items-center gap-2">
                             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
