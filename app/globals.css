@@ -22,21 +22,18 @@ body {
 }
 @keyframes slide {
   from {
-    left: var(--start-x);
-    top: var(--start-y);
+    left: var(--tower-positionX);
+    top: var(--tower-positionY);
   }
   to {
-    left: var(--end-x);
-    top: var(--end-y);
+    left: var(--enemy-positionX);
+    top: var(--enemy-positionY);
   }
 }
 
 .animate-slide {
-  position: absolute;
-  animation: slide 300ms linear forwards;
-  will-change: transform, left, top;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
+  animation-name: slide;
+  animation-timing-function: ease-in-out;
 }
 @keyframes explosion {
   0% {
