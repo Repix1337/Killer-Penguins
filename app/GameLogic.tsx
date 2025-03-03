@@ -3226,7 +3226,7 @@ const LingeringEffects = () => {
       onClick={handleOutsideClick}
     >
   <img 
-    src='/map.png' 
+    src='/test.webp' 
     className=' w-full h-full object-fill top-0 left-0 z-0' 
     alt='map' 
   />
