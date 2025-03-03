@@ -146,6 +146,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   
   // Add this new state near other state declarations
   const [isPageVisible, setIsPageVisible] = useState(true);
+  const [isGameEnded, setIsGameEnded] = useState(false);
   const [damageNumbers, setDamageNumbers] = useState<Array<{
     id: string;
     damage: number;
@@ -602,11 +603,18 @@ useEffect(() => {
   if (!isPageVisible || isPaused) return;
 
   const spawnEnemies = () => {
-    // Check for game over first
-    if (round > 50 && enemies.length === 0) {
-      alert('Congratulations! You won!');
-      resetGame();
-      return;
+    
+     if (round > 50 && enemies.length === 0 && enemyCount >= getEnemyLimit(round)) {
+      if (!isGameEnded) {
+        alert('Congratulations! You won!');
+        const continueGame = window.confirm('Do you want to continue?');
+        if (!continueGame) {
+          resetGame();
+        }
+        setIsGameEnded(true);
+        return;
+      }
+      return; // Don't spawn more enemies if game is ended
     }
 
 
@@ -737,8 +745,18 @@ useEffect(() => {
             setEnemies(prev => [...prev, createNewEnemy('MEGABOSS')]); 
             setEnemyCount(prev => prev + 35);
           }
+          case round >= 51:
+            if (enemyCount < getEnemyLimit(round)) {
+              const type46 = enemyCount % 80 === 0 ? 'MEGABOSS' :
+                            enemyCount % 2 === 0 ? 'SPAWNER' : 'SPEEDYMEGATANK';
+              setEnemies(prev => [...prev, 
+                type46 === 'MEGABOSS' ? createNewEnemy(type46) : createNewEnemy(type46)
+              ]);
+              setEnemyCount(prev => prev + 1);
+            }
+      }
     }
-  };
+  
 
   const spawnInterval = setInterval(
     spawnEnemies,
@@ -3223,7 +3241,7 @@ const LingeringEffects = () => {
   return (
     <>
    <div 
-      className='relative min-h-[72vh] w-full overflow-hidden' 
+      className='relative min-h-[75vh]  w-full overflow-hidden' 
       suppressHydrationWarning
       onClick={handleOutsideClick}
     >

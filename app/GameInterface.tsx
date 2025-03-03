@@ -40,11 +40,11 @@ const GameInterface = () => {
     }
     
     return !renderMenu ? (
-      <div className="flex flex-col justify-center min-h-[15vh] items-center text-white w-full">
+      <div className="flex flex-col justify-center min-h-[15vh] items-center text-white w-[100vw] select-none">
         {/* Top Game Controls Bar */}
         <div className='flex flex-wrap justify-center items-center gap-3 w-full p-3 
 text-base md:text-xl bg-gradient-to-r from-slate-800 to-slate-700 
-min-h-[7vh] shadow-lg border-b-2 border-blue-500/50'>
+min-h-[8vh] shadow-lg border-b-2 border-blue-500/50'>
   <button 
     className={`px-4 py-2 rounded-lg shadow-md transition-all duration-200
     ${round < 1 ? 'bg-green-500 hover:bg-green-600 animate-pulse' : 'bg-slate-600'}`}
@@ -123,7 +123,6 @@ min-h-[7vh] shadow-lg border-b-2 border-blue-500/50'>
         {/* Tower Selection Panel */}
         <div className='bg-gradient-to-b from-slate-800 to-slate-900 flex flex-col items-center p-4 
 shadow-lg border-t-2 border-blue-500/50 w-full'>
-  <h1 className="text-xl font-bold mb-1 text-blue-400">Available Towers</h1>
   <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-3 w-full max-w-4xl 
   px-2 justify-items-center'>
             <TowerButton
@@ -209,7 +208,7 @@ interface TowerButtonProps {
 
 const TowerButton = ({ type, src, price, isSelected, onClick, label }: TowerButtonProps) => (
   <div 
-    className={`group hover:scale-105 transition-all cursor-pointer rounded-lg p-1
+    className={`group hover:scale-105 transition-all cursor-pointer rounded-lg p-1 select-none
     ${isSelected 
       ? 'bg-gradient-to-br from-blue-600 to-blue-800 ring-2 ring-blue-400' 
       : 'bg-gradient-to-br from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700'}
