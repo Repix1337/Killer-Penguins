@@ -2057,22 +2057,31 @@ useEffect(() => {
   };
   // Component for attack animation
   const attackAnimation = () => {
-    return attackEffects.map((effect) => (
+    return attackEffects.map((effect) => {
+      // Calculate the start and end positions relative to viewport
+      const startX = effect.towerPositionX;
+      const startY = effect.towerPositionY;
+      const endX = effect.enemyPositionX ;
+      const endY = effect.enemyPositionY ;
+  
+      return (
         <img
           src={effect.effectSrc}
           key={effect.id}
-          className='pointer-events-none animate-slide h-6 w-6 absolute text-red-500'
+          className='pointer-events-none animate-slide h-6 w-6'
           style={{
-            '--tower-positionX': `${effect.towerPositionX + 1}%`,
-            '--tower-positionY': `${effect.towerPositionY + 2.5}%`,
-            '--enemy-positionX': `${effect.enemyPositionX + 1.5}%`,
-            '--enemy-positionY': `${effect.enemyPositionY}%`,
-            left: `${effect.towerPositionX}%`,
+            '--start-x': `${startX}%`,
+            '--start-y': `${startY}%`,
+            '--end-x': `${endX}%`,
+            '--end-y': `${endY}%`,
+            left: `${startX}%`,
+            top: `${startY}%`,
+            zIndex: 20,
             animationDuration: `${100 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)}ms`,
           } as React.CSSProperties}
         />
-          
-      ));
+      );
+    });
   };
   
   
