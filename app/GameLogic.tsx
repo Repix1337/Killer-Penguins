@@ -363,7 +363,18 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       canRegen: false,
       isArmored: false,
       canSpawn: true,
-    }
+    },
+    SPEEDYGIGATANK: {
+      src: 'speedyGigaTank.png',
+      hp: 5000,
+      damage: 1000,
+      type: 'speedygigatank',
+      speed: 0.5,    
+      baseSpeed: 0.5, 
+      regen: 0,
+      canRegen: false,
+      isArmored: true,
+    },
   };
 
 // Add this near ENEMY_TYPES constant
@@ -752,7 +763,7 @@ useEffect(() => {
           case round >= 51 && round <= 55:
             if (enemyCount < getEnemyLimit(round)) {
               const type51 = enemyCount % 100 === 0 ? 'MEGABOSS' :
-                            enemyCount % 3 === 0 ? 'SPEEDYMEGATANK' :
+                            enemyCount % 3 === 0 ? 'SPEEDYGIGATANK' :
                             enemyCount % 2 === 0 ? 'ARMOREDSPEEDYMEGATANK' : 'SPAWNER';
               setEnemies(prev => [...prev, createNewEnemy(type51)]);
               setEnemyCount(prev => prev + (type51 === 'MEGABOSS' ? 50 : 1));
@@ -764,7 +775,7 @@ useEffect(() => {
               // Intense wave of mixed armored and fast enemies
               const type56 = enemyCount % 150 === 0 ? 'MEGABOSS' :
                             enemyCount % 4 === 0 ? 'ARMOREDULTRATANK' :
-                            enemyCount % 3 === 0 ? 'SPEEDYMEGATANK' :
+                            enemyCount % 3 === 0 ? 'SPEEDYGIGATANK' :
                             enemyCount % 2 === 0 ? 'ARMOREDSPEEDYMEGATANK' : 'SPAWNER';
               setEnemies(prev => [...prev, createNewEnemy(type56)]);
               setEnemyCount(prev => prev + (type56 === 'MEGABOSS' ? 75 : 1));
@@ -776,7 +787,7 @@ useEffect(() => {
               // Super challenging wave with multiple MEGABOSS spawns
               const type61 = enemyCount % 120 === 0 ? 'MEGABOSS' :
                             enemyCount % 3 === 0 ? 'ARMOREDSPEEDYMEGATANK' :
-                            enemyCount % 2 === 0 ? 'SPAWNER' : 'SPEEDYMEGATANK';
+                            enemyCount % 2 === 0 ? 'SPAWNER' : 'SPEEDYGIGATANK';
               const enemy = createNewEnemy(type61);
               // Increase base stats for these rounds
               enemy.hp *= 1.5;
@@ -792,9 +803,8 @@ useEffect(() => {
             if (enemyCount < getEnemyLimit(round) * 2) { // Double enemy limit
               // Ultimate challenge with enhanced enemies
               const type66 = enemyCount % 100 === 0 ? 'MEGABOSS' :
-                            enemyCount % 4 === 0 ? 'ARMOREDSPEEDYMEGATANK' :
-                            enemyCount % 3 === 0 ? 'SPAWNER' :
-                            enemyCount % 2 === 0 ? 'SPEEDYMEGATANK' : 'ARMOREDULTRATANK';
+                            enemyCount % 2 === 0 ? 'SPEEDYGIGATANK' :
+                            'SPAWNER';
               const enemy = createNewEnemy(type66);
               // Significantly enhanced stats for endless mode
               enemy.hp *= 2 + (round - 65) * 0.1; // Scales with rounds
@@ -1090,18 +1100,28 @@ const moveEnemy = useCallback(() => {
                   }
                                     console.log(updatedEnemy);
                 if (newHp <= 0 && enemy.hp > 0) {
-                  if(enemy.canSpawn){
-                    const spawnBatch = async () => {
-                      for (let i = 0; i < 5; i++){
-                        // Add a small delay between spawns
-                        await new Promise(resolve => setTimeout(resolve, 50));
-                        setEnemies(prev => [...prev, createNewEnemy('SPEEDYMEGATANK', enemy.positionX, enemy.positionY)]);
-                      }
-                    };
-                    spawnBatch();
-                  }
-                  grantMoneyForKill(enemy);
+                if(enemy.canSpawn && round >= 50){
+                  const spawnBatch = async () => {
+                    for (let i = 0; i < 5; i++){
+                      // Add a small delay between spawns
+                      await new Promise(resolve => setTimeout(resolve, 50));
+                      setEnemies(prev => [...prev, createNewEnemy('SPEEDYGIGATANK', enemy.positionX, enemy.positionY)]);
+                    }
+                  };
+                  spawnBatch();
                 }
+                else if(enemy.canSpawn && round < 50){
+                  const spawnBatch = async () => {
+                    for (let i = 0; i < 5; i++){
+                      // Add a small delay between spawns
+                      await new Promise(resolve => setTimeout(resolve, 50));
+                      setEnemies(prev => [...prev, createNewEnemy('SPEEDYMEGATANK', enemy.positionX, enemy.positionY)]);
+                    }
+                  };
+                  spawnBatch();
+              }
+              grantMoneyForKill(enemy);
+            }
                 // Apply additional effects like stun/slow
                 if (tower.canStun) {
                   updatedEnemy = {
@@ -1328,7 +1348,17 @@ const moveEnemy = useCallback(() => {
           
               // Then check for kill and grant money
               if (updatedEnemy.hp <= 0 && enemy.hp > 0) {
-                if(enemy.canSpawn){
+                if(enemy.canSpawn && round >= 50){
+                  const spawnBatch = async () => {
+                    for (let i = 0; i < 5; i++){
+                      // Add a small delay between spawns
+                      await new Promise(resolve => setTimeout(resolve, 50));
+                      setEnemies(prev => [...prev, createNewEnemy('SPEEDYGIGATANK', enemy.positionX, enemy.positionY)]);
+                    }
+                  };
+                  spawnBatch();
+                }
+                else if(enemy.canSpawn && round < 50){
                   const spawnBatch = async () => {
                     for (let i = 0; i < 5; i++){
                       // Add a small delay between spawns
@@ -1337,13 +1367,12 @@ const moveEnemy = useCallback(() => {
                     }
                   };
                   spawnBatch();
-                }
-                grantMoneyForKill(enemy);
               }
-          
-              updatedEnemy.isTargeted = true;
-              return updatedEnemy;
-            });
+              grantMoneyForKill(enemy);
+            }
+            updatedEnemy.isTargeted = true;
+            return updatedEnemy;
+          });
           }
           
           return updatedEnemies;
@@ -1831,19 +1860,28 @@ useEffect(() => {
           const newHp = enemy.hp - actualPoisonDamage;
           // Only grant money if the poison damage kills the enemy
           if (newHp <= 0 && enemy.hp > 0) {
-            if(enemy.canSpawn){
+            if(enemy.canSpawn && round >= 50){
+              const spawnBatch = async () => {
+                for (let i = 0; i < 5; i++){
+                  // Add a small delay between spawns
+                  await new Promise(resolve => setTimeout(resolve, 50));
+                  setEnemies(prev => [...prev, createNewEnemy('SPEEDYGIGATANK', enemy.positionX, enemy.positionY)]);
+                }
+              };
+              spawnBatch();
+            }
+            else if(enemy.canSpawn && round < 50){
               const spawnBatch = async () => {
                 for (let i = 0; i < 5; i++){
                   // Add a small delay between spawns
                   await new Promise(resolve => setTimeout(resolve, 50));
                   setEnemies(prev => [...prev, createNewEnemy('SPEEDYMEGATANK', enemy.positionX, enemy.positionY)]);
-                  setEnemyCount(prev => prev + 1);
                 }
               };
               spawnBatch();
-            }
-            grantMoneyForKill(enemy);
           }
+          grantMoneyForKill(enemy);
+        }
   
           return {
             ...enemy,
