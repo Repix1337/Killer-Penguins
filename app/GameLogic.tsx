@@ -3373,7 +3373,7 @@ cannon: [
     requires: 5,
     path: 1,
     effect: (tower) => ({
-      attack: tower.attack * 4,
+      attack: tower.attack * 2,
       criticalChance: 0.6,
       criticalMultiplier: 5,
       canHitStealth: true,
