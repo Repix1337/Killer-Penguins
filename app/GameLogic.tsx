@@ -53,6 +53,7 @@ interface Enemy {
   canRegen: boolean;
   isArmored: boolean;
   isStunned: boolean;
+  stunReduction: number;
   stunSourceId?: string;
   stunStartTime?: number;
   canSpawn?: boolean;
@@ -578,6 +579,7 @@ const createNewEnemy = (type: keyof typeof ENEMY_TYPES, positionX?: number, posi
     isSlowed: false,
     isPoisoned: false,
     isStunned: false,
+    stunReduction: 1,
     maxHp: enemyStats.hp,
     ...enemyStats
   };
@@ -780,6 +782,7 @@ useEffect(() => {
               enemy.hp *= 1.5;
               enemy.maxHp *= 1.5;
               enemy.speed *= 1.2;
+              enemy.stunReduction = 0.5;
               setEnemies(prev => [...prev, enemy]);
               setEnemyCount(prev => prev + (type61 === 'MEGABOSS' ? 100 : 1));
             }
@@ -794,8 +797,8 @@ useEffect(() => {
                             enemyCount % 2 === 0 ? 'SPEEDYMEGATANK' : 'ARMOREDULTRATANK';
               const enemy = createNewEnemy(type66);
               // Significantly enhanced stats for endless mode
-              enemy.hp *= 2 + (round - 65) * 0.05; // Scales with rounds
-              enemy.maxHp *= 2 + (round - 65) * 0.05;
+              enemy.hp *= 2 + (round - 65) * 0.1; // Scales with rounds
+              enemy.maxHp *= 2 + (round - 65) * 0.1;
               enemy.speed *= 1.3;
               enemy.regen *= 1.5;
               setEnemies(prev => [...prev, enemy]);
@@ -1686,7 +1689,7 @@ useEffect(() => {
           if (!effectTower) return enemy;
   
           // If it's a stun (speed = 0), use the stun duration, otherwise use slow duration
-          const effectDuration = effectTower.stunDuration || 150
+          const effectDuration = effectTower.stunDuration || 150 * enemy.stunReduction
   
           const adjustedDuration = effectDuration / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1);
           
@@ -2283,6 +2286,21 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
         path: 1
       })
     },
+    {
+      name: "Infinite Barrage",
+      cost: 150000,
+      description: "Unleashes a constant stream of devastating attacks",
+      requires: 5,
+      path: 1,
+      effect: (tower) => ({
+        attackInterval: tower.attackInterval - 50,
+        attackType: 'quadruple',
+        attack: tower.attack * 3,
+        canHitStealth: true,
+        canHitArmored: true,
+        towerWorth: tower.towerWorth + 150000
+      })
+    },
 
     // Path 2 - Heavy Damage focused
     {
@@ -2350,6 +2368,22 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
         attack: tower.attack * 1.5,
         towerWorth: tower.towerWorth + 30000,
         path: 2
+      })
+    },
+    {
+      name: "Apocalypse Protocol",
+      cost: 150000,
+      description: "World-ending explosion radius and damage",
+      requires: 5,
+      path: 2,
+      effect: (tower) => ({
+        explosionRadius: tower.explosionRadius * 2,
+        attack: tower.attack * 4,
+        canHitStealth: true,
+        canHitArmored: true,
+        criticalChance: 0.5,
+        criticalMultiplier: 5,
+        towerWorth: tower.towerWorth + 150000
       })
     }
   ],
@@ -2423,6 +2457,21 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
         path: 1
       })
     },
+    {
+      name: "Omega Striker",
+      cost: 150000,
+      description: "Perfect accuracy with devastating power",
+      requires: 5,
+      path: 1,
+      effect: (tower) => ({
+        attack: tower.attack * 5,
+        criticalChance: 1.0,
+        stunDuration: 500,
+        canHitStealth: true,
+        canHitArmored: true,
+        towerWorth: tower.towerWorth + 150000
+      })
+    },
 
     // Path 2 - Attack Speed
     {
@@ -2489,6 +2538,21 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
         attack: tower.attack * 1.5,
         towerWorth: tower.towerWorth + 25000,
         path: 2
+      })
+    },
+    {
+      name: "Infinite Chambers",
+      cost: 150000,
+      description: "Superhuman firing speed with multiple targets",
+      requires: 5,
+      path: 2,
+      effect: (tower) => ({
+        attackType: 'quadruple',
+        attackInterval: tower.attackInterval - 200,
+        attack: tower.attack * 2.5,
+        canHitStealth: true,
+        canHitArmored: true,
+        towerWorth: tower.towerWorth + 150000
       })
     }
   ],
@@ -2558,6 +2622,21 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
         attack: tower.attack * 1.6,
         towerWorth: tower.towerWorth + 25000,
         path: 1
+      })
+    },
+    {
+      name: "Light Speed",
+      cost: 150000,
+      description: "Attacks at impossible speeds",
+      requires: 5,
+      path: 1,
+      effect: (tower) => ({
+        attackInterval: tower.attackInterval - 40,
+        attack: tower.attack * 2.5,
+        attackType: 'quadruple',
+        canHitArmored: true,
+        canHitStealth: true,
+        towerWorth: tower.towerWorth + 150000
       })
     },
 
@@ -2636,6 +2715,21 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
         towerWorth: tower.towerWorth + 25000,
         path: 2
       })
+    },
+    {
+      name: "Zeus's Wrath",
+      cost: 150000,
+      description: "Ultimate chain lightning mastery",
+      requires: 5,
+      path: 2,
+      effect: (tower) => ({
+        chainCount: 6,
+        chainRange: 40,
+        attack: tower.attack * 3,
+        attackInterval: tower.attackInterval - 100,
+        canHitArmored: true,
+        towerWorth: tower.towerWorth + 150000
+      })
     }
 ],
 slower: [
@@ -2708,6 +2802,21 @@ slower: [
       path: 1
     })
   },
+  {
+    name: "Time Stop",
+    cost: 150000,
+    description: "Nearly stops time itself",
+    requires: 5,
+    path: 1,
+    effect: (tower) => ({
+      explosionRadius: 35,
+      slowAmount: 0.4,
+      slowDuration: 6000,
+      attack: tower.attack * 3,
+      canHitArmored: true,
+      towerWorth: tower.towerWorth + 150000
+    })
+  },
   // Path 2 - Multi-target Freezing Path
   {
     name: "Frost Touch",
@@ -2776,6 +2885,22 @@ slower: [
       towerWorth: tower.towerWorth + 20000,
       path: 2
     })
+  },
+  {
+    name: "Absolute Zero",
+    cost: 150000,
+    description: "Complete battlefield control",
+    requires: 5,
+    path: 2,
+    effect: (tower) => ({
+      attackType: 'quadruple',
+      attack: tower.attack * 4,
+      stunDuration: 500,
+      canHitStealth: true,
+      canHitArmored: true,
+      radius: tower.radius * 2,
+      towerWorth: tower.towerWorth + 150000
+    })
   }
 ],
 
@@ -2815,6 +2940,7 @@ gasspitter: [
       attackType: 'lingering',
       lingeringDamage: tower.poisonDamage * 0.025,
       lingeringRadius: 15,
+      attackInterval: tower.attackInterval + 1500,
       lingeringDuration: 2000,
       lingeringColor: 'rgba(0, 255, 0, 0.5)',
       towerWorth: tower.towerWorth + 3000
@@ -2846,6 +2972,21 @@ gasspitter: [
       src: '/gasSpitterSpecial1.png',
       towerWorth: tower.towerWorth + 15000,
       path: 1
+    })
+  },
+  {
+    name: "Omega Virus",
+    cost: 150000,
+    description: "The ultimate biological weapon",
+    requires: 5,
+    path: 1,
+    effect: (tower) => ({
+      poisonDamage: tower.poisonDamage * 4,
+      attack: tower.attack * 2,
+      canHitArmored: true,
+      canHitStealth: true,
+      canStopRegen: true,
+      towerWorth: tower.towerWorth + 150000
     })
   },
 
@@ -2918,6 +3059,22 @@ gasspitter: [
       towerWorth: tower.towerWorth + 20000,
       path: 2
     })
+  },
+  {
+    name: "Toxic Apocalypse",
+    cost: 150000,
+    description: "Global contamination",
+    requires: 5,
+    path: 2,
+    effect: (tower) => ({
+      explosionRadius: 40,
+      poisonDamage: tower.poisonDamage * 2,
+      attack: tower.attack * 2,
+      slowAmount: 0.3,
+      slowDuration: 5000,
+      canHitArmored: true,
+      towerWorth: tower.towerWorth + 150000
+    })
   }
 ],
 mortar: [
@@ -2989,6 +3146,21 @@ mortar: [
       criticalMultiplier: 2,
       towerWorth: tower.towerWorth + 30000,
       path: 1
+    })
+  },
+  {
+    name: "Doomsday Device",
+    cost: 150000,
+    description: "Extinction-level explosions",
+    requires: 5,
+    path: 1,
+    effect: (tower) => ({
+      attack: tower.attack * 4,
+      explosionRadius: tower.explosionRadius * 1.8,
+      criticalChance: 0.5,
+      criticalMultiplier: 5,
+      canHitStealth: true,
+      towerWorth: tower.towerWorth + 150000
     })
   },
 
@@ -3068,6 +3240,22 @@ mortar: [
       towerWorth: tower.towerWorth + 20000,
       path: 2
     })
+  },
+  {
+    name: "Supreme Commander",
+    cost: 150000,
+    description: "Ultimate tactical superiority",
+    requires: 5,
+    path: 2,
+    effect: (tower) => ({
+      explosionRadius: tower.explosionRadius * 2,
+      attack: tower.attack * 2.5,
+      slowAmount: 0.3,
+      slowDuration: 5000,
+      stunDuration: 600,
+      canHitStealth: true,
+      towerWorth: tower.towerWorth + 150000
+    })
   }
 ],
 
@@ -3140,6 +3328,21 @@ cannon: [
       towerWorth: tower.towerWorth + 25000
     })
   },
+  {
+    name: "Titan Slayer",
+    cost: 150000,
+    description: "Unstoppable anti-everything weapon",
+    requires: 5,
+    path: 1,
+    effect: (tower) => ({
+      attack: tower.attack * 4,
+      criticalChance: 0.6,
+      criticalMultiplier: 5,
+      canHitStealth: true,
+      attackInterval: tower.attackInterval - 500,
+      towerWorth: tower.towerWorth + 150000
+    })
+  },
 
   // Path 2 - Anti-Group Specialist
   {
@@ -3177,6 +3380,7 @@ cannon: [
       hasLingering: true,
       lingeringDamage: tower.attack * 0.05,
       lingeringRadius: 20,
+      attackInterval: tower.attackInterval + 1000,
       lingeringDuration: 4000,
       attack: tower.attack + 75,
       explosionRadius: tower.explosionRadius * 1.3,
@@ -3212,6 +3416,23 @@ cannon: [
       explosionRadius: tower.explosionRadius * 1.5,
       canHitArmored: true,
       towerWorth: tower.towerWorth + 25000
+    })
+  },
+  {
+    name: "Supernova",
+    cost: 150000,
+    description: "Creates a star-like explosion",
+    requires: 5,
+    path: 2,
+    effect: (tower) => ({
+      lingeringDamage: tower.attack * 0.1,
+      lingeringRadius: 40,
+      lingeringDuration: 8000,
+      attack: tower.attack * 2.5,
+      explosionRadius: tower.explosionRadius * 2,
+      canHitArmored: true,
+      canHitStealth: true,
+      towerWorth: tower.towerWorth + 150000
     })
   }
   ]
@@ -3303,19 +3524,21 @@ const LingeringEffects = () => {
     <>
       {lingeringEffects.map(effect => (
         <div
-          key={effect.id}
-          className="absolute rounded-full pointer-events-none animate-pulse"
-          style={{
-            left: `${effect.positionX}%`,
-            top: `${effect.positionY}%`,
-            width: `${effect.radius * 2.5}%`,
-            height: `${effect.radius * 2.5}%`,
-            transform: 'translate(-50%, -50%)',
-            background: `radial-gradient(circle, ${effect.color} 0%, transparent 50%)`,
-            opacity: 0.5,
-            zIndex: 4
-          }}
-        />
+        key={effect.id}
+        className="absolute  pointer-events-none animate-pulse"
+        style={{
+          left: `${effect.positionX}%`,
+          top: `${effect.positionY}%`,
+          width: `${effect.radius * 2.5}%`,
+          height: `${effect.radius * 2.5}%`,
+          aspectRatio: '1 / 1', // Ensure a perfect circle
+          transform: 'translate(-50%, -50%)',
+          borderRadius: '50%',
+          background: `radial-gradient(circle, ${effect.color} 0%, transparent 50%)`,
+          opacity: 0.5,
+          zIndex: 4
+        }}
+      />
       ))}
     </>
   );
