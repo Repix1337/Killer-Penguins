@@ -3527,8 +3527,11 @@ const grantMoneyForKill = useCallback((enemy: Enemy) => {
       multiplier = 0.3;   // 30% of original reward
     }
     
+    // Apply multiplier to reward
+    reward = reward * multiplier;
+    
     // Ensure the reward is at least 1
-    reward = Math.max(1, Math.floor(reward * multiplier));
+    reward = Math.max(1, Math.floor(reward));
     
     // Update money
     setMoney(prev => prev + reward);
