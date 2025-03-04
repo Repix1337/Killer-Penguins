@@ -3256,10 +3256,22 @@ useEffect(() => {
 const grantMoneyForKill = useCallback((enemy: Enemy) => {
   if (!processedEnemies.has(enemy.id)) {
     processedEnemies.add(enemy.id);
-    const reward = Math.floor(
-      (enemy.maxHp / 6.5) * 
-      (round >= 33 ? 0.06 : round > 22 ? 0.3 : 1)
-    );
+    
+    // Base reward calculation
+    let reward = enemy.maxHp / 6.5;
+    
+    // Apply round-based reduction more explicitly
+    let multiplier = 1;
+    if (round >= 33) {
+      multiplier = 0.06;  // 6% of original reward
+    } else if (round > 22) {
+      multiplier = 0.3;   // 30% of original reward
+    }
+    
+    // Ensure the reward is at least 1
+    reward = Math.max(1, Math.floor(reward * multiplier));
+    
+    // Update money
     setMoney(prev => prev + reward);
   }
 }, [processedEnemies, round]);
