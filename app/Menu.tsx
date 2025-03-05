@@ -2,7 +2,7 @@ import React from 'react';
 import GameInterface from './GameInterface'
 import TutorialWindow from './TutorialWindow'
 import { useSettings } from './context/SettingsContext';
-
+import Leaderboard from './Leaderboard';
 interface SettingToggleProps {
   checked: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -18,6 +18,7 @@ const Menu: React.FC = () => {
     const [renderGame, setRenderGame] = React.useState(false)
     const [showTutorial, setShowTutorial] = React.useState(false)
     const [showSettings, setShowSettings] = React.useState(false)
+    const [showLeaderboard, setShowLeaderboard] = React.useState(false);
 
     const { 
         showDamageNumbers,
@@ -136,7 +137,19 @@ const Menu: React.FC = () => {
                         <div className="absolute inset-0 w-0 bg-gradient-to-r from-pink-500 
                         to-rose-600 transition-all duration-300 group-hover:w-full"></div>
                     </button>
-
+                    <button 
+                            onClick={() => setShowLeaderboard(true)}
+    className='menu-button bg-[#7C3AED]/80 hover:bg-[#6D28D9]/80 
+    hover:shadow-[#8B5CF6]/50 p-4 rounded-lg'
+>
+    <span className="relative z-10 flex items-center gap-2">
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        Leaderboard
+    </span>
+</button>
                     {showSettings && (
     <div className="absolute bg-[#000000]/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 w-2/3">
         <div className="animate-scaleUp bg-gradient-to-b from-[#0B1D35] to-[#1E3A8A] p-6 rounded-xl 
@@ -256,6 +269,7 @@ const Menu: React.FC = () => {
                 </div>
             </div>
             {showTutorial && <TutorialWindow onClose={() => setShowTutorial(false)} />}
+            {showLeaderboard && <Leaderboard onClose={() => setShowLeaderboard(false)} />}
         </div>
     ) : (
         <GameInterface />
