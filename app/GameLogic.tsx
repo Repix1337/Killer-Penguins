@@ -3524,7 +3524,7 @@ const grantMoneyForKill = useCallback((enemy: Enemy) => {
     // Apply round-based reduction more explicitly
     let multiplier = 1;
     if (round >= 33) {
-      multiplier = 0.06;  // 6% of original reward
+      multiplier = 0.075;  // 6% of original reward
     } else if (round > 22) {
       multiplier = 0.3;   // 30% of original reward
     }
@@ -3696,7 +3696,7 @@ const WinScreen = () => {
               hover:scale-105 hover:shadow-lg hover:from-red-500 hover:to-red-700
               focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50'
           >
-            New Adventure
+            RESET
           </button>
         </div>
       </div>
