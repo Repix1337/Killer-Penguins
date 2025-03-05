@@ -157,7 +157,7 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       {
         name: "Impact Core Rounds",
         cost: 2000,
-        description: "Further increases damage and adds armor piercing",
+        description: "Upgraded shells punch through armored enemies",
         requires: 1,
         path: 2,
         effect: (tower) => ({ 
@@ -168,9 +168,9 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
         })
       },
       {
-        name: "Critical Strike",
+        name: "Execution Shot",
         cost: 5000,
-        description: "30% chance to deal triple damage",
+        description: "A deadly 30% chance to deal triple damage.",
         requires: 2,
         path: 2,
         effect: (tower) => ({ 
@@ -182,9 +182,9 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
         })
       },
       {
-        name: "Demolition Expert",
+        name: "Annihilator Protocol ",
         cost: 15000,
-        description: "Converts to massive explosive damage",
+        description: "Converts attacks into devastating explosive force.",
         requires: 3,
         path: 2,
         effect: (tower) => ({
@@ -197,9 +197,9 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
         })
       },
       {
-        name: "Nuclear Strike",
+        name: "Tectonic Warhead",
         cost: 30000,
-        description: "Devastating explosion",
+        description: "Creates seismic-level explosions with amplified force.",
         requires: 4,
         path: 2,
         effect: (tower) => ({
@@ -210,9 +210,9 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
         })
       },
       {
-        name: "Apocalypse Protocol",
+        name: "Armageddon's Call",
         cost: 150000,
-        description: "World-ending explosion radius and damage",
+        description: "A world-ending detonation obliterates everything.",
         requires: 5,
         path: 2,
         effect: (tower) => ({
@@ -227,702 +227,703 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       }
     ],
     sniper: [
-      // Path 1 - High Damage/Stun
-      {
-        name: "Precision Scope",
-        cost: 1000,
-        requires: 0,
-        path: 1,
-        description: "Increases damage by 100",
-        effect: (tower) => ({
-          attack: tower.attack + 100,
-          towerWorth: tower.towerWorth + 1000,
-          path: 1
-        })
-      },
-      {
-        name: "Stun Rounds",
-        cost: 2500,
-        requires: 1,
-        path: 1,
-        description: "20% chance to stun enemies",
-        effect: (tower) => ({
-          canStun: true,
-          stunDuration: 75, // Reduced from 150
-          criticalChance: 0.2,
-          towerWorth: tower.towerWorth + 2500,
-          path: 1
-        })
-      },
-      {
-        name: "Armor Piercing",
-        cost: 5000,
-        requires: 2,
-        path: 1,
-        description: "Can hit armored enemies and +150 damage",
-        effect: (tower) => ({
-          canHitArmored: true,
-          attack: tower.attack + 150,
-          towerWorth: tower.towerWorth + 5000,
-          path: 1
-        })
-      },
-      {
-        name: "Heavy Impact",
-        cost: 12000,
-        requires: 3,
-        path: 1,
-        description: "40% stun chance and doubled damage",
-        effect: (tower) => ({
-          attack: tower.attack * 2,
-          criticalChance: 0.4,
-          stunDuration: 150, // Reduced from 300
-          src: '/sniperSpecial.png',
-          towerWorth: tower.towerWorth + 12000,
-          path: 1
-        })
-      },
-      {
-        name: "Ultimate Destroyer",
-        cost: 25000,
-        requires: 4,
-        path: 1,
-        description: "Massive damage and guaranteed stun",
-        effect: (tower) => ({
-          attack: tower.attack * 3,
-          criticalChance: 1.0,
-          stunDuration: 250, // Reduced from 500
-          towerWorth: tower.towerWorth + 25000,
-          path: 1
-        })
-      },
-      {
-        name: "Omega Striker",
-        cost: 150000,
-        description: "Perfect accuracy with devastating power",
-        requires: 5,
-        path: 1,
-        effect: (tower) => ({
-          attack: tower.attack * 5,
-          criticalChance: 1.0,
-          stunDuration: 500,
-          canHitStealth: true,
-          canHitArmored: true,
-          towerWorth: tower.towerWorth + 150000
-        })
-      },
-  
-      // Path 2 - Attack Speed
-      {
-        name: "Quick Loader",
-        cost: 800,
-        requires: 0,
-        path: 2,
-        description: "Reduces attack interval by 400ms",
-        effect: (tower) => ({
-          attackInterval: tower.attackInterval - 400,
-          towerWorth: tower.towerWorth + 800,
-          path: 2
-        })
-      },
-      {
-        name: "Double Shot",
-        cost: 2000,
-        requires: 1,
-        path: 2,
-        description: "Can target two enemies",
-        effect: (tower) => ({
-          attackType: 'double',
-          attackInterval: tower.attackInterval - 200,
-          towerWorth: tower.towerWorth + 2000,
-          path: 2
-        })
-      },
-      {
-        name: "Advanced Targeting",
-        cost: 4500,
-        requires: 2,
-        path: 2,
-        description: "Triple shot and faster firing",
-        effect: (tower) => ({
-          attackType: 'triple',
-          attackInterval: tower.attackInterval - 300,
-          towerWorth: tower.towerWorth + 4500,
-          path: 2
-        })
-      },
-      {
-        name: "Rapid Fire Master",
-        cost: 15000,
-        requires: 3,
-        path: 2,
-        description: "Extremely fast attack speed",
-        effect: (tower) => ({
-          attackInterval: tower.attackInterval - 450,
-          attack: tower.attack * 1.3,
-          src: '/sniperSpecial2.png',
-          towerWorth: tower.towerWorth + 15000,
-          path: 2
-        })
-      },
-      {
-        name: "Machine Gun Mode",
-        cost: 25000,
-        requires: 4,
-        path: 2,
-        description: "Quadruple shot with insane speed",
-        effect: (tower) => ({
-          attackType: 'quadruple',
-          attackInterval: tower.attackInterval - 350,
-          attack: tower.attack * 1.5,
-          towerWorth: tower.towerWorth + 25000,
-          path: 2
-        })
-      },
-      {
-        name: "Infinite Chambers",
-        cost: 150000,
-        description: "Superhuman firing speed with multiple targets",
-        requires: 5,
-        path: 2,
-        effect: (tower) => ({
-          attackType: 'quadruple',
-          attackInterval: tower.attackInterval - 170,
-          attack: tower.attack * 1.5,
-          canHitStealth: true,
-          canHitArmored: true,
-          towerWorth: tower.towerWorth + 150000
-        })
-      }
+        // Path 1 - High Damage/Stun Path
+        {
+          name: "Hawkeye Calibration",
+          cost: 1000,
+          requires: 0,
+          path: 1,
+          description: "Enhances precision for increased base damage.",
+          effect: (tower) => ({
+            attack: tower.attack + 100,
+            towerWorth: tower.towerWorth + 1000,
+            path: 1
+          })
+        },
+        {
+          name: "Shock Impact Rounds",
+          cost: 2500,
+          requires: 1,
+          path: 1,
+          description: "20% chance to paralyze enemies on hit.",
+          effect: (tower) => ({
+            canStun: true,
+            stunDuration: 75,
+            criticalChance: 0.2,
+            towerWorth: tower.towerWorth + 2500,
+            path: 1
+          })
+        },
+        {
+          name: "Titan Piercer",
+          cost: 5000,
+          requires: 2,
+          path: 1,
+          description: "Armor-piercing rounds with +150 damage.",
+          effect: (tower) => ({
+            canHitArmored: true,
+            attack: tower.attack + 150,
+            towerWorth: tower.towerWorth + 5000,
+            path: 1
+          })
+        },
+        {
+          name: "Colossus Strike",
+          cost: 12000,
+          requires: 3,
+          path: 1,
+          description: "40% chance to stun with doubled damage.",
+          effect: (tower) => ({
+            attack: tower.attack * 2,
+            criticalChance: 0.4,
+            stunDuration: 150,
+            src: '/sniperSpecial.png',
+            towerWorth: tower.towerWorth + 12000,
+            path: 1
+          })
+        },
+        {
+          name: "Oblivion Shot",
+          cost: 25000,
+          requires: 4,
+          path: 1,
+          description: "Massive damage with guaranteed stun.",
+          effect: (tower) => ({
+            attack: tower.attack * 3,
+            criticalChance: 1.0,
+            stunDuration: 250,
+            towerWorth: tower.towerWorth + 25000,
+            path: 1
+          })
+        },
+        {
+          name: "Omega Executioner",
+          cost: 150000,
+          requires: 5,
+          path: 1,
+          description: "Perfect accuracy with godlike destructive force.",
+          effect: (tower) => ({
+            attack: tower.attack * 5,
+            criticalChance: 1.0,
+            stunDuration: 500,
+            canHitStealth: true,
+            canHitArmored: true,
+            towerWorth: tower.towerWorth + 150000
+          })
+        },
+        
+        // Path 2 - Attack Speed Path
+        {
+          name: "Lightning Reflexes",
+          cost: 800,
+          requires: 0,
+          path: 2,
+          description: "Reduces reload time for faster firing.",
+          effect: (tower) => ({
+            attackInterval: tower.attackInterval - 400,
+            towerWorth: tower.towerWorth + 800,
+            path: 2
+          })
+        },
+        {
+          name: "Dual Repeater",
+          cost: 2000,
+          requires: 1,
+          path: 2,
+          description: "Targets two enemies per shot.",
+          effect: (tower) => ({
+            attackType: 'double',
+            attackInterval: tower.attackInterval - 200,
+            towerWorth: tower.towerWorth + 2000,
+            path: 2
+          })
+        },
+        {
+          name: "Storm Sniper",
+          cost: 4500,
+          requires: 2,
+          path: 2,
+          description: "Fires at three targets with increased speed.",
+          effect: (tower) => ({
+            attackType: 'triple',
+            attackInterval: tower.attackInterval - 300,
+            towerWorth: tower.towerWorth + 4500,
+            path: 2
+          })
+        },
+        {
+          name: "Bulletstorm Elite",
+          cost: 15000,
+          requires: 3,
+          path: 2,
+          description: "Extremely rapid-fire shots with increased damage.",
+          effect: (tower) => ({
+            attackInterval: tower.attackInterval - 450,
+            attack: tower.attack * 1.3,
+            src: '/sniperSpecial2.png',
+            towerWorth: tower.towerWorth + 15000,
+            path: 2
+          })
+        },
+        {
+          name: "Hypervelocity Mode",
+          cost: 25000,
+          requires: 4,
+          path: 2,
+          description: "Quad-shot bursts with unparalleled speed.",
+          effect: (tower) => ({
+            attackType: 'quadruple',
+            attackInterval: tower.attackInterval - 350,
+            attack: tower.attack * 1.5,
+            towerWorth: tower.towerWorth + 25000,
+            path: 2
+          })
+        },
+        {
+          name: "Infinity Barrage",
+          cost: 150000,
+          requires: 5,
+          path: 2,
+          description: "A relentless storm of unstoppable firepower.",
+          effect: (tower) => ({
+            attackType: 'quadruple',
+            attackInterval: tower.attackInterval - 160,
+            attack: tower.attack * 1.2,
+            canHitStealth: true,
+            canHitArmored: true,
+            towerWorth: tower.towerWorth + 150000
+          })
+        }
+      ],
+      rapidShooter: [
+        // Path 1 - Multi-Target Path
+        {
+          name: "Turbo Chamber",
+          cost: 500,
+          requires: 0,
+          path: 1,
+          description: "Enhances firing speed by reducing attack interval.",
+          effect: (tower) => ({
+            attackInterval: tower.attackInterval - 75,
+            towerWorth: tower.towerWorth + 500,
+            path: 1
+          })
+        },
+        {
+          name: "Vortex Precision",
+          cost: 1200,
+          requires: 1,
+          path: 1,
+          description: "Increases both damage and attack speed for efficiency.",
+          effect: (tower) => ({
+            attack: tower.attack + 15,
+            attackInterval: tower.attackInterval - 50,
+            towerWorth: tower.towerWorth + 1200,
+            path: 1
+          })
+        },
+        {
+          name: "Triple Barrage",
+          cost: 3500,
+          requires: 2,
+          path: 1,
+          description: "Allows the tower to fire at three targets simultaneously.",
+          effect: (tower) => ({
+            attackType: 'triple',
+            attackInterval: tower.attackInterval - 25,
+            towerWorth: tower.towerWorth + 3500,
+            path: 1
+          })
+        },
+        {
+          name: "Quadstrike Arsenal",
+          cost: 8000,
+          requires: 3,
+          path: 1,
+          description: "Expands targeting to four enemies with improved speed.",
+          effect: (tower) => ({
+            attackType: 'quadruple',
+            attackInterval: tower.attackInterval - 50,
+            attack: tower.attack + 10,
+            src: '/rapidShooterSpecial1.png',
+            towerWorth: tower.towerWorth + 8000,
+            path: 1
+          })
+        },
+        {
+          name: "Hailstorm Frenzy",
+          cost: 25000,
+          requires: 4,
+          path: 1,
+          description: "Unleashes a blizzard of bullets at extreme velocity.",
+          effect: (tower) => ({
+            attackInterval: tower.attackInterval - 65,
+            attack: tower.attack * 1.6,
+            towerWorth: tower.towerWorth + 25000,
+            path: 1
+          })
+        },
+        {
+          name: "Quantum Flurry",
+          cost: 150000,
+          requires: 5,
+          path: 1,
+          description: "Attacks at incomprehensible speeds, overwhelming enemies.",
+          effect: (tower) => ({
+            attackInterval: tower.attackInterval - 40,
+            attack: tower.attack * 2.5,
+            attackType: 'quadruple',
+            canHitArmored: true,
+            canHitStealth: true,
+            towerWorth: tower.towerWorth + 150000
+          })
+        },
+    
+        // Path 2 - Chain Lightning Path
+        {
+          name: "Electro Charge",
+          cost: 800,
+          requires: 0,
+          path: 2,
+          description: "Infuses attacks with electricity, slightly increasing damage.",
+          effect: (tower) => ({
+            attack: tower.attack + 25,
+            radius: tower.radius * 1.1,
+            towerWorth: tower.towerWorth + 800,
+            path: 2
+          })
+        },
+        {
+          name: "Amplified Arc",
+          cost: 1500,
+          requires: 1,
+          path: 2,
+          description: "Extends attack range, damage, and adds stealth detection.",
+          effect: (tower) => ({
+            radius: tower.radius * 1.2,
+            attack: tower.attack + 15,
+            canHitStealth: true,
+            towerWorth: tower.towerWorth + 1500,
+            path: 2
+          })
+        },
+        {
+          name: "Storm Surge",
+          cost: 4500,
+          requires: 2,
+          path: 2,
+          description: "Lightning attacks chain to two additional enemies.",
+          effect: (tower) => ({
+            attackType: 'chain',
+            chainCount: 2,
+            chainRange: 20,
+            effectSrc: '/chainLightning.png',
+            src: '/rapidShooterSpecial2.png',
+            attack: tower.attack + 20,
+            towerWorth: tower.towerWorth + 4500,
+            path: 2
+          })
+        },
+        {
+          name: "Maelstrom Core",
+          cost: 12000,
+          requires: 3,
+          path: 2,
+          description: "Lightning now jumps to three enemies with increased power.",
+          effect: (tower) => ({
+            chainCount: 3,
+            chainRange: 25,
+            attack: tower.attack * 1.4,
+            attackInterval: tower.attackInterval - 25,
+            src: '/rapidShooterSpecial2.png',
+            towerWorth: tower.towerWorth + 12000,
+            path: 2
+          })
+        },
+        {
+          name: "Thunderlord’s Wrath",
+          cost: 25000,
+          requires: 4,
+          path: 2,
+          description: "Maximum chaining potential with devastating electric force.",
+          effect: (tower) => ({
+            chainCount: 4,
+            chainRange: 30,
+            attack: tower.attack * 2,
+            attackInterval: tower.attackInterval - 50,
+            towerWorth: tower.towerWorth + 25000,
+            path: 2
+          })
+        },
+        {
+          name: "Divine Tempest",
+          cost: 150000,
+          requires: 5,
+          path: 2,
+          description: "A godlike storm of lightning obliterates all enemies.",
+          effect: (tower) => ({
+            chainCount: 6,
+            chainRange: 40,
+            attack: tower.attack * 3,
+            attackInterval: tower.attackInterval - 25,
+            canHitArmored: true,
+            towerWorth: tower.towerWorth + 150000
+          })
+        }
+      ],
+      slower: [
+        // Path 1 - Time Manipulation Path
+        {
+          name: "Temporal Drag",
+          cost: 400,
+          requires: 0,
+          path: 1,
+          description: "Enhances slow effect, reducing enemy speed further.",
+          effect: (tower) => ({
+            slowAmount: tower.slowAmount ? tower.slowAmount * 0.9 : 0.9,
+            towerWorth: tower.towerWorth + 400,
+            path: 1
+          })
+        },
+        {
+          name: "Reality Distortion",
+          cost: 1500,
+          requires: 1,
+          path: 1,
+          description: "Extends the slow effect and duration for greater impact.",
+          effect: (tower) => ({
+            slowAmount: tower.slowAmount ? tower.slowAmount * 0.8 : 0.8,
+            slowDuration: 3000,
+            towerWorth: tower.towerWorth + 1500,
+            path: 1
+          })
+        },
+        {
+          name: "Chrono Field",
+          cost: 3500,
+          requires: 2,
+          path: 1,
+          description: "Creates an area that slows all enemies within its reach.",
+          effect: (tower) => ({
+            attackType: 'explosion',
+            explosionRadius: 15,
+            slowAmount: tower.slowAmount ? tower.slowAmount * 0.7 : 0.7,
+            src: '/slowerSpecial1.png',
+            towerWorth: tower.towerWorth + 3500,
+            path: 1
+          })
+        },
+        {
+          name: "Dimensional Rift",
+          cost: 8000,
+          requires: 3,
+          path: 1,
+          description: "Expands slow radius and amplifies its effect.",
+          effect: (tower) => ({
+            explosionRadius: 20,
+            slowAmount: tower.slowAmount ? tower.slowAmount * 0.6 : 0.6,
+            slowDuration: 4000,
+            towerWorth: tower.towerWorth + 8000,
+            path: 1
+          })
+        },
+        {
+          name: "Master of Time",
+          cost: 20000,
+          requires: 4,
+          path: 1,
+          description: "Achieves near-total enemy immobilization.",
+          effect: (tower) => ({
+            explosionRadius: 25,
+            slowAmount: tower.slowAmount ? tower.slowAmount * 0.6 : 0.6,
+            canHitStealth: true,
+            towerWorth: tower.towerWorth + 20000,
+            path: 1
+          })
+        },
+        {
+          name: "Absolute Time Lock",
+          cost: 150000,
+          requires: 5,
+          path: 1,
+          description: "Bends reality itself, nearly stopping enemies entirely.",
+          effect: (tower) => ({
+            explosionRadius: 35,
+            slowAmount: tower.slowAmount ? tower.slowAmount * 0.8 : 0.8,
+            slowDuration: 7000,
+            attack: tower.attack * 3,
+            canHitArmored: true,
+            towerWorth: tower.towerWorth + 150000
+          })
+        },
+    
+        // Path 2 - Freeze Path
+        {
+          name: "Glacial Touch",
+          cost: 600,
+          requires: 0,
+          path: 2,
+          description: "Adds frost damage to slow and weaken enemies.",
+          effect: (tower) => ({
+            attack: tower.attack + 15,
+            towerWorth: tower.towerWorth + 600,
+            path: 2
+          })
+        },
+        {
+          name: "Icy Embrace",
+          cost: 1200,
+          requires: 1,
+          path: 2,
+          description: "Speeds up freeze application on enemies.",
+          effect: (tower) => ({
+            attackInterval: tower.attackInterval - 250,
+            towerWorth: tower.towerWorth + 1200,
+            path: 2
+          })
+        },
+        {
+          name: "Arctic Tempest",
+          cost: 4500,
+          requires: 2,
+          path: 2,
+          description: "Hits three enemies at once with a deep freeze.",
+          effect: (tower) => ({
+            attackType: 'triple',
+            radius: tower.radius * 1.3,
+            attack: tower.attack + 25,
+            src: '/slowerSpecial2.png',
+            towerWorth: tower.towerWorth + 4500,
+            path: 2
+          })
+        },
+        {
+          name: "Permafrost Surge",
+          cost: 12000,
+          requires: 3,
+          path: 2,
+          description: "Freezes four enemies with a chance to stun.",
+          effect: (tower) => ({
+            attackType: 'quadruple',
+            canStun: true,
+            stunDuration: 100,
+            attack: tower.attack + 30,
+            towerWorth: tower.towerWorth + 12000,
+            path: 2
+          })
+        },
+        {
+          name: "Frozen Dominion",
+          cost: 20000,
+          requires: 4,
+          path: 2,
+          description: "Absolute freezing control over the battlefield.",
+          effect: (tower) => ({
+            attack: tower.attack * 2,
+            stunDuration: 250,
+            radius: tower.radius * 1.5,
+            towerWorth: tower.towerWorth + 20000,
+            path: 2
+          })
+        },
+        {
+          name: "Absolute Zero",
+          cost: 150000,
+          requires: 5,
+          path: 2,
+          description: "A frost-bound apocalypse, freezing all in its wake.",
+          effect: (tower) => ({
+            attackType: 'quadruple',
+            attack: tower.attack * 4,
+            stunDuration: 500,
+            canHitStealth: true,
+            canHitArmored: true,
+            radius: tower.radius * 2,
+            towerWorth: tower.towerWorth + 150000
+          })
+        }
     ],
-    rapidShooter: [
-      // Path 1 - Multi-target Attack Speed Path
-      {
-        name: "Faster Firing",
-        cost: 500,
-        requires: 0,
-        path: 1,
-        description: "Reduces attack interval by 75ms",
-        effect: (tower) => ({
-          attackInterval: tower.attackInterval - 75,
-          towerWorth: tower.towerWorth + 500,
-          path: 1
-        })
-      },
-      {
-        name: "Enhanced Targeting",
-        cost: 1200,
-        requires: 1,
-        path: 1,
-        description: "Increases damage by 15 and attack speed",
-        effect: (tower) => ({
-          attack: tower.attack + 15,
-          attackInterval: tower.attackInterval - 50,
-          towerWorth: tower.towerWorth + 1200,
-          path: 1
-        })
-      },
-      {
-        name: "Triple Shot",
-        cost: 3500,
-        requires: 2,
-        path: 1,
-        description: "Can target three enemies at once",
-        effect: (tower) => ({
-          attackType: 'triple',
-          attackInterval: tower.attackInterval - 25,
-          towerWorth: tower.towerWorth + 3500,
-          path: 1
-        })
-      },
-      {
-        name: "Quad Shot",
-        cost: 8000,
-        requires: 3,
-        path: 1,
-        description: "Four targets and enhanced speed",
-        effect: (tower) => ({
-          attackType: 'quadruple',
-          attackInterval: tower.attackInterval - 50,
-          attack: tower.attack + 10,
-          src: '/rapidShooterSpecial1.png',
-          towerWorth: tower.towerWorth + 8000,
-          path: 1
-        })
-      },
-      {
-        name: "Bullet Storm",
-        cost: 25000,
-        requires: 4,
-        path: 1,
-        description: "Maximum attack speed and damage",
-        effect: (tower) => ({
-          attackInterval: tower.attackInterval - 65,
-          attack: tower.attack * 1.6,
-          towerWorth: tower.towerWorth + 25000,
-          path: 1
-        })
-      },
-      {
-        name: "Light Speed",
-        cost: 150000,
-        description: "Attacks at impossible speeds",
-        requires: 5,
-        path: 1,
-        effect: (tower) => ({
-          attackInterval: tower.attackInterval - 40,
-          attack: tower.attack * 2.5,
-          attackType: 'quadruple',
-          canHitArmored: true,
-          canHitStealth: true,
-          towerWorth: tower.towerWorth + 150000
-        })
-      },
-  
-      // Path 2 - Chain Lightning Path
-      {
-        name: "Static Charge",
-        cost: 800,
-        requires: 0,
-        path: 2,
-        description: "Adds 25 damage and slight range",
-        effect: (tower) => ({
-          attack: tower.attack + 25,
-          radius: tower.radius * 1.1,
-          towerWorth: tower.towerWorth + 800,
-          path: 2
-        })
-      },
-      {
-        name: "Enhanced Range",
-        cost: 1500,
-        requires: 1,
-        path: 2,
-        description: "Further increases range, damage and stealth detection",
-        effect: (tower) => ({
-          radius: tower.radius * 1.2,
-          attack: tower.attack + 15,
-          canHitStealth: true,
-          towerWorth: tower.towerWorth + 1500,
-          path: 2
-        })
-      },
-      {
-        name: "Chain Lightning",
-        cost: 4500,
-        requires: 2,
-        path: 2,
-        description: "Attacks chain to 2 nearby enemies",
-        effect: (tower) => ({
-          attackType: 'chain',
-          chainCount: 2,
-          chainRange: 20,
-          effectSrc: '/chainLightning.png',
-          src: '/rapidShooterSpecial2.png',
-          attack: tower.attack + 20,
-          towerWorth: tower.towerWorth + 4500,
-          path: 2
-        })
-      },
-      {
-        name: "Storm Caller",
-        cost: 12000,
-        requires: 3,
-        path: 2,
-        description: "Chain to 3 enemies with increased damage",
-        effect: (tower) => ({
-          chainCount: 3,
-          chainRange: 25,
-          attack: tower.attack * 1.4,
-          attackInterval: tower.attackInterval - 25,
-          src: '/rapidShooterSpecial2.png',
-          towerWorth: tower.towerWorth + 12000,
-          path: 2
-        })
-      },
-      {
-        name: "Lightning Master",
-        cost: 25000,
-        requires: 4,
-        path: 2,
-        description: "Maximum chain potential and massive damage",
-        effect: (tower) => ({
-          chainCount: 4,
-          chainRange: 30,
-          attack: tower.attack * 2,
-          attackInterval: tower.attackInterval - 50,
-          towerWorth: tower.towerWorth + 25000,
-          path: 2
-        })
-      },
-      {
-        name: "Zeus's Wrath",
-        cost: 150000,
-        description: "Ultimate chain lightning mastery",
-        requires: 5,
-        path: 2,
-        effect: (tower) => ({
-          chainCount: 6,
-          chainRange: 40,
-          attack: tower.attack * 3,
-          attackInterval: tower.attackInterval - 25,
-          canHitArmored: true,
-          towerWorth: tower.towerWorth + 150000
-        })
-      }
-  ],
-  slower: [
-    // Path 1 - Time Warping Path
-    {
-      name: "Enhanced Slow",
-      cost: 400,
-      requires: 0,
-      path: 1,
-      description: "Increases slow effect by 10%",
-      effect: (tower) => ({
-        slowAmount: tower.slowAmount ? tower.slowAmount * 0.9 : 0.9,
-        towerWorth: tower.towerWorth + 400,
-        path: 1
-      })
-    },
-    {
-      name: "Time Distortion",
-      cost: 1500,
-      requires: 1,
-      path: 1,
-      description: "Further increases slow effect and duration",
-      effect: (tower) => ({
-        slowAmount: tower.slowAmount ? tower.slowAmount * 0.8 : 0.8,
-        slowDuration: 3000,
-        towerWorth: tower.towerWorth + 1500,
-        path: 1
-      })
-    },
-    {
-      name: "Temporal Field",
-      cost: 3500,
-      requires: 2,
-      path: 1,
-      description: "Creates slowing field around targets",
-      effect: (tower) => ({
-        attackType: 'explosion',
-        explosionRadius: 15,
-        slowAmount: tower.slowAmount ? tower.slowAmount * 0.7: 0.7,
-        src: '/slowerSpecial1.png',
-        towerWorth: tower.towerWorth + 3500,
-        path: 1
-      })
-    },
-    {
-      name: "Chrono Break",
-      cost: 8000,
-      requires: 3,
-      path: 1,
-      description: "Massive slow effect in larger area",
-      effect: (tower) => ({
-        explosionRadius: 20,
-        slowAmount: tower.slowAmount ? tower.slowAmount * 0.6: 0.6,
-        slowDuration: 4000,
-        towerWorth: tower.towerWorth + 8000,
-        path: 1
-      })
-    },
-    {
-      name: "Time Lord",
-      cost: 20000,
-      requires: 4,
-      path: 1,
-      description: "Ultimate time manipulation",
-      effect: (tower) => ({
-        explosionRadius: 25,
-        slowAmount: tower.slowAmount ? tower.slowAmount * 0.6 : 0.6,
-        canHitStealth: true,
-        towerWorth: tower.towerWorth + 20000,
-        path: 1
-      })
-    },
-    {
-      name: "Time Stop",
-      cost: 150000,
-      description: "Nearly stops time itself",
-      requires: 5,
-      path: 1,
-      effect: (tower) => ({
-        explosionRadius: 35,
-        slowAmount: 0.4,
-        slowDuration: 6000,
-        attack: tower.attack * 3,
-        canHitArmored: true,
-        towerWorth: tower.towerWorth + 150000
-      })
-    },
-    // Path 2 - Multi-target Freezing Path
-    {
-      name: "Frost Touch",
-      cost: 600,
-      requires: 0,
-      path: 2,
-      description: "Adds freezing damage",
-      effect: (tower) => ({
-        attack: tower.attack + 15,
-        towerWorth: tower.towerWorth + 600,
-        path: 2
-      })
-    },
-    {
-      name: "Frost Touch 2",
-      cost: 1200,
-      requires: 1,
-      path: 2,
-      description: "Faster freeze",
-      effect: (tower) => ({
-        attackInterval: tower.attackInterval - 250,
-        towerWorth: tower.towerWorth + 600,
-        path: 2
-      })
-    },
-    {
-      name: "Arctic Wind",
-      cost: 4500,
-      requires: 2,
-      path: 2,
-      description: "Triple target and increased range",
-      effect: (tower) => ({
-        attackType: 'triple',
-        radius: tower.radius * 1.3,
-        attack: tower.attack + 25,
-        src: '/slowerSpecial2.png',
-        towerWorth: tower.towerWorth + 4500,
-        path: 2
-      })
-    },
-    {
-      name: "Deep Freeze",
-      cost: 12000,
-      requires: 3,
-      path: 2,
-      description: "Quad target and chance to stun",
-      effect: (tower) => ({
-        attackType: 'quadruple',
-        canStun: true,
-        stunDuration: 100, // Reduced from 200
-        attack: tower.attack + 30,
-        towerWorth: tower.towerWorth + 12000,
-        path: 2
-      })
-    },
-    {
-      name: "Permafrost",
-      cost: 20000,
-      requires: 4,
-      path: 2,
-      description: "Maximum freeze potential",
-      effect: (tower) => ({
-        attack: tower.attack * 2,
-        stunDuration: 250, // Reduced from 400
-        radius: tower.radius * 1.5,
-        towerWorth: tower.towerWorth + 20000,
-        path: 2
-      })
-    },
-    {
-      name: "Absolute Zero",
-      cost: 150000,
-      description: "Complete battlefield control",
-      requires: 5,
-      path: 2,
-      effect: (tower) => ({
-        attackType: 'quadruple',
-        attack: tower.attack * 4,
-        stunDuration: 500,
-        canHitStealth: true,
-        canHitArmored: true,
-        radius: tower.radius * 2,
-        towerWorth: tower.towerWorth + 150000
-      })
-    }
-  ],
-  
-  gasspitter: [
-    // Path 1 - DOT Damage Path
-    {
-      name: "Virulent Strain",
-      cost: 400,
-      requires: 0,
-      path: 1,
-      description: "Increases poison damage",
-      effect: (tower) => ({
-        poisonDamage: tower.poisonDamage + 25,
-        towerWorth: tower.towerWorth + 400,
-        path: 1
-      })
-    },
-    {
-      name: "Lingering Toxin",
-      cost: 1200,
-      requires: 1,
-      path: 1,
-      description: "Longer lasting poison",
-      effect: (tower) => ({
-        poisonDamage: tower.poisonDamage + 30,
-        towerWorth: tower.towerWorth + 1200,
-        path: 1
-      })
-    },
-    {
-      name: "Acid Pools",
-      cost: 3000,
-      requires: 2,
-      path: 1,
-      description: "Creates damaging acid pools on impact",
-      effect: (tower) => ({
-        attackType: 'lingering',
-        lingeringDamage: tower.poisonDamage * 0.025,
-        lingeringRadius: 15,
-        attackInterval: tower.attackInterval + 1500,
-        lingeringDuration: 2000,
-        lingeringColor: 'rgba(0, 255, 0, 0.5)',
-        towerWorth: tower.towerWorth + 3000
-      })
-    },
-    {
-      name: "Toxic Catalyst",
-      cost: 8000,
-      requires: 3,
-      path: 1,
-      description: "Extreme poison damage, Can stop regen and hit stealth",
-      effect: (tower) => ({
-        poisonDamage: tower.poisonDamage * 2.25,
-        canHitStealth: true,
-        canStopRegen: true,
-        towerWorth: tower.towerWorth + 8000,
-        path: 1
-      })
-    },
-    {
-      name: "Bio Weaponry",
-      cost: 15000,
-      requires: 4,
-      path: 1,
-      description: "Ultimate poison damage",
-      effect: (tower) => ({
-        poisonDamage: tower.poisonDamage * 2.75,
-        attack: tower.attack * 1.5,
-        src: '/gasSpitterSpecial1.png',
-        towerWorth: tower.towerWorth + 15000,
-        path: 1
-      })
-    },
-    {
-      name: "Omega Virus",
-      cost: 150000,
-      description: "The ultimate biological weapon",
-      requires: 5,
-      path: 1,
-      effect: (tower) => ({
-        poisonDamage: tower.poisonDamage * 4,
-        attack: tower.attack * 2,
-        canHitArmored: true,
-        canHitStealth: true,
-        canStopRegen: true,
-        towerWorth: tower.towerWorth + 150000
-      })
-    },
-  
-    // Path 2 - Gas Cloud Path
-    {
-      name: "Wider Spray",
-      cost: 600,
-      requires: 0,
-      path: 2,
-      description: "Increases attack radius",
-      effect: (tower) => ({
-        radius: tower.radius * 1.2,
-        towerWorth: tower.towerWorth + 600,
-        path: 2
-      })
-    },
-    {
-      name: "Faster Attack",
-      cost: 2000,
-      requires: 1,
-      path: 2,
-      description: "Reduces attack interval",
-      effect: (tower) => ({
-        attackInterval: tower.attackInterval - 200,
-        radius: tower.radius * 1.2,
-        towerWorth: tower.towerWorth + 2000,
-        path: 2
-      })
-    },
-    {
-      name: "Gas Cloud",
-      cost: 4500,
-      requires: 2,
-      path: 2,
-      description: "Creates poisonous explosion",
-      effect: (tower) => ({
-        attackType: 'explosion',
-        explosionRadius: 20,
-        poisonDamage: tower.poisonDamage + 20,
-        towerWorth: tower.towerWorth + 4500,
-        path: 2
-      })
-    },
-    {
-      name: "Dense Vapors",
-      cost: 12000,
-      requires: 3,
-      path: 2,
-      description: "Larger explosion and slowing effect",
-      effect: (tower) => ({
-        explosionRadius: 25,
-        slowAmount: 0.8,
-        slowDuration: 2000,
-        poisonDamage: tower.poisonDamage + 30,
-        towerWorth: tower.towerWorth + 12000,
-        src: '/gasSpitterSpecial2.png',
-        path: 2
-      })
-    },
-    {
-      name: "Chemical Warfare",
-      cost: 20000,
-      requires: 4,
-      path: 2,
-      description: "Maximum area control",
-      effect: (tower) => ({
-        explosionRadius: 30,
-        slowAmount: 0.7,
-        poisonDamage: tower.poisonDamage * 1.5,
-        towerWorth: tower.towerWorth + 20000,
-        path: 2
-      })
-    },
-    {
-      name: "Toxic Apocalypse",
-      cost: 150000,
-      description: "Global contamination",
-      requires: 5,
-      path: 2,
-      effect: (tower) => ({
-        explosionRadius: 40,
-        poisonDamage: tower.poisonDamage * 2,
-        attack: tower.attack * 2,
-        slowAmount: 0.3,
-        slowDuration: 5000,
-        canHitArmored: true,
-        towerWorth: tower.towerWorth + 150000
-      })
-    }
+    gasSpitter: [
+        // Path 1 - Poison Damage Path
+        {
+          name: "Toxic Infusion",
+          cost: 400,
+          requires: 0,
+          path: 1,
+          description: "Enhances poison potency, increasing damage over time.",
+          effect: (tower) => ({
+            poisonDamage: tower.poisonDamage + 25,
+            towerWorth: tower.towerWorth + 400,
+            path: 1
+          })
+        },
+        {
+          name: "Plagueborn Essence",
+          cost: 1200,
+          requires: 1,
+          path: 1,
+          description: "Extends poison duration for prolonged suffering.",
+          effect: (tower) => ({
+            poisonDamage: tower.poisonDamage + 30,
+            towerWorth: tower.towerWorth + 1200,
+            path: 1
+          })
+        },
+        {
+          name: "Venom Pools",
+          cost: 3000,
+          requires: 2,
+          path: 1,
+          description: "Creates acidic puddles that deal continuous damage.",
+          effect: (tower) => ({
+            attackType: 'lingering',
+            lingeringDamage: tower.poisonDamage * 0.025,
+            lingeringRadius: 15,
+            attackInterval: tower.attackInterval + 1500,
+            lingeringDuration: 2000,
+            lingeringColor: 'rgba(0, 255, 0, 0.5)',
+            towerWorth: tower.towerWorth + 3000
+          })
+        },
+        {
+          name: "Mutagenic Corruption",
+          cost: 8000,
+          requires: 3,
+          path: 1,
+          description: "Hyper-toxic venom that bypasses regeneration.",
+          effect: (tower) => ({
+            poisonDamage: tower.poisonDamage * 2.25,
+            canHitStealth: true,
+            canStopRegen: true,
+            towerWorth: tower.towerWorth + 8000,
+            path: 1
+          })
+        },
+        {
+          name: "Biohazard Warfare",
+          cost: 15000,
+          requires: 4,
+          path: 1,
+          description: "Unleashes extreme poison devastation.",
+          effect: (tower) => ({
+            poisonDamage: tower.poisonDamage * 2.75,
+            attack: tower.attack * 1.5,
+            src: '/gasSpitterSpecial1.png',
+            towerWorth: tower.towerWorth + 15000,
+            path: 1
+          })
+        },
+        {
+          name: "Doomsday Pathogen",
+          cost: 150000,
+          requires: 5,
+          path: 1,
+          description: "A lethal biological weapon that dissolves all.",
+          effect: (tower) => ({
+            poisonDamage: tower.poisonDamage * 4,
+            attack: tower.attack * 2,
+            canHitArmored: true,
+            canHitStealth: true,
+            canStopRegen: true,
+            towerWorth: tower.towerWorth + 150000
+          })
+        },
+        
+        // Path 2 - Gas Cloud Path
+        {
+          name: "Expansive Fumes",
+          cost: 600,
+          requires: 0,
+          path: 2,
+          description: "Increases attack radius and poison dispersion.",
+          effect: (tower) => ({
+            radius: tower.radius * 1.2,
+            towerWorth: tower.towerWorth + 600,
+            path: 2
+          })
+        },
+        {
+          name: "Toxic Jetstreams",
+          cost: 2000,
+          requires: 1,
+          path: 2,
+          description: "Speeds up poison dispersion for a wider spread.",
+          effect: (tower) => ({
+            attackInterval: tower.attackInterval - 200,
+            radius: tower.radius * 1.2,
+            towerWorth: tower.towerWorth + 2000,
+            path: 2
+          })
+        },
+        {
+          name: "Necrotic Haze",
+          cost: 4500,
+          requires: 2,
+          path: 2,
+          description: "Creates deadly poison clouds upon impact.",
+          effect: (tower) => ({
+            attackType: 'explosion',
+            explosionRadius: 20,
+            poisonDamage: tower.poisonDamage + 20,
+            towerWorth: tower.towerWorth + 4500,
+            path: 2
+          })
+        },
+        {
+          name: "Plague Winds",
+          cost: 12000,
+          requires: 3,
+          path: 2,
+          description: "Expands poison cloud size and adds slowing effects.",
+          effect: (tower) => ({
+            explosionRadius: 25,
+            slowAmount: 0.8,
+            slowDuration: 2000,
+            poisonDamage: tower.poisonDamage + 30,
+            towerWorth: tower.towerWorth + 12000,
+            src: '/gasSpitterSpecial2.png',
+            path: 2
+          })
+        },
+        {
+          name: "Chemical Hellstorm",
+          cost: 20000,
+          requires: 4,
+          path: 2,
+          description: "Unleashes maximum area control with toxic devastation.",
+          effect: (tower) => ({
+            explosionRadius: 30,
+            slowAmount: 0.7,
+            poisonDamage: tower.poisonDamage * 2,
+            towerWorth: tower.towerWorth + 20000,
+            path: 2
+          })
+        },
+        {
+          name: "World’s End Plague",
+          cost: 150000,
+          requires: 5,
+          path: 2,
+          description: "A poisonous miasma engulfs the battlefield.",
+          effect: (tower) => ({
+            explosionRadius: 40,
+            poisonDamage: tower.poisonDamage * 4,
+            attack: tower.attack * 2,
+            slowAmount: 0.3,
+            slowDuration: 5000,
+            canHitArmored: true,
+            towerWorth: tower.towerWorth + 150000
+          })
+        }
   ],
   mortar: [
+    // Path 1 - High Damage Explosions
     {
-      name: "High Explosive Shells",
+      name: "Blastwave Shells",
       cost: 800,
       requires: 0,
       path: 1,
-      description: "More powerful explosions",
+      description: "Enhances explosion power, dealing increased damage.",
       effect: (tower) => ({
         attack: tower.attack + 100,
         explosionRadius: tower.explosionRadius * 1.1,
@@ -931,11 +932,11 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Heavy Ordnance",
+      name: "Obliterator Rounds",
       cost: 2000,
       requires: 1,
       path: 1,
-      description: "Massively enhanced explosion damage",
+      description: "Massively enhances explosion damage and impact.",
       effect: (tower) => ({
         explosionRadius: tower.explosionRadius * 1.2,
         attack: tower.attack * 1.3,
@@ -944,11 +945,11 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Concentrated Blast",
+      name: "Thermobaric Devastation",
       cost: 4500,
       requires: 2,
       path: 1,
-      description: "Extreme explosive power",
+      description: "Extreme explosive force with amplified radius.",
       effect: (tower) => ({
         attack: tower.attack * 1.5,
         canHitArmored: true,
@@ -958,11 +959,11 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Napalm Shells",
+      name: "Napalm Storm",
       cost: 8000,
       requires: 3,
       path: 1,
-      description: "Devastating area damage",
+      description: "Explosions leave fiery destruction in their wake.",
       effect: (tower) => ({
         attack: tower.attack * 1.75,
         explosionRadius: tower.explosionRadius * 1.3,
@@ -972,15 +973,15 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Nuclear Artillery",
+      name: "Cataclysmic Strike",
       cost: 30000,
       requires: 4,
       path: 1,
-      description: "Ultimate destruction",
+      description: "Unleashes nuclear-level devastation.",
       effect: (tower) => ({
         attack: tower.attack * 2.5,
         explosionRadius: tower.explosionRadius * 1.4,
-        attackInterval: tower.attackInterval * 1.5, // Slower but more powerful
+        attackInterval: tower.attackInterval * 1.5,
         criticalChance: 0.3,
         criticalMultiplier: 2,
         towerWorth: tower.towerWorth + 30000,
@@ -988,11 +989,11 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Doomsday Device",
+      name: "Extinction Cannon",
       cost: 150000,
-      description: "Extinction-level explosions",
       requires: 5,
       path: 1,
+      description: "Apocalyptic blasts erase everything in their path.",
       effect: (tower) => ({
         attack: tower.attack * 4,
         explosionRadius: tower.explosionRadius * 1.8,
@@ -1002,14 +1003,14 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
         towerWorth: tower.towerWorth + 150000
       })
     },
-  
-    // Path 2 - Tactical Support (crowd control)
+
+    // Path 2 - Tactical Support
     {
-      name: "EMP Shells",
+      name: "EMP Shock",
       cost: 1000,
       requires: 0,
       path: 2,
-      description: "Shells temporarily disable enemies",
+      description: "Shells temporarily disable enemy movement.",
       effect: (tower) => ({
         canStun: true,
         stunDuration: 100,
@@ -1019,11 +1020,11 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Cryogenic Payload",
+      name: "Cryo Payload",
       cost: 2500,
       requires: 1,
       path: 2,
-      description: "Freezing explosions slow enemies",
+      description: "Freezing explosions drastically slow enemies.",
       effect: (tower) => ({
         slowAmount: 0.7,
         slowDuration: 2000,
@@ -1033,11 +1034,11 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Shockwave Artillery",
+      name: "Seismic Bombardment",
       cost: 5000,
       requires: 2,
       path: 2,
-      description: "Enhanced control effects",
+      description: "Massive control effects slow and stun enemies.",
       effect: (tower) => ({
         explosionRadius: tower.explosionRadius * 1.3,
         stunDuration: 300,
@@ -1048,11 +1049,11 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Shock and Awe",
+      name: "Thunderous Reckoning",
       cost: 12000,
       requires: 3,
       path: 2,
-      description: "Devastating crowd control",
+      description: "Unleashes devastating waves of disruption.",
       effect: (tower) => ({
         explosionRadius: tower.explosionRadius * 1.4,
         slowAmount: 0.5,
@@ -1065,27 +1066,27 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Strategic Command",
+      name: "Tactical Superiority",
       cost: 25000,
       requires: 4,
       path: 2,
-      description: "Ultimate battlefield control",
+      description: "The battlefield bends to your command.",
       effect: (tower) => ({
         explosionRadius: tower.explosionRadius * 1.5,
         attack: tower.attack * 1.5,
         slowAmount: 0.4,
         slowDuration: 4000,
         canHitStealth: true,
-        towerWorth: tower.towerWorth + 20000,
+        towerWorth: tower.towerWorth + 25000,
         path: 2
       })
     },
     {
-      name: "Supreme Commander",
+      name: "Commander's Wrath",
       cost: 150000,
-      description: "Ultimate tactical superiority",
       requires: 5,
       path: 2,
+      description: "Unstoppable control, rendering enemies helpless.",
       effect: (tower) => ({
         explosionRadius: tower.explosionRadius * 2,
         attack: tower.attack * 2.5,
@@ -1105,18 +1106,18 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       cost: 800,
       requires: 0,
       path: 1,
-      description: "Increased damage ",
+      description: "Enhances firepower, increasing base damage.",
       effect: (tower) => ({
         attack: tower.attack + 50,
         towerWorth: tower.towerWorth + 800
       })
     },
     {
-      name: "Armor Piercing Rounds",
+      name: "Piercing Devastator",
       cost: 2000,
       requires: 1,
       path: 1,
-      description: "Specialized anti-armor ammunition",
+      description: "Specialized anti-armor rounds for maximum penetration.",
       effect: (tower) => ({
         attack: tower.attack + 75,
         hasCritical: true,
@@ -1126,11 +1127,11 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Depleted Uranium",
+      name: "Uranium Core Shells",
       cost: 4500,
       requires: 2,
       path: 1,
-      description: "Extreme armor penetration",
+      description: "Extreme armor penetration with increased damage output.",
       effect: (tower) => ({
         attack: tower.attack * 1.5,
         criticalChance: 0.3,
@@ -1139,11 +1140,11 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Tank Hunter",
+      name: "Titan Breaker",
       cost: 8000,
       requires: 3,
       path: 1,
-      description: "Specialized in destroying tough enemies",
+      description: "Devastating firepower specialized in destroying massive enemies.",
       effect: (tower) => ({
         attack: tower.attack * 1.75,
         criticalChance: 0.4,
@@ -1154,11 +1155,11 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Siege Breaker",
+      name: "Siege Annihilator",
       cost: 25000,
       requires: 4,
       path: 1,
-      description: "Ultimate anti-armor capabilities",
+      description: "The pinnacle of anti-armor weaponry.",
       effect: (tower) => ({
         attack: tower.attack * 1.5,
         criticalChance: 0.5,
@@ -1168,11 +1169,11 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Titan Slayer",
+      name: "World Shatterer",
       cost: 150000,
-      description: "Unstoppable anti-everything weapon",
       requires: 5,
       path: 1,
+      description: "An unstoppable force that obliterates everything in its path.",
       effect: (tower) => ({
         attack: tower.attack * 2,
         criticalChance: 0.6,
@@ -1182,39 +1183,39 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
         towerWorth: tower.towerWorth + 150000
       })
     },
-  
+
     // Path 2 - Anti-Group Specialist
     {
-      name: "Wide Shells",
+      name: "Shockwave Payload",
       cost: 1000,
       requires: 0,
       path: 2,
-      description: "Increases explosion radius",
+      description: "Expands explosion radius, affecting more enemies.",
       effect: (tower) => ({
         explosionRadius: tower.explosionRadius * 1.2,
-        attack: tower.attack - 15, // Small damage penalty for bigger radius
-        towerWorth: tower.towerWorth + 1000,
+        attack: tower.attack - 15,
+        towerWorth: tower.towerWorth + 1000
       })
     },
     {
-      name: "Cluster Bombs",
+      name: "Cluster Armageddon",
       cost: 2500,
       requires: 1,
       path: 2,
-      description: "Creates multiple small explosions",
+      description: "Creates multiple small but powerful explosions.",
       effect: (tower) => ({
         explosionRadius: tower.explosionRadius * 1.3,
-        attackInterval: tower.attackInterval - 125, 
+        attackInterval: tower.attackInterval - 125,
         attack: tower.attack + 15,
-        towerWorth: tower.towerWorth + 2500,
+        towerWorth: tower.towerWorth + 2500
       })
     },
     {
-      name: "Inferno Zone",
+      name: "Infernal Rain",
       cost: 5000,
       requires: 2,
       path: 2,
-      description: "Massive burning zones after explosions",
+      description: "Explosions ignite the battlefield with lingering fire damage.",
       effect: (tower) => ({
         hasLingering: true,
         lingeringDamage: tower.attack * 0.05,
@@ -1227,11 +1228,11 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Hellfire Cannon",
+      name: "Hellstorm Barrage",
       cost: 12000,
       requires: 3,
       path: 2,
-      description: "Devastating explosions with intense burning",
+      description: "Devastating explosive payloads leave scorched earth behind.",
       effect: (tower) => ({
         lingeringRadius: 25,
         lingeringDuration: 5000,
@@ -1242,11 +1243,11 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Solar Inferno",
+      name: "Solar Cataclysm",
       cost: 25000,
       requires: 4,
       path: 2,
-      description: "Ultimate area denial with massive damage",
+      description: "Harnesses the power of a miniature sun to incinerate enemies.",
       effect: (tower) => ({
         lingeringDamage: tower.attack * 0.06,
         lingeringRadius: 30,
@@ -1258,11 +1259,11 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       })
     },
     {
-      name: "Supernova",
+      name: "Supernova Detonation",
       cost: 150000,
-      description: "Creates a star-like explosion",
       requires: 5,
       path: 2,
+      description: "Unleashes an explosion of cosmic proportions.",
       effect: (tower) => ({
         lingeringDamage: tower.attack * 0.1,
         lingeringRadius: 40,
@@ -1274,4 +1275,5 @@ export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
         towerWorth: tower.towerWorth + 150000
       })
     }
-    ]};
+  ]
+};
