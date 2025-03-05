@@ -2269,7 +2269,7 @@ const RangeIndicator = ({ tower }: { tower: Tower }) => {
   
   return showUpgradeMenu && tower.id === selectedTowerID && (
     <div
-      className="absolute rounded-full border-2 border-blue-400 pointer-events-none"
+      className="absolute rounded-full border-2 border-yellow-400 pointer-events-none"
       style={{
         width: `${(tower.radius * 2)}%`,
         height: `${(tower.radius * 2)}%`,

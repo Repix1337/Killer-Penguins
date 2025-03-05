@@ -980,7 +980,6 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       effect: (tower) => ({
         attack: tower.attack * 2.5,
         explosionRadius: tower.explosionRadius * 1.4,
-        attackInterval: tower.attackInterval * 1.5,
         criticalChance: 0.3,
         criticalMultiplier: 2,
         towerWorth: tower.towerWorth + 30000,
@@ -1248,7 +1247,6 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 2,
       description: "Harnesses the power of a miniature sun to incinerate enemies.",
       effect: (tower) => ({
-        lingeringDamage: tower.attack * 0.06,
         lingeringRadius: 30,
         lingeringDuration: 6000,
         attack: tower.attack * 1.6,
@@ -1264,10 +1262,10 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 2,
       description: "Unleashes an explosion of cosmic proportions.",
       effect: (tower) => ({
-        lingeringDamage: tower.attack * 0.1,
+        lingeringDamage: tower.attack * 0.075,
         lingeringRadius: 40,
         lingeringDuration: 8000,
-        attack: tower.attack * 2.5,
+        attack: tower.attack * 2,
         explosionRadius: tower.explosionRadius * 2,
         canHitArmored: true,
         canHitStealth: true,
