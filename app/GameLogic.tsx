@@ -2080,8 +2080,12 @@ useEffect(() => {
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-bold text-white">{upgrade.name}</span>
                   <span className="text-sm text-gray-300">${upgrade.cost}</span>
+                  
+
                 </div>
                 <p className="text-sm text-gray-300">{upgrade.description}</p>
+                <span className="text-sm text-green-300">Upgrades left:{Math.abs(upgrade.requires - 6)}</span>
+
               </button>
             ))}
   
