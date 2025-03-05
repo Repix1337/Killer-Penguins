@@ -289,7 +289,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           description: "Massive damage with guaranteed stun.",
           effect: (tower) => ({
             attack: tower.attack * 3,
-            criticalChance: 1.0,
+            criticalChance: 0.6,
             stunDuration: 250,
             towerWorth: tower.towerWorth + 25000,
             path: 1
@@ -302,8 +302,8 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 1,
           description: "Perfect accuracy with godlike destructive force.",
           effect: (tower) => ({
-            attack: tower.attack * 5,
-            criticalChance: 1.0,
+            attack: tower.attack * 3.5,
+            criticalChance: 0.8,
             stunDuration: 500,
             canHitStealth: true,
             canHitArmored: true,
