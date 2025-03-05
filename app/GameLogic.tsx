@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback} from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useSettings } from './context/SettingsContext';
+import { saveGameResult } from '@/app/saveGameResult';
 
 
 
@@ -3586,29 +3587,43 @@ const LingeringEffects = () => {
   );
 };
 const GameOverScreen = () => {
+  // Add useEffect to save result when game over screen shows
+  React.useEffect(() => {
+    if (showGameOver) {
+      saveGameResult(round)
+        .then(() => {
+          console.log('Game result saved successfully');
+        })
+        .catch((error) => {
+          console.error('Failed to save game result:', error);
+        });
+    }
+  }, [showGameOver, round]);
+
   return showGameOver && (
     <div className='absolute top-0 left-0 w-full h-full bg-black bg-opacity-75 flex items-center justify-center z-50'>
       <div className='bg-gradient-to-br from-slate-900 to-slate-800 text-white p-12 rounded-2xl 
         text-center border-4 border-blue-500 shadow-2xl transform scale-100 animate-pop-in'>
-          <span className='text-yellow-400 text-6xl'>⛔</span>
+        <span className='text-yellow-400 text-6xl'>⛔</span>
         <h2 className='text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 
           bg-clip-text text-transparent mb-4 mt-3 animate-pulse'>
           GAME OVER
         </h2>
         <p className='text-xl text-blue-300 mb-8'>You made it to round {round}!</p>
-          <button
-            onClick={resetGame}
-            className='bg-gradient-to-r from-red-600 to-red-800 text-white px-8 py-3 
-              rounded-lg text-lg font-bold transform transition duration-200 
-              hover:scale-105 hover:shadow-lg hover:from-red-500 hover:to-red-700
-              focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50'
-          >
-            RESTART
-          </button>
-        </div>
+        <p className='text-sm text-blue-200 mb-4'>Your score has been saved!</p>
+        <button
+          onClick={resetGame}
+          className='bg-gradient-to-r from-red-600 to-red-800 text-white px-8 py-3 
+            rounded-lg text-lg font-bold transform transition duration-200 
+            hover:scale-105 hover:shadow-lg hover:from-red-500 hover:to-red-700
+            focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50'
+        >
+          RESTART
+        </button>
       </div>
-  )
-}
+    </div>
+  );
+};
 const WinScreen = () => {
   return showWinScreen && (
     <div className='absolute top-0 left-0 w-full h-full bg-black bg-opacity-75 flex items-center justify-center z-50'>
