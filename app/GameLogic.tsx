@@ -148,7 +148,9 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   
   // Add this new state near other state declarations
   const [isPageVisible, setIsPageVisible] = useState(true);
-  const [isGameEnded, setIsGameEnded] = useState(false);
+  const [showGameOver, setShowGameOver] = useState(false);
+  const [showWinScreen, setShowWinScreen] = useState(false);
+  const [hasWon, setHasWon] = useState(false);
   const [damageNumbers, setDamageNumbers] = useState<Array<{
     id: string;
     damage: number;
@@ -561,6 +563,9 @@ const resetGame = () => {
   setEnemies([]);
   setTower([]);
   setShowUpgradeMenu(false);
+  setShowGameOver(false);
+  setShowWinScreen(false);
+  setIsPaused(false);
 };
 
 // Then create a helper function for creating new towers
@@ -597,8 +602,8 @@ const createNewEnemy = (type: keyof typeof ENEMY_TYPES, positionX?: number, posi
 };
 useEffect(() => {
   if (hp <= 0) {
-    alert('Game Over! You lost!');
-    resetGame();
+    setIsPaused(true);
+    setShowGameOver(true);
   }
 }, [hp]);
 
@@ -618,15 +623,11 @@ useEffect(() => {
 
   const spawnEnemies = () => {
     
-     if (round > 50 && enemies.length === 0 && enemyCount >= getEnemyLimit(round)) {
-      if (!isGameEnded) {
-        alert('Congratulations! You won!');
-        const continueGame = window.confirm('Do you want to continue?');
-        if (!continueGame) {
-          resetGame();
-        }
-        setIsGameEnded(true);
-        return;
+     if (round >= 50 && enemies.length === 0 && enemyCount >= getEnemyLimit(round)) {
+      if (hasWon === false) {
+        setHasWon(true);
+        setIsPaused(true);
+        setShowWinScreen(true);
       }
       return; // Don't spawn more enemies if game is ended
     }
@@ -826,7 +827,7 @@ useEffect(() => {
   );
 
   return () => clearInterval(spawnInterval);
-}, [round, enemyCount, enemies.length, isPageVisible, isSpeedUp, isPaused]);
+}, [round, enemyCount, enemies.length, isPageVisible, isSpeedUp, isPaused,hasWon]);
 
 
 useEffect(() => {
@@ -3584,6 +3585,73 @@ const LingeringEffects = () => {
     </>
   );
 };
+const GameOverScreen = () => {
+  return showGameOver && (
+    <div className='absolute top-0 left-0 w-full h-full bg-black bg-opacity-75 flex items-center justify-center z-50'>
+      <div className='bg-gradient-to-br from-slate-900 to-slate-800 text-white p-12 rounded-2xl 
+        text-center border-4 border-blue-500 shadow-2xl transform scale-100 animate-pop-in'>
+          <span className='text-yellow-400 text-6xl'>⛔</span>
+        <h2 className='text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 
+          bg-clip-text text-transparent mb-4 mt-3 animate-pulse'>
+          GAME OVER
+        </h2>
+        <p className='text-xl text-blue-300 mb-8'>You made it to round {round}!</p>
+          <button
+            onClick={resetGame}
+            className='bg-gradient-to-r from-red-600 to-red-800 text-white px-8 py-3 
+              rounded-lg text-lg font-bold transform transition duration-200 
+              hover:scale-105 hover:shadow-lg hover:from-red-500 hover:to-red-700
+              focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50'
+          >
+            RESTART
+          </button>
+        </div>
+      </div>
+  )
+}
+const WinScreen = () => {
+  return showWinScreen && (
+    <div className='absolute top-0 left-0 w-full h-full bg-black bg-opacity-75 flex items-center justify-center z-50'>
+      <div className='bg-gradient-to-br from-slate-900 to-slate-800 text-white p-12 rounded-2xl 
+        text-center border-4 border-blue-500 shadow-2xl transform scale-100 animate-pop-in'>
+        <div className='animate-bounce mb-6'>
+          <span className='text-yellow-400 text-6xl'>🏆</span>
+        </div>
+        <h2 className='text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 
+          bg-clip-text text-transparent mb-4 animate-pulse'>
+          VICTORY!
+        </h2>
+        <p className='text-xl text-blue-300 mb-8'>
+          Do you wish to continue?
+        </p>
+        <div className='flex justify-center gap-4'>
+          <button
+            onClick={() => {
+              setShowWinScreen(false);
+              setIsPaused(false);
+              setHasWon(true);
+            }}
+            className='bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 
+              rounded-lg text-lg font-bold transform transition duration-200 
+              hover:scale-105 hover:shadow-lg hover:from-blue-500 hover:to-blue-700
+              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50'
+          >
+            Continue 
+          </button>
+          <button
+            onClick={resetGame}
+            className='bg-gradient-to-r from-red-600 to-red-800 text-white px-8 py-3 
+              rounded-lg text-lg font-bold transform transition duration-200 
+              hover:scale-105 hover:shadow-lg hover:from-red-500 hover:to-red-700
+              focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50'
+          >
+            New Adventure
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
   return (
     <>
    <div 
@@ -3661,6 +3729,8 @@ const LingeringEffects = () => {
       {LingeringEffects()}
     </div>
     {upgradeTower()}
+    {GameOverScreen()}
+    {WinScreen()}
     </>
   );
 };
