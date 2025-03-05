@@ -993,7 +993,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       description: "Apocalyptic blasts erase everything in their path.",
       effect: (tower) => ({
-        attack: tower.attack * 4,
+        attack: tower.attack * 5,
         explosionRadius: tower.explosionRadius * 1.8,
         criticalChance: 0.5,
         criticalMultiplier: 5,
@@ -1090,7 +1090,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         attack: tower.attack * 2.5,
         slowAmount: 0.3,
         slowDuration: 5000,
-        stunDuration: 600,
+        stunDuration: 700,
         canHitStealth: true,
         towerWorth: tower.towerWorth + 150000
       })
@@ -1217,9 +1217,9 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       effect: (tower) => ({
         hasLingering: true,
         lingeringDamage: tower.attack * 0.05,
-        lingeringRadius: 20,
+        lingeringRadius: 13,
         attackInterval: tower.attackInterval + 1000,
-        lingeringDuration: 4000,
+        lingeringDuration: 3000,
         attack: tower.attack + 75,
         explosionRadius: tower.explosionRadius * 1.3,
         towerWorth: tower.towerWorth + 5000
@@ -1232,8 +1232,8 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 2,
       description: "Devastating explosive payloads leave scorched earth behind.",
       effect: (tower) => ({
-        lingeringRadius: 25,
-        lingeringDuration: 5000,
+        lingeringRadius: 18,
+        lingeringDuration: 4000,
         attack: tower.attack * 1.4,
         explosionRadius: tower.explosionRadius * 1.4,
         src: '/cannonSpecial2.png',
@@ -1247,9 +1247,9 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 2,
       description: "Harnesses the power of a miniature sun to incinerate enemies.",
       effect: (tower) => ({
-        lingeringRadius: 30,
-        lingeringDuration: 6000,
-        attack: tower.attack * 1.6,
+        lingeringRadius: 22,
+        lingeringDuration: 5000,
+        attack: tower.attack * 1.5,
         explosionRadius: tower.explosionRadius * 1.5,
         canHitArmored: true,
         towerWorth: tower.towerWorth + 25000
@@ -1263,8 +1263,8 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       description: "Unleashes an explosion of cosmic proportions.",
       effect: (tower) => ({
         lingeringDamage: tower.attack * 0.075,
-        lingeringRadius: 40,
-        lingeringDuration: 8000,
+        lingeringRadius: 25,
+        lingeringDuration: 6000,
         attack: tower.attack * 2,
         explosionRadius: tower.explosionRadius * 2,
         canHitArmored: true,
