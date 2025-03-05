@@ -3524,7 +3524,7 @@ const grantMoneyForKill = useCallback((enemy: Enemy) => {
     // Apply round-based reduction more explicitly
     let multiplier = 1;
     if (round >= 33) {
-      multiplier = 0.075;  // 6% of original reward
+      multiplier = 0.075;  
     } else if (round > 22) {
       multiplier = 0.3;   // 30% of original reward
     }
