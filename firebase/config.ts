@@ -39,10 +39,7 @@ try {
   storage = getStorage(app);
 } catch (error) {
   console.error("Firebase initialization error:", error);
-  console.log("Firebase config:", {
-    ...firebaseConfig,
-    apiKey: firebaseConfig.apiKey ? "exists" : "missing"
-  });
+  
 }
 
 export { app, auth, db, storage, analytics };

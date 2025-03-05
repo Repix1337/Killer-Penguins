@@ -2,13 +2,15 @@ import { db } from '@/firebase/config';
 import { collection, addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 
 interface GameResult {
+  username: string;
   roundRecord: number;
   timestamp: Timestamp;
 }
 
-export const saveGameResult = async (round: number): Promise<void> => {
+export const saveGameResult = async (round: number, username: string): Promise<void> => {
   try {
     const gameResult: GameResult = {
+      username: username,
       roundRecord: round,
       timestamp: serverTimestamp() as Timestamp,
     };

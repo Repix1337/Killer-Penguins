@@ -3587,18 +3587,27 @@ const LingeringEffects = () => {
   );
 };
 const GameOverScreen = () => {
-  // Add useEffect to save result when game over screen shows
-  React.useEffect(() => {
-    if (showGameOver) {
-      saveGameResult(round)
-        .then(() => {
-          console.log('Game result saved successfully');
-        })
-        .catch((error) => {
-          console.error('Failed to save game result:', error);
-        });
+  const [username, setUsername] = useState('');
+  const [isSaved, setIsSaved] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSave = () => {
+    if (!username.trim()) {
+      setError('Please enter a username');
+      return;
     }
-  }, [showGameOver, round]);
+
+    saveGameResult(round, username)
+      .then(() => {
+        setIsSaved(true);
+        setError('');
+        console.log('Game result saved successfully');
+      })
+      .catch((error) => {
+        setError('Failed to save score. Please try again.');
+        console.error('Failed to save game result:', error);
+      });
+  };
 
   return showGameOver && (
     <div className='absolute top-0 left-0 w-full h-full bg-black bg-opacity-75 flex items-center justify-center z-50'>
@@ -3610,11 +3619,38 @@ const GameOverScreen = () => {
           GAME OVER
         </h2>
         <p className='text-xl text-blue-300 mb-8'>You made it to round {round}!</p>
-        <p className='text-sm text-blue-200 mb-4'>Your score has been saved!</p>
+        
+        {!isSaved ? (
+          <div className='mb-6 space-y-4'>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter your username"
+              className='w-full px-4 py-2 bg-slate-700 border border-blue-500 rounded-lg 
+                text-white placeholder-gray-400 focus:outline-none focus:ring-2 
+                focus:ring-blue-500'
+              maxLength={20}
+            />
+            {error && <p className='text-red-500 text-sm'>{error}</p>}
+            <button
+              onClick={handleSave}
+              className='bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 
+                rounded-lg text-lg font-bold transform transition duration-200 w-full
+                hover:scale-105 hover:shadow-lg hover:from-blue-500 hover:to-blue-700
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50'
+            >
+              Save Score
+            </button>
+          </div>
+        ) : (
+          <p className='text-sm text-green-400 mb-4'>Score saved successfully!</p>
+        )}
+
         <button
           onClick={resetGame}
           className='bg-gradient-to-r from-red-600 to-red-800 text-white px-8 py-3 
-            rounded-lg text-lg font-bold transform transition duration-200 
+            rounded-lg text-lg font-bold transform transition duration-200 w-full
             hover:scale-105 hover:shadow-lg hover:from-red-500 hover:to-red-700
             focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50'
         >
