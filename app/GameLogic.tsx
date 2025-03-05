@@ -2333,9 +2333,9 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       requires: 5,
       path: 1,
       effect: (tower) => ({
-        attackInterval: tower.attackInterval - 50,
+        attackInterval: tower.attackInterval - 35,
         attackType: 'quadruple',
-        attack: tower.attack * 3,
+        attack: tower.attack * 2.5,
         canHitStealth: true,
         canHitArmored: true,
         towerWorth: tower.towerWorth + 150000
@@ -2559,7 +2559,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       path: 2,
       description: "Extremely fast attack speed",
       effect: (tower) => ({
-        attackInterval: tower.attackInterval - 500,
+        attackInterval: tower.attackInterval - 450,
         attack: tower.attack * 1.3,
         src: '/sniperSpecial2.png',
         towerWorth: tower.towerWorth + 15000,
@@ -2588,8 +2588,8 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
       path: 2,
       effect: (tower) => ({
         attackType: 'quadruple',
-        attackInterval: tower.attackInterval - 200,
-        attack: tower.attack * 2.5,
+        attackInterval: tower.attackInterval - 170,
+        attack: tower.attack * 1.5,
         canHitStealth: true,
         canHitArmored: true,
         towerWorth: tower.towerWorth + 150000
@@ -2766,7 +2766,7 @@ const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
         chainCount: 6,
         chainRange: 40,
         attack: tower.attack * 3,
-        attackInterval: tower.attackInterval - 100,
+        attackInterval: tower.attackInterval - 25,
         canHitArmored: true,
         towerWorth: tower.towerWorth + 150000
       })
@@ -3524,7 +3524,7 @@ const grantMoneyForKill = useCallback((enemy: Enemy) => {
     // Apply round-based reduction more explicitly
     let multiplier = 1;
     if (round >= 33) {
-      multiplier = 0.075;  
+      multiplier = 0.075;  // 6% of original reward
     } else if (round > 22) {
       multiplier = 0.3;   // 30% of original reward
     }
