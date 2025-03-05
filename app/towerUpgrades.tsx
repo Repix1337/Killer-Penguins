@@ -56,7 +56,7 @@ interface TowerUpgrade {
     effect: (tower: Tower) => Partial<Tower>;
     requires: number; // Previous upgrade level required
   }
-export const TOWER_UPGRADES: { [key: string]: TowerUpgrade[] } = {
+export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
     basic: [
       // Path 1 - Attack Speed focused
       {

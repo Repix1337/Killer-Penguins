@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback} from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useSettings } from './context/SettingsContext';
 import { saveGameResult } from '@/app/saveGameResult';
-import { TOWER_UPGRADES } from './TOWER_UPGRADES';
+import { towerUpgrades } from './towerUpgrades';
 
 
 // Define the props for the Spawn component
@@ -1932,7 +1932,7 @@ useEffect(() => {
       const selectedTower = tower.find(t => t.id === selectedTowerID);
       if (!selectedTower) return null;
   
-      const availableUpgrades = TOWER_UPGRADES[selectedTower.type]?.filter(upgrade => {
+      const availableUpgrades = towerUpgrades[selectedTower.type]?.filter(upgrade => {
         const hasChosenPath = selectedTower.path1Level >= 3 || selectedTower.path2Level >= 3;
         
         if (hasChosenPath) {
