@@ -2342,7 +2342,20 @@ useEffect(() => {
     return hasChanges ? updatedEnemies : prevEnemies;
   });
 }, [enemies, grantMoneyForKill]);
-
+useEffect(() => {
+  if (hp > 101) {
+    alert('kys');
+    resetGame()
+  }
+  if (round < 30 && money > 1000000) {
+    alert('kys');
+    resetGame()
+  }
+  if (round >= 200 && money < 10000) {
+    alert('kys');
+    resetGame()
+  }
+}, [hp,round,money])
 // Add a helper function to calculate rotation
 const getTowerRotation = (tower: Tower, target: Enemy) => {
   if (!target) return '';
