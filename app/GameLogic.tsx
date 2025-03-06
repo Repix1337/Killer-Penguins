@@ -565,6 +565,7 @@ const resetGame = () => {
   });
 
   // Reset game state
+  lastRound.current = 0; 
   setRound(0);
   setEnemyCount(0);
   setHealthPoints(100);
@@ -851,7 +852,6 @@ useEffect(() => {
   if (round !== lastRound.current + 1 && round !== 0) {
     alert("Kys");
     resetGame();
-    lastRound.current = round; 
     return;
   }
 
