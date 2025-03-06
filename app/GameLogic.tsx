@@ -280,6 +280,9 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       regen: 1200,
       canRegen: true,
       isArmored: false,
+      stunReduction: 0.7,
+      slowReduction: 0.7,
+
     },
     ULTRATANKS: {
       src: 'ultraTank.png',
@@ -357,6 +360,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       regen: 5000,
       canRegen: true,
       isArmored: false,
+      stunReduction: 0.3,
+      slowReduction: 0.3,
     },
     SPAWNER: {
       src: 'boss.png',
@@ -799,7 +804,7 @@ useEffect(() => {
               enemy.hp *= 1.5;
               enemy.maxHp *= 1.5;
               enemy.speed *= 1.2;
-              enemy.stunReduction = 0.5;
+              enemy.stunReduction *= 0.5;
               setEnemies(prev => [...prev, enemy]);
               setEnemyCount(prev => prev + (type61 === 'MEGABOSS' ? 100 : 1));
             }
