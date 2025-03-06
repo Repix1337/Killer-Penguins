@@ -650,7 +650,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
             explosionRadius: 35,
             slowAmount: tower.slowAmount ? tower.slowAmount * 0.8 : 0.8,
             slowDuration: 7000,
-            attack: tower.attack * 3,
+            attackInterval: tower.attackInterval - 300,
             canHitArmored: true,
             towerWorth: tower.towerWorth + 150000
           })
@@ -742,7 +742,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           })
         }
     ],
-    gasSpitter: [
+    gasspitter: [
         // Path 1 - Poison Damage Path
         {
           name: "Toxic Infusion",

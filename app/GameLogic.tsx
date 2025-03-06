@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback} from 'react';
+import { useRef } from "react";
 import { v4 as uuidv4 } from 'uuid';
 import { useSettings } from './context/SettingsContext';
 import { saveGameResult } from '@/app/saveGameResult';
@@ -33,6 +34,7 @@ interface Enemy {
   speed: number;
   baseSpeed: number;
   isSlowed: boolean;
+  slowReduction: number;
   slowValue?: number;
   slowSourceId?: string;
   slowStartTime?: number;
@@ -597,6 +599,7 @@ const createNewEnemy = (type: keyof typeof ENEMY_TYPES, positionX?: number, posi
     isSlowed: false,
     isPoisoned: false,
     isStunned: false,
+    slowReduction: 1,
     stunReduction: 1,
     maxHp: enemyStats.hp,
     ...enemyStats
@@ -812,10 +815,12 @@ useEffect(() => {
               // Significantly enhanced stats for endless mode
               enemy.hp *= 2 + (round - 65) * 0.1; // Scales with rounds
               enemy.maxHp *= 2 + (round - 65) * 0.1;
-              enemy.speed *= 1.3;
+              enemy.speed *= 1.4;
+              enemy.slowReduction = 0.4;
+              enemy.stunReduction = 0.5;
               enemy.regen *= 1.5;
               setEnemies(prev => [...prev, enemy]);
-              setEnemyCount(prev => prev + (type66 === 'MEGABOSS' ? 150 : 1));
+              setEnemyCount(prev => prev + (type66 === 'MEGABOSS' ? 100 : 1));
             }
             break;
       }
@@ -832,14 +837,24 @@ useEffect(() => {
 }, [round, enemyCount, enemies.length, isPageVisible, isSpeedUp, isPaused,hasWon]);
 
 
+
+const lastRound = useRef(round); // Store the last valid round
+
 useEffect(() => {
   if (isPaused) return;
+
+  if (round !== lastRound.current + 1 && round !== 0) {
+    alert("Kys");
+    resetGame();
+    return;
+  }
+
   if (enemies.length === 0 && enemyCount >= getEnemyLimit(round) && round !== 0) {
     setCanPause(true); // Allow pausing when round is over
-    
-    // Only auto-advance if autorounds is enabled
+
     if (autoStartRounds) {
       const roundTimeout = setTimeout(() => {
+        lastRound.current = round; // Update last valid round
         setRound(prev => prev + 1);
         setEnemies([]);
         setEnemyCount(0);
@@ -847,7 +862,6 @@ useEffect(() => {
       }, 4000 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
       return () => clearTimeout(roundTimeout);
     } else {
-      // If autorounds is disabled, pause the game
       setIsPaused(true);
     }
   }
@@ -1146,8 +1160,7 @@ const moveEnemy = useCallback(() => {
                       slowStartTime: Date.now(),
                       slowValue: newSlowAmount,
                       speed: !updatedEnemy.isStunned ? 
-                          Math.max(enemy.baseSpeed * newSlowAmount, enemy.baseSpeed * 0.4) : 
-                          0
+                          (enemy.baseSpeed * newSlowAmount) : 0
                     };
                   }
                 }
@@ -1309,7 +1322,6 @@ const moveEnemy = useCallback(() => {
               
                 // Only apply new slow if it's stronger or there's no current slow
                 if (!updatedEnemy.isSlowed || newSlowAmount < currentSlowAmount) {
-                    const minimumSpeed = round < 30 ? 0.15 : 0.4;
                     const calculatedSpeed = enemy.baseSpeed * newSlowAmount;
                     
                     updatedEnemy = {
@@ -1319,7 +1331,7 @@ const moveEnemy = useCallback(() => {
                         slowStartTime: Date.now(),
                         slowValue: newSlowAmount,
                         speed: !updatedEnemy.isStunned ? 
-                            Math.max(calculatedSpeed, enemy.baseSpeed * minimumSpeed) : 
+                            calculatedSpeed : 
                             0
                     };
                 }
@@ -1682,7 +1694,7 @@ useEffect(() => {
   
           const effectDuration = effectTower.slowDuration || 2500;
   
-          const adjustedDuration = effectDuration / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1);
+          const adjustedDuration = (effectDuration / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)) * (enemy.slowReduction || 1);
           
           if (currentTime - enemy.slowStartTime >= adjustedDuration) {
             hasChanges = true;
@@ -2308,9 +2320,9 @@ const grantMoneyForKill = useCallback((enemy: Enemy) => {
     
     // Apply round-based reduction more explicitly
     let multiplier = 1;
-    if (round >= 33) {
+    if (round >= 33 && round < 42) {
       multiplier = 0.07;  // 7% of original reward
-    } else if (round > 22) {
+    } else if (round > 22 && round < 33) {
       multiplier = 0.3;   // 30% of original reward
     }else if (round >= 42) {
       multiplier = 0.055;   // 5.5% of original reward
@@ -2351,7 +2363,7 @@ useEffect(() => {
     alert('kys');
     resetGame()
   }
-  if (round >= 200 && money < 10000) {
+  if (round >= 150 && money < 10000) {
     alert('kys');
     resetGame()
   }
