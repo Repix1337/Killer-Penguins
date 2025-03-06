@@ -851,6 +851,7 @@ useEffect(() => {
   if (round !== lastRound.current + 1 && round !== 0) {
     alert("Kys");
     resetGame();
+    lastRound.current = round; 
     return;
   }
 
