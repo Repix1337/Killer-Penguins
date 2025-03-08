@@ -104,6 +104,7 @@ interface Tower {
   path1Level: number;
   path2Level: number;
   path: number;
+  bossDamageMultiplier?: number;
 }
 interface TowerUpgrade {
   name: string;
@@ -987,12 +988,14 @@ const moveEnemy = useCallback(() => {
     const interval = setInterval(() => {
       setEnemies((prevEnemies) => 
         prevEnemies.map((enemy) => 
-          enemy.regen > 0 && enemy.canRegen ? {...enemy, hp: enemy.hp + enemy.regen} : enemy
+          enemy.canRegen ? {...enemy, hp: Math.min((enemy.hp + enemy.regen), enemy.maxHp)} : enemy
         )
+        
       )
+      console.log("Regen");
     }, 1500 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)); // Adjusted for 3x speed
     return () => clearInterval(interval);
-  }, [enemies, isPageVisible, isSpeedUp, isPaused]); // Add isPaused to dependencies
+  }, [round, isPageVisible, isSpeedUp, isPaused]); // Add isPaused to dependencies
 
   // Main tower attack logic
   const towerAttack = useCallback((tower: Tower, targets: Enemy[]) => {
@@ -1110,7 +1113,7 @@ const moveEnemy = useCallback(() => {
           
                   let updatedEnemy = {
                     ...enemy,
-                    hp: enemy.hp - actualDamage
+                    hp: enemy.hp - (enemy.type === "boss" ? actualDamage * (tower.bossDamageMultiplier ?? 1) : actualDamage)
                   };
             
                   // Remove armor if tower can hit armored enemies
@@ -1121,7 +1124,6 @@ const moveEnemy = useCallback(() => {
                       src: enemy.src.replace('armored', '')
                     };
                   }
-                                    console.log(updatedEnemy);
                 if (newHp <= 0 && enemy.hp > 0) {
                 if(enemy.canSpawn && round >= 50){
                   const spawnBatch = async () => {
@@ -1170,7 +1172,15 @@ const moveEnemy = useCallback(() => {
                     };
                   }
                 }
-          
+                if (tower.poisonDamage > 0) {
+                  updatedEnemy = {
+                    ...updatedEnemy,
+                    isPoisoned: true,
+                    poisonSourceId: tower.id,
+                    poisonStartTime: Date.now(),
+                    canRegen: tower.canStopRegen ? false : true
+                  };
+                }
                 
           
                 return updatedEnemy;
@@ -1255,7 +1265,7 @@ const moveEnemy = useCallback(() => {
                 chainDamage += damage;
                 return {
                   ...enemy,
-                  hp: enemy.hp - damage,
+                  hp: enemy.hp - (enemy.type === "boss" ? damage * (tower.bossDamageMultiplier ?? 1) : damage),
                   isTargeted: true
                 };
               }
@@ -1293,7 +1303,7 @@ const moveEnemy = useCallback(() => {
               const actualDamage = Math.min(tower.attack * damageMultiplier, enemy.hp);
               return {
                 ...enemy,
-                hp: enemy.hp - actualDamage
+                hp: enemy.hp - (enemy.type === "boss" ? actualDamage * (tower.bossDamageMultiplier ?? 1) : actualDamage)
               };
             });
             totalDamageDealt = tower.lingeringDamage || tower.attack * 0.1;
@@ -1365,7 +1375,7 @@ const moveEnemy = useCallback(() => {
               // Apply damage based on armor
               updatedEnemy.hp = enemy.isArmored && !tower.canHitArmored ? 
                 enemy.hp : 
-                Math.max(enemy.hp - actualDamage, 0);
+                Math.max(enemy.hp - (enemy.type === "boss" ? actualDamage * (tower.bossDamageMultiplier ?? 1) : actualDamage), 0);
           
               // Then check for kill and grant money
               if (updatedEnemy.hp <= 0 && enemy.hp > 0) {
@@ -1863,14 +1873,14 @@ useEffect(() => {
               isPoisoned: false,
               poisonSourceId: undefined,
               poisonStartTime: undefined,
-              canRegen: true
+              canRegen: enemy.regen > 0 ? true : enemy.canRegen
             };
           }
   
           const poisonTower = tower.find(t => t.id === enemy.poisonSourceId);
           if (!poisonTower?.poisonDamage) return enemy;
   
-          const damagePerTick = (4 * poisonTower.poisonDamage) / TOTAL_TICKS;
+          const damagePerTick = ((4 * poisonTower.poisonDamage) * (poisonTower.bossDamageMultiplier ?? 1)) / TOTAL_TICKS;
           const actualPoisonDamage = Math.min(damagePerTick, enemy.hp);
           
           if (!poisonDamageByTower[poisonTower.id]) {
@@ -2036,7 +2046,7 @@ useEffect(() => {
   
                 {selectedTower.poisonDamage > 0 && (
                   <StatBlock 
-                    label="Poison DPS" 
+                    label="Poison Total Damage" 
                     value={selectedTower.poisonDamage * 4} 
                   />
                 )}

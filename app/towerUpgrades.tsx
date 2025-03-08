@@ -45,6 +45,7 @@ interface Tower {
   path1Level: number;
   path2Level: number;
   path: number;
+  bossDamageMultiplier?: number;
 }
 
 interface TowerUpgrade {
@@ -806,6 +807,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           description: "Unleashes extreme poison devastation.",
           effect: (tower) => ({
             poisonDamage: tower.poisonDamage * 2.75,
+            lingeringDamage: tower.poisonDamage * 0.05,
             attack: tower.attack * 1.5,
             src: '/gasSpitterSpecial1.png',
             towerWorth: tower.towerWorth + 15000,
@@ -821,9 +823,9 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           effect: (tower) => ({
             poisonDamage: tower.poisonDamage * 4,
             attack: tower.attack * 2,
+            lingeringDamage: tower.poisonDamage * 0.1,
             canHitArmored: true,
             canHitStealth: true,
-            canStopRegen: true,
             towerWorth: tower.towerWorth + 150000
           })
         },
@@ -861,9 +863,8 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 2,
           description: "Creates deadly poison clouds upon impact.",
           effect: (tower) => ({
-            attackType: 'explosion',
-            explosionRadius: 20,
-            poisonDamage: tower.poisonDamage + 20,
+            attackType: 'triple',
+            poisonDamage: tower.poisonDamage * 2,
             towerWorth: tower.towerWorth + 4500,
             path: 2
           })
@@ -875,10 +876,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 2,
           description: "Expands poison cloud size and adds slowing effects.",
           effect: (tower) => ({
-            explosionRadius: 25,
-            slowAmount: 0.8,
-            slowDuration: 2000,
-            poisonDamage: tower.poisonDamage + 30,
+            poisonDamage: tower.poisonDamage * 3,
             towerWorth: tower.towerWorth + 12000,
             src: '/gasSpitterSpecial2.png',
             path: 2
@@ -891,9 +889,10 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 2,
           description: "Unleashes maximum area control with toxic devastation.",
           effect: (tower) => ({
-            explosionRadius: 30,
-            slowAmount: 0.7,
-            poisonDamage: tower.poisonDamage * 2,
+            attackType: 'quadruple',
+            poisonDamage: tower.poisonDamage * 4,
+            bossDamageMultiplier: 2,
+            canStopRegen: true,
             towerWorth: tower.towerWorth + 20000,
             path: 2
           })
@@ -905,12 +904,9 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 2,
           description: "A poisonous miasma engulfs the battlefield.",
           effect: (tower) => ({
-            explosionRadius: 40,
-            poisonDamage: tower.poisonDamage * 4,
-            attack: tower.attack * 2,
-            slowAmount: 0.3,
-            slowDuration: 5000,
-            canHitArmored: true,
+            poisonDamage: tower.poisonDamage * 6,
+            bossDamageMultiplier: 8,
+            attackInterval: tower.attackInterval / 2,
             towerWorth: tower.towerWorth + 150000
           })
         }
@@ -951,7 +947,6 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       description: "Extreme explosive force with amplified radius.",
       effect: (tower) => ({
         attack: tower.attack * 1.5,
-        canHitArmored: true,
         src: '/mortarSpecial.png',
         towerWorth: tower.towerWorth + 4500,
         path: 1
@@ -966,6 +961,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       effect: (tower) => ({
         attack: tower.attack * 1.75,
         explosionRadius: tower.explosionRadius * 1.3,
+        bossDamageMultiplier: 1.25,
         canHitStealth: true,
         towerWorth: tower.towerWorth + 8000,
         path: 1
@@ -980,6 +976,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       effect: (tower) => ({
         attack: tower.attack * 2.5,
         explosionRadius: tower.explosionRadius * 1.4,
+        bossDamageMultiplier: 1.5,
         criticalChance: 0.3,
         criticalMultiplier: 2,
         towerWorth: tower.towerWorth + 30000,
@@ -994,8 +991,10 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       description: "Apocalyptic blasts erase everything in their path.",
       effect: (tower) => ({
         attack: tower.attack * 5,
-        explosionRadius: tower.explosionRadius * 1.8,
+        explosionRadius: tower.explosionRadius * 2,
+        attackInterval: tower.attackInterval - 1000,
         criticalChance: 0.5,
+        bossDamageMultiplier: 3,
         criticalMultiplier: 5,
         canHitStealth: true,
         towerWorth: tower.towerWorth + 150000
@@ -1090,7 +1089,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         attack: tower.attack * 2.5,
         slowAmount: 0.3,
         slowDuration: 5000,
-        stunDuration: 700,
+        stunDuration: 1000,
         canHitStealth: true,
         towerWorth: tower.towerWorth + 150000
       })
