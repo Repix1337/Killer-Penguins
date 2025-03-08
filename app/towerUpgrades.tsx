@@ -865,7 +865,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           cost: 4500,
           requires: 2,
           path: 2,
-          description: "Creates deadly poison clouds upon impact.",
+          description: "Creates deadly poison clouds upon impact (Turn off enemy regen).",
           effect: (tower) => ({
             attackType: 'triple',
             poisonDamage: tower.poisonDamage * 2,
