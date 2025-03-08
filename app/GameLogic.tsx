@@ -992,7 +992,6 @@ const moveEnemy = useCallback(() => {
         )
         
       )
-      console.log("Regen");
     }, 1500 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)); // Adjusted for 3x speed
     return () => clearInterval(interval);
   }, [round, isPageVisible, isSpeedUp, isPaused]); // Add isPaused to dependencies
