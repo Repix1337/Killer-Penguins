@@ -865,6 +865,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           effect: (tower) => ({
             attackType: 'triple',
             poisonDamage: tower.poisonDamage * 2,
+            canStopRegen: true,
             towerWorth: tower.towerWorth + 4500,
             path: 2
           })
@@ -892,7 +893,6 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
             attackType: 'quadruple',
             poisonDamage: tower.poisonDamage * 4,
             bossDamageMultiplier: 2,
-            canStopRegen: true,
             towerWorth: tower.towerWorth + 20000,
             path: 2
           })

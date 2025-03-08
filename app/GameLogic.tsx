@@ -121,6 +121,7 @@ interface LingeringEffect {
   damage: number;
   radius: number;
   timestamp: number;
+  canStopRegen: boolean;
   color: string;
   duration: number;
   towerId: string; // Add this field
@@ -992,7 +993,7 @@ const moveEnemy = useCallback(() => {
         )
         
       )
-    }, 1500 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)); // Adjusted for 3x speed
+    }, 4000 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)); // Adjusted for 3x speed
     return () => clearInterval(interval);
   }, [round, isPageVisible, isSpeedUp, isPaused]); // Add isPaused to dependencies
 
@@ -1079,6 +1080,7 @@ const moveEnemy = useCallback(() => {
                 radius: tower.lingeringRadius || 15,
                 timestamp: Date.now(),
                 duration: tower.lingeringDuration || 2000,
+                canStopRegen: tower.canStopRegen,
                 color: tower.lingeringColor || 'rgba(255, 69, 0, 0.5)',
                 towerId: tower.id // Add this
               }]);
@@ -1290,6 +1292,7 @@ const moveEnemy = useCallback(() => {
               radius: tower.lingeringRadius || 10,
               timestamp: Date.now(),
               duration: tower.lingeringDuration || 2000,
+              canStopRegen: tower.canStopRegen,
               color: tower.lingeringColor || 'rgba(144, 238, 144, 0.5)',
               towerId: tower.id // Add this
             }]);
@@ -1773,83 +1776,92 @@ useEffect(() => {
   }, [isPageVisible, isPaused, isSpeedUp, tower]);
   useEffect(() => {
     if (!isPageVisible || isPaused) return;
-  
+
     const LINGERING_TICK_RATE = 50;
-  
+
     const lingeringInterval = setInterval(() => {
-      const currentTime = Date.now();
-  
-      // Remove expired lingering effects
-      setLingeringEffects(prev => prev.filter(effect => 
-        currentTime - effect.timestamp < effect.duration
-      ));
-  
-      // Track damage done by each tower
-      const towerDamage: { [key: string]: number } = {};
-  
-      // Apply damage to enemies in lingering areas
-      setEnemies(prevEnemies => {
-        let hasChanges = false;
-        const updatedEnemies = prevEnemies.map(enemy => {
-          let totalDamage = 0;
-  
-          // Check each lingering effect
-          lingeringEffects.forEach(effect => {
-            const dx = enemy.positionX - effect.positionX;
-            const dy = enemy.positionY - effect.positionY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-  
-            if (distance <= effect.radius) {
-              const damage = effect.damage;
-              totalDamage += damage;
-  
-              // Track damage for each tower
-              if (!towerDamage[effect.towerId]) {
-                towerDamage[effect.towerId] = 0;
-              }
-              towerDamage[effect.towerId] += damage;
-            }
-          });
-  
-          if (totalDamage > 0) {
-            hasChanges = true;
-            const newHp = Math.max(0, enemy.hp - totalDamage);
-  
-            if (showDamageNumbers) {
-              setDamageNumbers(prev => [...prev, {
-                id: uuidv4(),
-                damage: totalDamage,
-                x: enemy.positionX,
-                y: enemy.positionY,
-                timestamp: currentTime
-              }]);
-            }
-  
-            // Check for kill
-            if (newHp <= 0 && enemy.hp > 0) {
-              grantMoneyForKill(enemy);
-            }
-  
-            return { ...enemy, hp: newHp };
-          }
-  
-          return enemy;
+        const currentTime = Date.now();
+
+        // Remove expired lingering effects
+        setLingeringEffects(prev => prev.filter(effect =>
+            currentTime - effect.timestamp < effect.duration
+        ));
+
+        // Track damage done by each tower
+        const towerDamage: { [key: string]: number } = {};
+
+        // Apply damage to enemies in lingering areas
+        setEnemies(prevEnemies => {
+            let hasChanges = false;
+            const updatedEnemies = prevEnemies.map(enemy => {
+                let totalDamage = 0;
+                let insideRegenStoppingEffect = false;
+
+                // Check each lingering effect
+                lingeringEffects.forEach(effect => {
+                    const dx = enemy.positionX - effect.positionX;
+                    const dy = enemy.positionY - effect.positionY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance <= effect.radius) {
+                        totalDamage += effect.damage;
+
+                        // If the effect can stop regen, mark enemy as inside regen-stopping area
+                        if (effect.canStopRegen) {
+                            insideRegenStoppingEffect = true;
+                        }
+
+                        // Track damage for each tower
+                        if (!towerDamage[effect.towerId]) {
+                            towerDamage[effect.towerId] = 0;
+                        }
+                        towerDamage[effect.towerId] += effect.damage;
+                    }
+                });
+
+                // Set canRegen based on whether the enemy is inside a regen-stopping effect
+                const newCanRegen = !insideRegenStoppingEffect;
+
+                if (totalDamage > 0 || enemy.canRegen !== newCanRegen) {
+                    hasChanges = true;
+                    const newHp = Math.max(0, enemy.hp - totalDamage);
+
+                    if (showDamageNumbers) {
+                        setDamageNumbers(prev => [...prev, {
+                            id: uuidv4(),
+                            damage: totalDamage,
+                            x: enemy.positionX,
+                            y: enemy.positionY,
+                            timestamp: currentTime
+                        }]);
+                    }
+
+                    // Check for kill
+                    if (newHp <= 0 && enemy.hp > 0) {
+                        grantMoneyForKill(enemy);
+                    }
+
+                    return { ...enemy, hp: newHp, canRegen: newCanRegen };
+                }
+
+                return enemy;
+            });
+
+            return hasChanges ? updatedEnemies : prevEnemies;
         });
-  
+
         // Update tower damage counters
         setTower(prevTowers =>
-          prevTowers.map(t => ({
-            ...t,
-            damageDone: t.damageDone + (towerDamage[t.id] || 0)
-          }))
+            prevTowers.map(t => ({
+                ...t,
+                damageDone: t.damageDone + (towerDamage[t.id] || 0)
+            }))
         );
-  
-        return hasChanges ? updatedEnemies : prevEnemies;
-      });
     }, LINGERING_TICK_RATE);
-  
+
     return () => clearInterval(lingeringInterval);
-  }, [isPageVisible, isPaused, lingeringEffects]);
+}, [isPageVisible, isPaused, lingeringEffects]);
+
   useEffect(() => {
     if (!isPageVisible || isPaused) return;
              
