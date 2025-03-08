@@ -282,8 +282,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       regen: 1200,
       canRegen: true,
       isArmored: false,
-      stunReduction: 0.7,
-      slowReduction: 0.7,
+      stunReduction: 0.85,
+      slowReduction: 0.85,
 
     },
     ULTRATANKS: {
