@@ -932,7 +932,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
     },
     {
       name: "Obliterator Rounds",
-      cost: 2000,
+      cost: 1500,
       requires: 1,
       path: 1,
       description: "Massively enhances explosion damage and impact.",
@@ -945,13 +945,12 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
     },
     {
       name: "Thermobaric Devastation",
-      cost: 4500,
+      cost: 4000,
       requires: 2,
       path: 1,
       description: "Extreme explosive force with amplified radius.",
       effect: (tower) => ({
         attack: tower.attack * 1.5,
-        src: '/mortarSpecial.png',
         towerWorth: tower.towerWorth + 4500,
         path: 1
       })
@@ -966,6 +965,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         attack: tower.attack * 1.75,
         explosionRadius: tower.explosionRadius * 1.3,
         bossDamageMultiplier: 1.25,
+        src: '/mortarSpecial.png',
         canHitStealth: true,
         towerWorth: tower.towerWorth + 8000,
         path: 1
@@ -973,7 +973,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
     },
     {
       name: "Cataclysmic Strike",
-      cost: 30000,
+      cost: 25000,
       requires: 4,
       path: 1,
       description: "Unleashes nuclear-level devastation.",
@@ -1051,7 +1051,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
     },
     {
       name: "Thunderous Reckoning",
-      cost: 12000,
+      cost: 10000,
       requires: 3,
       path: 2,
       description: "Unleashes devastating waves of disruption.",
@@ -1068,7 +1068,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
     },
     {
       name: "Tactical Superiority",
-      cost: 25000,
+      cost: 22500,
       requires: 4,
       path: 2,
       description: "The battlefield bends to your command.",
@@ -1147,7 +1147,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       description: "Devastating firepower specialized in destroying massive enemies.",
       effect: (tower) => ({
-        attack: tower.attack * 1.75,
+        attack: tower.attack * 2,
         criticalChance: 0.4,
         criticalMultiplier: 3,
         attackInterval: tower.attackInterval - 500,
@@ -1162,7 +1162,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       description: "The pinnacle of anti-armor weaponry.",
       effect: (tower) => ({
-        attack: tower.attack * 1.5,
+        attack: tower.attack * 2,
         criticalChance: 0.5,
         criticalMultiplier: 4,
         canHitStealth: true,
