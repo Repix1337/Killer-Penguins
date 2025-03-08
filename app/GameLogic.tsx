@@ -282,8 +282,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       regen: 1000,
       canRegen: true,
       isArmored: false,
-      stunReduction: 0.85,
-      slowReduction: 0.85,
+      stunReduction: 0.80,
+      slowReduction: 0.80,
 
     },
     ULTRATANKS: {
@@ -362,8 +362,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       regen: 5000,
       canRegen: true,
       isArmored: false,
-      stunReduction: 0.3,
-      slowReduction: 0.3,
+      stunReduction: 0.4,
+      slowReduction: 0.4,
     },
     SPAWNER: {
       src: 'boss.png',
@@ -993,7 +993,7 @@ const moveEnemy = useCallback(() => {
         )
         
       )
-    }, 5000 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)); // Adjusted for 3x speed
+    }, 4500 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)); // Adjusted for 3x speed
     return () => clearInterval(interval);
   }, [round, isPageVisible, isSpeedUp, isPaused]); // Add isPaused to dependencies
 
