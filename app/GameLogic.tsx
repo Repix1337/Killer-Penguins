@@ -256,7 +256,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       type: 'regentank',
       speed: 0.1875,    // from 0.125 * 1.5
       baseSpeed: 0.1875, // from 0.125 * 1.5
-      regen: 100,
+      regen: 75,
       canRegen: true,
       isArmored: false,
     },
@@ -267,7 +267,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       type: 'speedyregentank',
       speed: 0.35,    // from 0.2 * 1.5
       baseSpeed: 0.35, // from 0.2 * 1.5
-      regen: 150,
+      regen: 125,
       canRegen: true,
       isArmored: false,
     }
@@ -279,7 +279,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       type: 'boss',
       speed: 0.15,    
       baseSpeed: 0.15, 
-      regen: 1200,
+      regen: 1000,
       canRegen: true,
       isArmored: false,
       stunReduction: 0.85,
