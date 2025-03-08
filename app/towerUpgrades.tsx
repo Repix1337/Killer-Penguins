@@ -777,7 +777,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           description: "Creates acidic puddles that deal continuous damage.",
           effect: (tower) => ({
             attackType: 'lingering',
-            lingeringDamage: tower.poisonDamage * 0.025,
+            lingeringDamage: tower.poisonDamage * 0.04,
             lingeringRadius: 15,
             attackInterval: tower.attackInterval + 1500,
             lingeringDuration: 2000,
@@ -792,7 +792,8 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 1,
           description: "Hyper-toxic venom that bypasses regeneration.",
           effect: (tower) => ({
-            poisonDamage: tower.poisonDamage * 2.25,
+            poisonDamage: tower.poisonDamage * 3,
+            lingeringRadius: 20,
             canHitStealth: true,
             canStopRegen: true,
             towerWorth: tower.towerWorth + 8000,
@@ -807,7 +808,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           description: "Unleashes extreme poison devastation.",
           effect: (tower) => ({
             poisonDamage: tower.poisonDamage * 2.75,
-            lingeringDamage: tower.poisonDamage * 0.05,
+            lingeringDamage: tower.poisonDamage * 0.08,
             attack: tower.attack * 1.5,
             src: '/gasSpitterSpecial1.png',
             towerWorth: tower.towerWorth + 15000,
@@ -823,7 +824,8 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           effect: (tower) => ({
             poisonDamage: tower.poisonDamage * 4,
             attack: tower.attack * 2,
-            lingeringDamage: tower.poisonDamage * 0.1,
+            lingeringRadius: 25,
+            lingeringDamage: tower.poisonDamage * 0.15,
             canHitArmored: true,
             canHitStealth: true,
             towerWorth: tower.towerWorth + 150000
