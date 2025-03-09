@@ -1,21 +1,21 @@
-import type { NextApiRequest, NextApiResponse } from "next";
-import { db } from "@/firebase/server";
-import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
+import { NextResponse } from 'next/server';
+import { collection, getDocs, orderBy, limit, query } from 'firebase/firestore';
+import { db } from '@/firebase/server';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method Not Allowed" });
-  }
-
+// ✅ Correct function signature for App Router
+export async function GET() {
   try {
-    const leaderboardRef = collection(db, "leaderboard");
-    const q = query(leaderboardRef, orderBy("roundRecord", "desc"), limit(10));
+    const leaderboardRef = collection(db, 'leaderboard');
+    const q = query(leaderboardRef, orderBy('roundRecord', 'desc'), limit(10));
     const querySnapshot = await getDocs(q);
-    const users = querySnapshot.docs.map((doc) => doc.data());
 
-    res.status(200).json({ users });
+    const leaderboard = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return NextResponse.json(leaderboard);
   } catch (error) {
-    console.error("Error fetching leaderboard:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    return NextResponse.json({ error: 'Failed to fetch leaderboard' }, { status: 500 });
   }
 }
