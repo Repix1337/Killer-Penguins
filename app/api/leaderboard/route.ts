@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { collection, getDocs, orderBy, limit, query } from 'firebase/firestore';
 import { db } from '@/firebase/server';
 
-// ✅ Correct function signature for App Router
 export async function GET() {
   try {
     const leaderboardRef = collection(db, 'leaderboard');
@@ -15,7 +14,7 @@ export async function GET() {
     }));
 
     return NextResponse.json(leaderboard);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch leaderboard' }, { status: 500 });
   }
 }
