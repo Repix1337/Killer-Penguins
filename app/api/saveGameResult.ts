@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { db } from "@/firebase/server";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -8,21 +8,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { username, round } = req.body;
+    const { username, roundRecord } = req.body;
 
-    if (!username || typeof round !== "number") {
+    if (!username || typeof roundRecord !== "number") {
       return res.status(400).json({ error: "Invalid request data" });
     }
 
-    await addDoc(collection(db, "leaderboard"), {
+    const leaderboardRef = collection(db, "leaderboard");
+    await addDoc(leaderboardRef, {
       username,
-      roundRecord: round,
-      timestamp: serverTimestamp(),
+      roundRecord,
+      timestamp: new Date(),
     });
 
-    res.status(200).json({ message: "Game result saved successfully" });
+    return res.status(200).json({ success: true });
   } catch (error) {
     console.error("Error saving game result:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 }
