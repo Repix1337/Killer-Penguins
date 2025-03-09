@@ -1,17 +1,23 @@
+import { db } from '@/firebase/config';
+import { collection, addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
+
+interface GameResult {
+  username: string;
+  roundRecord: number;
+  timestamp: Timestamp;
+}
+
 export const saveGameResult = async (round: number, username: string): Promise<void> => {
   try {
-    const response = await fetch("/api/saveGameResult", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, round }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to save game result");
-    }
-
-    console.log("Game result saved successfully");
+    const gameResult: GameResult = {
+      username: username,
+      roundRecord: round,
+      timestamp: serverTimestamp() as Timestamp,
+    };
+    
+    await addDoc(collection(db, 'leaderboard'), gameResult);
+    console.log('Game result saved successfully');
   } catch (error) {
-    console.error("Error saving game result:", error);
+    console.error('Error saving game result:', error);
   }
 };
