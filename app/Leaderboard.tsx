@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { collection, query, orderBy, limit, getDocs, Timestamp } from 'firebase/firestore';
-import { db } from '../firebase/config';
+import { db } from '../firebase/server';
 
 interface LeaderboardEntry {
   username: string;
