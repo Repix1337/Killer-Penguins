@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, orderBy, limit, getDocs, Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, limit, getDocs, Timestamp, DocumentData } from 'firebase/firestore';
 import { db } from '../firebase/server';
 
 interface LeaderboardEntry {
@@ -21,22 +21,23 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onClose }) => {
     const fetchLeaderboard = async () => {
       try {
         const leaderboardRef = collection(db, 'leaderboard');
-        const q = query(
-          leaderboardRef,
-          orderBy('roundRecord', 'desc'),
-          limit(10)
-        );
+        const q = query(leaderboardRef, orderBy('roundRecord', 'desc'), limit(10));
         
         const querySnapshot = await getDocs(q);
-        const entries = querySnapshot.docs.map(doc => ({
-          ...doc.data(),
-        })) as LeaderboardEntry[];
-        
+        const entries: LeaderboardEntry[] = querySnapshot.docs.map(doc => {
+          const data = doc.data() as DocumentData; // Explicitly type as DocumentData
+          return {
+            username: data.username || 'Unknown',
+            roundRecord: data.roundRecord || 0,
+            timestamp: data.timestamp instanceof Timestamp ? data.timestamp : Timestamp.now(),
+          };
+        });
+
         setLeaderboardData(entries);
-        setLoading(false);
       } catch (err) {
         console.error('Error fetching leaderboard:', err);
         setError('Failed to load leaderboard');
+      } finally {
         setLoading(false);
       }
     };
