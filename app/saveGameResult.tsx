@@ -1,14 +1,10 @@
 export const saveGameResult = async (round: number, username: string): Promise<void> => {
   try {
-    // Get the token from environment variables or window object
-    // In Next.js, you would typically expose this as NEXT_PUBLIC_APP_TOKEN
-    const appToken = process.env.NEXT_PUBLIC_APP_TOKEN;
-    
+    // Make a simpler version without token validation for now
     const response = await fetch('/api/leaderboard/save', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-app-token': appToken || '',
       },
       body: JSON.stringify({
         username,
