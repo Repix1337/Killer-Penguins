@@ -1,11 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { collection, query, orderBy, limit, getDocs, Timestamp, DocumentData } from 'firebase/firestore';
-import { db } from '../firebase/server';
+import React, { useEffect, useState } from "react";
 
 interface LeaderboardEntry {
   username: string;
   roundRecord: number;
-  timestamp: Timestamp;
 }
 
 interface LeaderboardProps {
@@ -15,28 +12,18 @@ interface LeaderboardProps {
 const Leaderboard: React.FC<LeaderboardProps> = ({ onClose }) => {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const leaderboardRef = collection(db, 'leaderboard');
-        const q = query(leaderboardRef, orderBy('roundRecord', 'desc'), limit(10));
-        
-        const querySnapshot = await getDocs(q);
-        const entries: LeaderboardEntry[] = querySnapshot.docs.map(doc => {
-          const data = doc.data() as DocumentData; // Explicitly type as DocumentData
-          return {
-            username: data.username || 'Unknown',
-            roundRecord: data.roundRecord || 0,
-            timestamp: data.timestamp instanceof Timestamp ? data.timestamp : Timestamp.now(),
-          };
-        });
-
-        setLeaderboardData(entries);
+        const res = await fetch("/api/leaderboard"); // ✅ Use API route
+        if (!res.ok) throw new Error("Failed to fetch leaderboard");
+        const data = await res.json();
+        setLeaderboardData(data.users);
       } catch (err) {
-        console.error('Error fetching leaderboard:', err);
-        setError('Failed to load leaderboard');
+        console.error("Error fetching leaderboard:", err);
+        setError("Failed to load leaderboard");
       } finally {
         setLoading(false);
       }
@@ -52,10 +39,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onClose }) => {
           <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
             Top 10 Players
           </h2>
-          <button 
-            onClick={onClose}
-            className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors">
             <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -72,16 +56,13 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onClose }) => {
         ) : (
           <div className="space-y-2">
             {leaderboardData.map((entry, index) => (
-              <div 
-                key={index}
-                className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 transition-colors"
-              >
+              <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 transition-colors">
                 <div className="flex items-center gap-3">
                   <span className={`w-6 text-center font-bold ${
-                    index === 0 ? 'text-yellow-400' :
-                    index === 1 ? 'text-gray-400' :
-                    index === 2 ? 'text-amber-600' :
-                    'text-gray-500'
+                    index === 0 ? "text-yellow-400" :
+                    index === 1 ? "text-gray-400" :
+                    index === 2 ? "text-amber-600" :
+                    "text-gray-500"
                   }`}>
                     {index + 1}
                   </span>
