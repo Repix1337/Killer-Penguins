@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, orderBy, limit, getDocs, Timestamp } from 'firebase/firestore';
-import { db } from '../firebase/config';
 
 interface LeaderboardEntry {
+  id: string;
   username: string;
   roundRecord: number;
-  timestamp: Timestamp;
+  timestamp: {
+    seconds: number;
+    nanoseconds: number;
+  };
 }
 
 interface LeaderboardProps {
@@ -20,19 +22,14 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onClose }) => {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const leaderboardRef = collection(db, 'leaderboard');
-        const q = query(
-          leaderboardRef,
-          orderBy('roundRecord', 'desc'),
-          limit(10)
-        );
+        const response = await fetch('/api/leaderboard');
         
-        const querySnapshot = await getDocs(q);
-        const entries = querySnapshot.docs.map(doc => ({
-          ...doc.data(),
-        })) as LeaderboardEntry[];
+        if (!response.ok) {
+          throw new Error('Failed to fetch leaderboard');
+        }
         
-        setLeaderboardData(entries);
+        const data = await response.json();
+        setLeaderboardData(data);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching leaderboard:', err);
@@ -72,7 +69,7 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onClose }) => {
           <div className="space-y-2">
             {leaderboardData.map((entry, index) => (
               <div 
-                key={index}
+                key={entry.id || index}
                 className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 transition-colors"
               >
                 <div className="flex items-center gap-3">
