@@ -3,11 +3,8 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /leaderboard/{document} {
       allow read: if true;  // Anyone can read leaderboard entries
-      allow write: if true; // Anyone can write leaderboard entries
-      
-      // Optional: Add validation rules
-      allow create: if request.resource.data.roundRecord is number
-                   && request.resource.data.timestamp is timestamp;
+      // Remove direct write access completely
+      allow write: if false; 
     }
   }
 }
