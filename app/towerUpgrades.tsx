@@ -181,7 +181,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         description: "Shots now mark enemies and amplify dmg done by other towers to that enemy.",
         effect: (tower) => ({
           canMark: true,
-          markedDamageMultiplier: 1.25,
+          markedDamageMultiplier: 1.15,
           attack: tower.attack + 75,
           towerWorth: tower.towerWorth + 6000
         })
@@ -193,8 +193,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         path: 2,
         description: "Marked enemies are even weaker.",
         effect: (tower) => ({
-          markedDamageMultiplier: 1.5,
-          attackType: "double",
+          markedDamageMultiplier: 1.3,
           attack: tower.attack * 1.5,
           src: "/basicSpecial2.png",
           towerWorth: tower.towerWorth + 17000
@@ -207,8 +206,8 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         path: 2,
         description: "Shots gain immense power, increasing overall damage. Marked enemies take significantly more damage.",
         effect: (tower) => ({
-          markedDamageMultiplier: 1.75,
-          attack: tower.attack * 2.5,
+          markedDamageMultiplier: 1.6,
+          attack: tower.attack * 2.25,
           towerWorth: tower.towerWorth + 35000
         })
       },
@@ -219,9 +218,8 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         path: 2,
         description: "Unleashes absolute destruction—marked enemies suffer catastrophic fate, attacks triple in power, and all defenses are bypassed.",
         effect: (tower) => ({
-          markedDamageMultiplier: 2.5,
-          explosionRadius: tower.explosionRadius * 2,
-          attack: tower.attack * 3,
+          markedDamageMultiplier: 2.25,
+          attack: tower.attack * 2.5,
           canHitStealth: true,
           canHitArmored: true,
           towerWorth: tower.towerWorth + 150000
@@ -737,7 +735,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           description: "A frost-bound apocalypse, freezing all in its wake.",
           effect: (tower) => ({
             attack: tower.attack * 3,
-            attackInterval: tower.attackInterval + 4500,
+            attackInterval: tower.attackInterval + 2500,
             stunDuration: 2500,
             canHitStealth: true,
             canHitArmored: true,
