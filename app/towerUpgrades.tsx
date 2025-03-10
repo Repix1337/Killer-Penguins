@@ -97,7 +97,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       effect: (tower) => ({ 
         acceleration: true,
-        accelerationValue: 1.05,
+        accelerationValue: 0.1,
         attackInterval: tower.attackInterval - 250,
         towerWorth: tower.towerWorth + 2000,
         path: 1
@@ -111,7 +111,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       effect: (tower) => ({
         acceleration: true,
-        accelerationValue: 1.1,
+        accelerationValue: 0.2,
         attackInterval: tower.attackInterval - 250,
         attack: tower.attack * 1.2,
         src: '/basicSpecial.png',
@@ -127,7 +127,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       effect: (tower) => ({
         acceleration: true,
-        accelerationValue: 1.2,
+        accelerationValue: 0.35,
         attackInterval: tower.attackInterval - 100,
         attack: tower.attack * 1.25,
         towerWorth: tower.towerWorth + 25000,
@@ -142,7 +142,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       effect: (tower) => ({
         acceleration: true,
-        accelerationValue: 1.3,
+        accelerationValue: 0.5,
         attackInterval: tower.attackInterval - 35,
         attack: tower.attack * 1.5,
         canHitStealth: true,

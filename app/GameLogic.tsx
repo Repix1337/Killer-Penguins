@@ -1355,7 +1355,7 @@ const moveEnemy = useCallback(() => {
 
 const actualDamage = Math.min(
   (tower.attack * damageMultiplier * markMultiplier) * 
-  ((enemy.accelerationValue ?? 1) * enemy.acceleratedHitCount),
+  ((1 + (enemy.accelerationValue ?? 0.1) * (enemy.acceleratedHitCount))),
   enemy.hp
 );
               console.log(actualDamage)
