@@ -92,12 +92,13 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
     {
       name: "Twin Fang Arsenal",
       cost: 3000,
-      description: "The tower fires two shots simultaneously with increased firing speed, doubling its offensive output and speed.",
+      description: "make the attacks faster and better against tanks.",
       requires: 2,
       path: 1,
       effect: (tower) => ({ 
-        attackType: 'double',
-        attackInterval: tower.attackInterval - 200,
+        acceleration: true,
+        accelerationValue: 1.05,
+        attackInterval: tower.attackInterval - 250,
         towerWorth: tower.towerWorth + 2000,
         path: 1
       })
@@ -105,14 +106,14 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
     {
       name: "Blitz Commander",
       cost: 10000,
-      description: "Unleashes a rapid triple-shot barrage with extreme speed, quickly overwhelming even the toughest of enemies.",
+      description: "Unleashes a rapid barrage with extreme speed, quickly overwhelming even the toughest of enemies.",
       requires: 3,
       path: 1,
       effect: (tower) => ({
         acceleration: true,
         accelerationValue: 1.1,
         attackInterval: tower.attackInterval - 250,
-        attack: tower.attack * 1.3,
+        attack: tower.attack * 1.2,
         src: '/basicSpecial.png',
         towerWorth: tower.towerWorth + 15000,
         path: 1
@@ -126,7 +127,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       effect: (tower) => ({
         acceleration: true,
-        accelerationValue: 1.25,
+        accelerationValue: 1.2,
         attackInterval: tower.attackInterval - 100,
         attack: tower.attack * 1.25,
         towerWorth: tower.towerWorth + 25000,
@@ -143,7 +144,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         acceleration: true,
         accelerationValue: 1.3,
         attackInterval: tower.attackInterval - 35,
-        attack: tower.attack * 2,
+        attack: tower.attack * 1.5,
         canHitStealth: true,
         canHitArmored: true,
         towerWorth: tower.towerWorth + 150000
@@ -781,7 +782,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
             lingeringDamage: tower.poisonDamage * 0.04,
             lingeringRadius: 15,
             attackInterval: tower.attackInterval + 1200,
-            lingeringDuration: 2000,
+            lingeringDuration: 2500,
             lingeringColor: 'rgba(0, 255, 0, 0.5)',
             towerWorth: tower.towerWorth + 3000
           })
@@ -807,9 +808,9 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 1,
           description: "Unleashes extreme poison devastation.",
           effect: (tower) => ({
-            poisonDamage: tower.poisonDamage * 2.75,
+            poisonDamage: tower.poisonDamage * 3,
             lingeringDamage: tower.poisonDamage * 0.08,
-            lingeringDuration: 2500,
+            lingeringDuration: 3000,
             attack: tower.attack * 1.5,
             src: '/gasSpitterSpecial1.png',
             towerWorth: tower.towerWorth + 15000,
@@ -826,7 +827,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
             poisonDamage: tower.poisonDamage * 4,
             attack: tower.attack * 2,
             lingeringRadius: 25,
-            lingeringDuration: 3000,
+            lingeringDuration: 4000,
             lingeringDamage: tower.poisonDamage * 0.15,
             canHitArmored: true,
             canHitStealth: true,
@@ -1195,7 +1196,6 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       description: "Expands explosion radius, affecting more enemies.",
       effect: (tower) => ({
         explosionRadius: tower.explosionRadius * 1.2,
-        attack: tower.attack - 15,
         towerWorth: tower.towerWorth + 1000
       })
     },
@@ -1220,7 +1220,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       description: "Explosions ignite the battlefield with lingering fire damage.",
       effect: (tower) => ({
         hasLingering: true,
-        lingeringDamage: tower.attack * 0.05,
+        lingeringDamage: tower.attack * 0.03,
         lingeringRadius: 13,
         attackInterval: tower.attackInterval + 1000,
         lingeringDuration: 3000,
@@ -1266,7 +1266,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 2,
       description: "Unleashes an explosion of cosmic proportions.",
       effect: (tower) => ({
-        lingeringDamage: tower.attack * 0.075,
+        lingeringDamage: tower.attack * 0.06,
         lingeringRadius: 25,
         lingeringDuration: 6000,
         attack: tower.attack * 2,
