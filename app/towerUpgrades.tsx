@@ -155,7 +155,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         cost: 800,
         requires: 0,
         path: 2,
-        description: "Enhances precision, increasing damage and granting a chance to mark enemies for amplified damage.",
+        description: "Enhances precision, increasing damage.",
         effect: (tower) => ({
           attack: tower.attack + 50,
           towerWorth: tower.towerWorth + 800
@@ -178,7 +178,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         cost: 6000,
         requires: 2,
         path: 2,
-        description: "Shots now have a 25% chance to ricochet, striking another enemy for 75% of the original damage.",
+        description: "Shots now mark enemies and amplify dmg done by other towers to that enemy.",
         effect: (tower) => ({
           canMark: true,
           markedDamageMultiplier: 1.25,
@@ -191,7 +191,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         cost: 17000,
         requires: 3,
         path: 2,
-        description: "Marked enemies detonate upon defeat, dealing explosive area damage to nearby foes.",
+        description: "Marked enemies are even weaker.",
         effect: (tower) => ({
           markedDamageMultiplier: 1.5,
           attackType: "double",
@@ -217,7 +217,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         cost: 150000,
         requires: 5,
         path: 2,
-        description: "Unleashes absolute destruction—marked enemies suffer catastrophic explosions, attacks triple in power, and all defenses are bypassed.",
+        description: "Unleashes absolute destruction—marked enemies suffer catastrophic fate, attacks triple in power, and all defenses are bypassed.",
         effect: (tower) => ({
           markedDamageMultiplier: 2.5,
           explosionRadius: tower.explosionRadius * 2,
