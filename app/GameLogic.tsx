@@ -53,6 +53,12 @@ interface Enemy {
   stunSourceId?: string;
   stunStartTime?: number;
   canSpawn?: boolean;
+  executed: boolean;
+  acceleratedHitCount: number;
+  accelerationValue?: number;
+  marked: boolean;
+  markedDamageMultiplier?: number;
+  markedExplosion?: boolean;
 }
 
 // Define the Tower interface
@@ -105,6 +111,13 @@ interface Tower {
   path2Level: number;
   path: number;
   bossDamageMultiplier?: number;
+  canExecute? : boolean;
+  executeTreshhold?: number;
+  acceleration?: boolean
+  accelerationValue?: number
+  canMark?: boolean
+  markedDamageMultiplier?: number
+  markedExplosion?: boolean
 }
 interface TowerUpgrade {
   name: string;
@@ -610,6 +623,9 @@ const createNewEnemy = (type: keyof typeof ENEMY_TYPES, positionX?: number, posi
     slowReduction: 1,
     stunReduction: 1,
     maxHp: enemyStats.hp,
+    executed: false,
+    marked: false,
+    acceleratedHitCount: 1,
     ...enemyStats
   };
 };
@@ -971,7 +987,7 @@ const moveEnemy = useCallback(() => {
           return { ...enemy, positionX: enemy.positionX + enemy.speed };
         }
       })
-      .filter((enemy) => enemy.hp > 0)
+      .filter((enemy) => enemy.hp > 0 && !enemy.executed)
   );
 }, [isPageVisible, isPaused]);
   // Enemy movement - updates position every 25ms
@@ -1043,7 +1059,7 @@ const moveEnemy = useCallback(() => {
           // Calculate critical hit if tower has that ability
           const isCriticalHit = tower.hasCritical && 
                                tower.criticalChance && 
-                               Math.random() < tower.criticalChance;
+                               Math.random() <= tower.criticalChance;
           const damageMultiplier = isCriticalHit ? (tower.criticalMultiplier || 1) : 1;
       
           if (tower.attackType === 'explosion') {
@@ -1161,7 +1177,7 @@ const moveEnemy = useCallback(() => {
           
                 if (tower.slowAmount) {
                   const newSlowAmount = tower.slowAmount;
-                  if (!updatedEnemy.isSlowed || newSlowAmount < (updatedEnemy.slowValue || 1)) {
+                  if (!updatedEnemy.isSlowed || newSlowAmount <= (updatedEnemy.slowValue || 1)) {
                     updatedEnemy = {
                       ...updatedEnemy,
                       isSlowed: true,
@@ -1179,7 +1195,7 @@ const moveEnemy = useCallback(() => {
                     isPoisoned: true,
                     poisonSourceId: tower.id,
                     poisonStartTime: Date.now(),
-                    canRegen: tower.canStopRegen ? false : true
+                    canRegen: enemy.canRegen && !tower.canStopRegen,
                   };
                 }
                 
@@ -1316,14 +1332,38 @@ const moveEnemy = useCallback(() => {
             updatedEnemies = prevEnemies.map((enemy) => {
               const isTargeted = targets.some(target => target.id === enemy.id);
               if (!isTargeted) return enemy;
-            
-              // Update damage calculation to include critical hits
-              const actualDamage = Math.min(tower.attack * damageMultiplier, enemy.hp);
-              totalDamageDealt += actualDamage;
               let updatedEnemy = { ...enemy };
-          
+              // Update damage calculation to include critical hits
+              if (tower.acceleration){
+                updatedEnemy = {
+                  ...updatedEnemy,
+                  acceleratedHitCount: enemy.acceleratedHitCount + 1,
+                  accelerationValue: tower.accelerationValue,
+                };
+              }
+              const markMultiplier = updatedEnemy.marked ? (updatedEnemy.markedDamageMultiplier ?? 1) : 1;
+              if (tower.canMark){
+                updatedEnemy = {
+                  ...updatedEnemy,
+                  marked: true,
+                  markedDamageMultiplier: tower.markedDamageMultiplier,
+                  markedExplosion: tower.markedExplosion,
+                };
+              }
+              // Apply marked damage multiplier if enemy is marked
+
+
+const actualDamage = Math.min(
+  (tower.attack * damageMultiplier * markMultiplier) * 
+  ((enemy.accelerationValue ?? 1) * enemy.acceleratedHitCount),
+  enemy.hp
+);
+              console.log(actualDamage)
+              totalDamageDealt += actualDamage;
+              
+              
               // Apply stun effect if tower has it
-              if (tower.canStun && Math.random() < (tower.criticalChance || 0)) {
+              if (tower.canStun) {
                 updatedEnemy = {
                   ...updatedEnemy,
                   isStunned: true,
@@ -1365,6 +1405,7 @@ const moveEnemy = useCallback(() => {
                   canRegen: tower.canStopRegen ? false : true
                 };
               }
+              
               if (showDamageNumbers) {  // Add this check
                 setDamageNumbers(prev => [...prev, {
                   id: uuidv4(),
@@ -1378,9 +1419,9 @@ const moveEnemy = useCallback(() => {
               updatedEnemy.hp = enemy.isArmored && !tower.canHitArmored ? 
                 enemy.hp : 
                 Math.max(enemy.hp - (enemy.type === "boss" ? actualDamage * (tower.bossDamageMultiplier ?? 1) : actualDamage), 0);
-          
-              // Then check for kill and grant money
-              if (updatedEnemy.hp <= 0 && enemy.hp > 0) {
+                updatedEnemy.executed = (updatedEnemy.hp / enemy.maxHp) * 100 <= (tower.executeTreshhold ?? 1);
+                // Then check for kill and grant money
+              if ((updatedEnemy.hp <= 0 && enemy.hp > 0) || enemy.executed) {
                 if(enemy.canSpawn && round >= 50){
                   const spawnBatch = async () => {
                     for (let i = 0; i < 5; i++){
@@ -1401,6 +1442,7 @@ const moveEnemy = useCallback(() => {
                   };
                   spawnBatch();
               }
+              
               grantMoneyForKill(enemy);
             }
             updatedEnemy.isTargeted = true;
@@ -1537,8 +1579,8 @@ const getFurthestEnemyInRadius = (
   });
 
   // Sort enemies based on targeting type
-  if (targettingType === "highestHp") {
-    enemiesWithProgress.sort((a, b) => b.hp - a.hp);
+  if (targettingType === "highestMaxHp") {
+    enemiesWithProgress.sort((a, b) => b.maxHp - a.maxHp);
   } else if (targettingType === "last") {
     enemiesWithProgress.reverse();
   } else {
@@ -1553,6 +1595,10 @@ const getFurthestEnemyInRadius = (
     return enemiesWithProgress.slice(0, Math.min(3, enemiesWithProgress.length));
   } else if (attackType === 'quadruple') {
     return enemiesWithProgress.slice(0, Math.min(4, enemiesWithProgress.length));
+  }else if (attackType === 'five') {
+    return enemiesWithProgress.slice(0, Math.min(5, enemiesWithProgress.length));
+  }else if (attackType === 'aura') {
+    return enemiesWithProgress;
   } else {
     // Single target
     return enemiesWithProgress.slice(0, 1);
@@ -1837,7 +1883,7 @@ useEffect(() => {
                     }
 
                     // Check for kill
-                    if (newHp <= 0 && enemy.hp > 0) {
+                    if ((newHp <= 0 && enemy.hp > 0) || enemy.executed) {
                         grantMoneyForKill(enemy);
                     }
 
@@ -2205,8 +2251,8 @@ useEffect(() => {
         t.id === selectedTowerID ? { 
           ...t, 
           targettingType: t.targettingType === "first" 
-            ? "highestHp" 
-            : t.targettingType === "highestHp" 
+            ? "highestMaxHp" 
+            : t.targettingType === "highestMaxHp" 
             ? "last" 
             : "first" 
         } : t
@@ -2372,7 +2418,7 @@ useEffect(() => {
   setEnemies(prevEnemies => {
     let hasChanges = false;
     const updatedEnemies = prevEnemies.map(enemy => {
-      if (enemy.hp <= 0 && !processedEnemies.has(enemy.id)) {
+      if (enemy.hp <= 0 || enemy.executed && !processedEnemies.has(enemy.id)) {
         grantMoneyForKill(enemy);
         hasChanges = true;
       }
@@ -2381,7 +2427,7 @@ useEffect(() => {
     return hasChanges ? updatedEnemies : prevEnemies;
   });
 }, [enemies, grantMoneyForKill]);
-useEffect(() => {
+ useEffect(() => {
   if (hp > 101) {
     alert('kys');
     resetGame()
@@ -2395,6 +2441,7 @@ useEffect(() => {
     resetGame()
   }
 }, [hp,round,money])
+
 // Add a helper function to calculate rotation
 const getTowerRotation = (tower: Tower, target: Enemy) => {
   if (!target) return '';

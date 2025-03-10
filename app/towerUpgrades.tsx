@@ -46,6 +46,12 @@ interface Tower {
   path2Level: number;
   path: number;
   bossDamageMultiplier?: number;
+  canExecute? : boolean;
+  executeTreshhold?: number;
+  acceleration?: boolean
+  accelerationValue?: number
+  canMark?: boolean
+  markedDamageMultiplier?: number
 }
 
 interface TowerUpgrade {
@@ -57,171 +63,167 @@ interface TowerUpgrade {
     requires: number; // Previous upgrade level required
   }
 export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
-    basic: [
-      // Path 1 - Attack Speed focused
-      {
-        name: "Stealth Tracker",
-        cost: 400,
-        requires: 0,
-        path: 1,
-        description: "Can detect and attack stealth units",
-        effect: (tower) => ({ 
-          canHitStealth: true,
-          towerWorth: tower.towerWorth + 400,
-          path: 1
-        })
-      },
-      {
-        name: "Hyperfire Gear",
-        cost: 800,
-        description: "Significantly reduces attack interval",
-        requires: 1,
-        path: 1,
-        effect: (tower) => ({ 
-          attackInterval: tower.attackInterval - 300,
-          towerWorth: tower.towerWorth + 800,
-          path: 1
-        })
-      },
-      {
-        name: "Twin Fang Arsenal",
-        cost: 2000,
-        description: "Fires two shots at once with increased speed.",
-        requires: 2,
-        path: 1,
-        effect: (tower) => ({ 
-          attackType: 'double',
-          attackInterval: tower.attackInterval - 200,
-          towerWorth: tower.towerWorth + 2000,
-          path: 1
-        })
-      },
-      {
-        name: "Blitz Commander",
-        cost: 15000,
-        description: "Unleashes a triple-shot barrage at supreme speed",
-        requires: 3,
-        path: 1,
-        effect: (tower) => ({
-          attackInterval: tower.attackInterval - 250,
-          attackType: 'triple',
-          attack: tower.attack * 1.5,
-          src: '/basicSpecial.png',
-          towerWorth: tower.towerWorth + 15000,
-          path: 1
-        })
-      },
-      {
-        name: "Tempest Onslaught",
-        cost: 25000,
-        description: "Fires four shots per attack with near-instant firing rate",
-        requires: 4,
-        path: 1,
-        effect: (tower) => ({
-          attackInterval: tower.attackInterval - 100,
-          attackType: 'quadruple',
-          attack: tower.attack * 1.8,
-          towerWorth: tower.towerWorth + 25000,
-          path: 1
-        })
-      },
-      {
-        name: "Endless Storm",
-        cost: 150000,
-        description: "A relentless, ceaseless stream of destruction",
-        requires: 5,
-        path: 1,
-        effect: (tower) => ({
-          attackInterval: tower.attackInterval - 35,
-          attackType: 'quadruple',
-          attack: tower.attack * 2.5,
-          canHitStealth: true,
-          canHitArmored: true,
-          towerWorth: tower.towerWorth + 150000
-        })
-      },
-  
+  basic: [
+    // Path 1 - Attack Speed focused
+    {
+      name: "Stealth Tracker",
+      cost: 400,
+      requires: 0,
+      path: 1,
+      description: "This upgrade enables the tower to detect and attack stealth units, ensuring no enemy goes undetected.",
+      effect: (tower) => ({ 
+        canHitStealth: true,
+        towerWorth: tower.towerWorth + 400,
+        path: 1
+      })
+    },
+    {
+      name: "Hyperfire Gear",
+      cost: 800,
+      description: "Reduces the tower's attack interval significantly, allowing for faster, more frequent shots to overwhelm enemies.",
+      requires: 1,
+      path: 1,
+      effect: (tower) => ({ 
+        attackInterval: tower.attackInterval - 300,
+        towerWorth: tower.towerWorth + 800,
+        path: 1
+      })
+    },
+    {
+      name: "Twin Fang Arsenal",
+      cost: 3000,
+      description: "The tower fires two shots simultaneously with increased firing speed, doubling its offensive output and speed.",
+      requires: 2,
+      path: 1,
+      effect: (tower) => ({ 
+        attackType: 'double',
+        attackInterval: tower.attackInterval - 200,
+        towerWorth: tower.towerWorth + 2000,
+        path: 1
+      })
+    },
+    {
+      name: "Blitz Commander",
+      cost: 10000,
+      description: "Unleashes a rapid triple-shot barrage with extreme speed, quickly overwhelming even the toughest of enemies.",
+      requires: 3,
+      path: 1,
+      effect: (tower) => ({
+        acceleration: true,
+        accelerationValue: 1.1,
+        attackInterval: tower.attackInterval - 250,
+        attack: tower.attack * 1.3,
+        src: '/basicSpecial.png',
+        towerWorth: tower.towerWorth + 15000,
+        path: 1
+      })
+    },
+    {
+      name: "Tempest Onslaught",
+      cost: 25000,
+      description: "Achieves a near-instant fire rate, allowing the tower to bombard enemies with continuous, rapid-fire destruction.",
+      requires: 4,
+      path: 1,
+      effect: (tower) => ({
+        acceleration: true,
+        accelerationValue: 1.25,
+        attackInterval: tower.attackInterval - 100,
+        attack: tower.attack * 1.25,
+        towerWorth: tower.towerWorth + 25000,
+        path: 1
+      })
+    },
+    {
+      name: "Endless Storm",
+      cost: 150000,
+      description: "Transforms the tower into an unstoppable force, with an unrelenting stream of rapid-fire shots that can pierce through all defenses, including stealth and armored units.",
+      requires: 5,
+      path: 1,
+      effect: (tower) => ({
+        acceleration: true,
+        accelerationValue: 1.3,
+        attackInterval: tower.attackInterval - 35,
+        attack: tower.attack * 2,
+        canHitStealth: true,
+        canHitArmored: true,
+        towerWorth: tower.towerWorth + 150000
+      })
+    },
       // Path 2 - Heavy Damage focused
       {
         name: "Deadeye Calibration",
-        cost: 600,
+        cost: 800,
         requires: 0,
         path: 2,
-        description: "Increases damage output significantly",
-        effect: (tower) => ({ 
-          attack: tower.attack + 60,
-          towerWorth: tower.towerWorth + 600,
-          path: 2
+        description: "Enhances precision, increasing damage and granting a chance to mark enemies for amplified damage.",
+        effect: (tower) => ({
+          attack: tower.attack + 50,
+          towerWorth: tower.towerWorth + 800
         })
       },
       {
         name: "Impact Core Rounds",
-        cost: 2000,
-        description: "Upgraded shells punch through armored enemies",
+        cost: 2500,
         requires: 1,
         path: 2,
-        effect: (tower) => ({ 
-          attack: tower.attack + 80,
+        description: "Specialized rounds pierce an additional enemy and can now penetrate armored targets.",
+        effect: (tower) => ({
+          attack: tower.attack + 50,
           canHitArmored: true,
-          towerWorth: tower.towerWorth + 2000,
-          path: 2
+          towerWorth: tower.towerWorth + 2500
         })
       },
       {
         name: "Execution Shot",
-        cost: 5000,
-        description: "A deadly 30% chance to deal triple damage.",
+        cost: 6000,
         requires: 2,
         path: 2,
-        effect: (tower) => ({ 
-          hasCritical: true,
-          criticalChance: 0.30,
-          criticalMultiplier: 3,
-          towerWorth: tower.towerWorth + 5000,
-          path: 2
+        description: "Shots now have a 25% chance to ricochet, striking another enemy for 75% of the original damage.",
+        effect: (tower) => ({
+          canMark: true,
+          markedDamageMultiplier: 1.25,
+          attack: tower.attack + 75,
+          towerWorth: tower.towerWorth + 6000
         })
       },
       {
-        name: "Annihilator Protocol ",
-        cost: 15000,
-        description: "Converts attacks into devastating explosive force.",
+        name: "Annihilator Protocol",
+        cost: 17000,
         requires: 3,
         path: 2,
+        description: "Marked enemies detonate upon defeat, dealing explosive area damage to nearby foes.",
         effect: (tower) => ({
-          attackType: 'explosion',
-          explosionRadius: 25,
-          attack: tower.attack * 3,
-          src: '/basicSpecial2.png',
-          towerWorth: tower.towerWorth + 15000,
-          path: 2
+          markedDamageMultiplier: 1.5,
+          attackType: "double",
+          attack: tower.attack * 1.5,
+          src: "/basicSpecial2.png",
+          towerWorth: tower.towerWorth + 17000
         })
       },
       {
         name: "Tectonic Warhead",
-        cost: 30000,
-        description: "Creates seismic-level explosions with amplified force.",
+        cost: 35000,
         requires: 4,
         path: 2,
+        description: "Shots gain immense power, increasing overall damage. Marked enemies take significantly more damage.",
         effect: (tower) => ({
-          explosionRadius: tower.explosionRadius * 1.4,
-          attack: tower.attack * 1.5,
-          towerWorth: tower.towerWorth + 30000,
-          path: 2
+          markedDamageMultiplier: 1.75,
+          attack: tower.attack * 2.5,
+          towerWorth: tower.towerWorth + 35000
         })
       },
       {
-        name: "Armageddon's Call",
+        name: "Armageddon’s Call",
         cost: 150000,
-        description: "A world-ending detonation obliterates everything.",
         requires: 5,
         path: 2,
+        description: "Unleashes absolute destruction—marked enemies suffer catastrophic explosions, attacks triple in power, and all defenses are bypassed.",
         effect: (tower) => ({
+          markedDamageMultiplier: 2.5,
           explosionRadius: tower.explosionRadius * 2,
-          attack: tower.attack * 4,
+          attack: tower.attack * 3,
           canHitStealth: true,
           canHitArmored: true,
-          criticalChance: 0.5,
-          criticalMultiplier: 5,
           towerWorth: tower.towerWorth + 150000
         })
       }
@@ -235,7 +237,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 1,
           description: "Enhances precision for increased base damage.",
           effect: (tower) => ({
-            attack: tower.attack + 100,
+            attack: tower.attack + 80,
             towerWorth: tower.towerWorth + 1000,
             path: 1
           })
@@ -245,11 +247,9 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           cost: 2500,
           requires: 1,
           path: 1,
-          description: "20% chance to paralyze enemies on hit.",
+          description: "Better rounds.",
           effect: (tower) => ({
-            canStun: true,
-            stunDuration: 75,
-            criticalChance: 0.2,
+            criticalChance: 0.25,
             towerWorth: tower.towerWorth + 2500,
             path: 1
           })
@@ -261,6 +261,8 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 1,
           description: "Armor-piercing rounds with +150 damage.",
           effect: (tower) => ({
+            canStun: true,
+            stunDuration: 75,
             canHitArmored: true,
             attack: tower.attack + 150,
             towerWorth: tower.towerWorth + 5000,
@@ -275,7 +277,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           description: "40% chance to stun with doubled damage.",
           effect: (tower) => ({
             attack: tower.attack * 2,
-            criticalChance: 0.4,
+            criticalChance: 0.5,
             stunDuration: 150,
             src: '/sniperSpecial.png',
             towerWorth: tower.towerWorth + 12000,
@@ -289,7 +291,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 1,
           description: "Massive damage with guaranteed stun.",
           effect: (tower) => ({
-            attack: tower.attack * 3,
+            attack: tower.attack * 3.5,
             criticalChance: 0.6,
             stunDuration: 250,
             towerWorth: tower.towerWorth + 25000,
@@ -303,7 +305,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 1,
           description: "Perfect accuracy with godlike destructive force.",
           effect: (tower) => ({
-            attack: tower.attack * 3.5,
+            attack: tower.attack * 5,
             criticalChance: 0.8,
             stunDuration: 500,
             canHitStealth: true,
@@ -345,7 +347,6 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 2,
           description: "Fires at three targets with increased speed.",
           effect: (tower) => ({
-            attackType: 'triple',
             attackInterval: tower.attackInterval - 300,
             towerWorth: tower.towerWorth + 4500,
             path: 2
@@ -358,6 +359,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 2,
           description: "Extremely rapid-fire shots with increased damage.",
           effect: (tower) => ({
+            attackType: 'triple',
             attackInterval: tower.attackInterval - 450,
             attack: tower.attack * 1.3,
             src: '/sniperSpecial2.png',
@@ -372,7 +374,6 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 2,
           description: "Quad-shot bursts with unparalleled speed.",
           effect: (tower) => ({
-            attackType: 'quadruple',
             attackInterval: tower.attackInterval - 350,
             attack: tower.attack * 1.5,
             towerWorth: tower.towerWorth + 25000,
@@ -455,8 +456,10 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           cost: 25000,
           requires: 4,
           path: 1,
-          description: "Unleashes a blizzard of bullets at extreme velocity.",
+          description: "Unleashes a blizzard of bullets at extreme velocity and allow tower to execute.",
           effect: (tower) => ({
+            canExecute: true,
+            executeTreshhold: 10,
             attackInterval: tower.attackInterval - 65,
             attack: tower.attack * 1.6,
             towerWorth: tower.towerWorth + 25000,
@@ -471,8 +474,9 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           description: "Attacks at incomprehensible speeds, overwhelming enemies.",
           effect: (tower) => ({
             attackInterval: tower.attackInterval - 40,
+            executeTreshhold: 20,
             attack: tower.attack * 2.5,
-            attackType: 'quadruple',
+            attackType: 'five',
             canHitArmored: true,
             canHitStealth: true,
             towerWorth: tower.towerWorth + 150000
@@ -649,7 +653,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           description: "Bends reality itself, nearly stopping enemies entirely.",
           effect: (tower) => ({
             explosionRadius: 35,
-            slowAmount: tower.slowAmount ? tower.slowAmount * 0.8 : 0.8,
+            slowAmount: tower.slowAmount ? tower.slowAmount * 0.7 : 0.7,
             slowDuration: 7000,
             attackInterval: tower.attackInterval - 300,
             canHitArmored: true,
@@ -687,11 +691,12 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           cost: 4500,
           requires: 2,
           path: 2,
-          description: "Hits three enemies at once with a deep freeze.",
+          description: "Unleashes a fierce frost storm.",
           effect: (tower) => ({
-            attackType: 'triple',
-            radius: tower.radius * 1.3,
-            attack: tower.attack + 25,
+            attackType: 'aura',
+            attackInterval: tower.attackInterval + 500,
+            canStun: true,
+            stunDuration: 250,
             src: '/slowerSpecial2.png',
             towerWorth: tower.towerWorth + 4500,
             path: 2
@@ -702,11 +707,9 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           cost: 12000,
           requires: 3,
           path: 2,
-          description: "Freezes four enemies with a chance to stun.",
+          description: "Freezes more.",
           effect: (tower) => ({
-            attackType: 'quadruple',
-            canStun: true,
-            stunDuration: 100,
+            stunDuration: 500,
             attack: tower.attack + 30,
             towerWorth: tower.towerWorth + 12000,
             path: 2
@@ -720,8 +723,8 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           description: "Absolute freezing control over the battlefield.",
           effect: (tower) => ({
             attack: tower.attack * 2,
-            stunDuration: 250,
-            radius: tower.radius * 1.5,
+            stunDuration: 1000,
+            attackInterval: tower.attackInterval + 750,
             towerWorth: tower.towerWorth + 20000,
             path: 2
           })
@@ -733,12 +736,12 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 2,
           description: "A frost-bound apocalypse, freezing all in its wake.",
           effect: (tower) => ({
-            attackType: 'quadruple',
-            attack: tower.attack * 4,
-            stunDuration: 500,
+            attack: tower.attack * 3,
+            attackInterval: tower.attackInterval + 4500,
+            stunDuration: 2500,
             canHitStealth: true,
             canHitArmored: true,
-            radius: tower.radius * 2,
+            radius: tower.radius * 1.2,
             towerWorth: tower.towerWorth + 150000
           })
         }
@@ -790,12 +793,11 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           cost: 8000,
           requires: 3,
           path: 1,
-          description: "Hyper-toxic venom that bypasses regeneration.",
+          description: "Hyper-toxic venom.",
           effect: (tower) => ({
             poisonDamage: tower.poisonDamage * 3,
             lingeringRadius: 20,
             canHitStealth: true,
-            canStopRegen: true,
             towerWorth: tower.towerWorth + 8000,
             path: 1
           })
@@ -852,9 +854,10 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           cost: 2000,
           requires: 1,
           path: 2,
-          description: "Speeds up poison dispersion for a wider spread.",
+          description: "Speeds up poison dispersion for a wider spread (disable enemy regen).",
           effect: (tower) => ({
             attackInterval: tower.attackInterval - 200,
+            canStopRegen: true,
             radius: tower.radius * 1.2,
             towerWorth: tower.towerWorth + 2000,
             path: 2
@@ -865,11 +868,9 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           cost: 4500,
           requires: 2,
           path: 2,
-          description: "Creates deadly poison clouds upon impact (Turn off enemy regen).",
+          description: "Creates deadly poison clouds upon impact.",
           effect: (tower) => ({
-            attackType: 'triple',
             poisonDamage: tower.poisonDamage * 2,
-            canStopRegen: true,
             towerWorth: tower.towerWorth + 4500,
             path: 2
           })
@@ -894,7 +895,6 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 2,
           description: "Unleashes maximum area control with toxic devastation.",
           effect: (tower) => ({
-            attackType: 'quadruple',
             poisonDamage: tower.poisonDamage * 4,
             bossDamageMultiplier: 2,
             towerWorth: tower.towerWorth + 20000,
@@ -1163,6 +1163,8 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       description: "The pinnacle of anti-armor weaponry.",
       effect: (tower) => ({
         attack: tower.attack * 2,
+        canStun: true,
+        stunDuration: 100,
         criticalChance: 0.5,
         criticalMultiplier: 4,
         canHitStealth: true,
@@ -1176,9 +1178,10 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       description: "An unstoppable force that obliterates everything in its path.",
       effect: (tower) => ({
-        attack: tower.attack * 2,
+        attack: tower.attack * 3.5,
         criticalChance: 0.6,
         criticalMultiplier: 5,
+        stunDuration: 250,
         canHitStealth: true,
         attackInterval: tower.attackInterval - 500,
         towerWorth: tower.towerWorth + 150000

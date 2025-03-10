@@ -5,7 +5,7 @@ interface TutorialWindowProps {
 }
 
 const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
-    const [activeTab, setActiveTab] = useState<'towers' | 'mechanics'>('towers');
+    const [activeTab, setActiveTab] = useState<'towers' | 'mechanics' | 'patchNotes'>('towers');
     const [selectedTowerInfo, setSelectedTowerInfo] = useState<string | null>(null);
 
     const renderTowerContent = () => {
@@ -291,7 +291,52 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
             </div>
         </div>
     );
-
+    const renderPatchNotesContent = () => (
+        <div className="space-y-6">
+            {/* Tower Upgrades section update */}
+            <div className="bg-sky-800/80 p-4 rounded-lg border border-cyan-400/30">
+                <h3 className="text-xl text-white mb-2">Patch Notes 10.03.2025</h3>
+                
+                {/* Reworked Tower Paths section */}
+                <div className="mt-6 space-y-4">
+                    <h4 className="text-lg text-white">Basic Tower</h4>
+                    <p className="text-gray-300">• Reworked Path 1: Focus on accelerated shots that deal more damage the more they attack the same target.</p>
+                    <p className="text-gray-300">• Reworked Path 2: Slow, high-damage attacker that marks enemies to take more damage from other towers.</p>
+                </div>
+    
+                {/* Sniper Adjustments section */}
+                <div className="mt-6 space-y-4">
+                    <h4 className="text-lg text-white">Sniper Tower Adjustments</h4>
+                    <p className="text-gray-300">• Path 1: Deals more damage and is better at stunning.</p>
+                    <p className="text-gray-300">• Path 2: Can no longer stun and deals less overall damage.</p>
+                </div>
+    
+                {/* Slower Tower Adjustments */}
+                <div className="mt-6 space-y-4">
+                    <h4 className="text-lg text-white">Slower Tower Adjustments</h4>
+                    <p className="text-gray-300">• Completely reworked Path 2: Now can stun all enemies within its range, becoming the stun master.</p>
+                </div>
+    
+                {/* Rapid Tower Adjustments */}
+                <div className="mt-6 space-y-4">
+                    <h4 className="text-lg text-white">Rapid Tower Adjustments</h4>
+                    <p className="text-gray-300">• Path 1: Now executes enemies at certain thresholds and can target up to 5 enemies at a time.</p>
+                </div>
+    
+                {/* Gas Spitter Tower Adjustments */}
+                <div className="mt-6 space-y-4">
+                    <h4 className="text-lg text-white">Gas Spitter Tower Adjustments</h4>
+                    <p className="text-gray-300">• Path 2: Now worse at clearing waves of enemies.</p>
+                </div>
+    
+                {/* Cannon Tower Adjustments */}
+                <div className="mt-6 space-y-4">
+                    <h4 className="text-lg text-white">Cannon Tower Adjustments</h4>
+                    <p className="text-gray-300">• Path 1: Deals more overall damage and can stun enemies.</p>
+                </div>
+            </div>
+        </div>
+    );
     return (
         <div className="fixed inset-0 bg-sky-900/50 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-gradient-to-br from-sky-900 via-blue-900 to-cyan-900 p-6 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto border-2 border-cyan-400/50 shadow-lg shadow-cyan-500/30">
@@ -329,6 +374,16 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
                     >
                         Game Mechanics
                     </button>
+                    <button
+                        onClick={() => setActiveTab('patchNotes')}
+                        className={`px-4 py-2 rounded-lg transition-all ${
+                            activeTab === 'patchNotes'
+                                ? 'bg-cyan-600/80 text-white shadow-lg shadow-cyan-500/30'
+                                : 'bg-sky-800/80 text-gray-300 hover:bg-sky-700/80'
+                        }`}
+                    >
+                        Patch Notes
+                    </button>
                 </div>
 
                 {/* Update tower card styles */}
@@ -357,7 +412,7 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
 
                 {/* Apply new styles to existing content */}
                 <div className="space-y-6">
-                    {activeTab === 'towers' ? renderTowerContent() : renderMechanicsContent()}
+                    {activeTab === 'towers' ? renderTowerContent() : activeTab === 'mechanics' ? renderMechanicsContent() : renderPatchNotesContent()}
                 </div>
             </div>
         </div>
