@@ -181,6 +181,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         path: 2,
         description: "Shots now mark enemies and amplify dmg done by other towers to that enemy.",
         effect: (tower) => ({
+          attackType: "double",
           canMark: true,
           markedDamageMultiplier: 1.15,
           attack: tower.attack + 75,
@@ -290,7 +291,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 1,
           description: "Massive damage with guaranteed stun.",
           effect: (tower) => ({
-            attack: tower.attack * 3.5,
+            attack: tower.attack * 4,
             criticalChance: 0.6,
             stunDuration: 250,
             towerWorth: tower.towerWorth + 25000,
@@ -304,7 +305,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 1,
           description: "Perfect accuracy with godlike destructive force.",
           effect: (tower) => ({
-            attack: tower.attack * 5,
+            attack: tower.attack * 8,
             criticalChance: 0.8,
             stunDuration: 500,
             canHitStealth: true,
@@ -583,7 +584,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 1,
           description: "Enhances slow effect, reducing enemy speed further.",
           effect: (tower) => ({
-            slowAmount: tower.slowAmount ? tower.slowAmount * 0.9 : 0.9,
+            slowAmount: tower.slowAmount ? tower.slowAmount * 0.95 : 0.95,
             towerWorth: tower.towerWorth + 400,
             path: 1
           })
@@ -595,7 +596,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 1,
           description: "Extends the slow effect and duration for greater impact.",
           effect: (tower) => ({
-            slowAmount: tower.slowAmount ? tower.slowAmount * 0.8 : 0.8,
+            slowAmount: tower.slowAmount ? tower.slowAmount * 0.85 : 0.85,
             slowDuration: 3000,
             towerWorth: tower.towerWorth + 1500,
             path: 1
@@ -610,7 +611,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           effect: (tower) => ({
             attackType: 'explosion',
             explosionRadius: 15,
-            slowAmount: tower.slowAmount ? tower.slowAmount * 0.7 : 0.7,
+            slowAmount: 0.5,
             src: '/slowerSpecial1.png',
             towerWorth: tower.towerWorth + 3500,
             path: 1
@@ -624,7 +625,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           description: "Expands slow radius and amplifies its effect.",
           effect: (tower) => ({
             explosionRadius: 20,
-            slowAmount: tower.slowAmount ? tower.slowAmount * 0.6 : 0.6,
+            slowAmount: 0.4,
             slowDuration: 4000,
             towerWorth: tower.towerWorth + 8000,
             path: 1
@@ -638,7 +639,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           description: "Achieves near-total enemy immobilization.",
           effect: (tower) => ({
             explosionRadius: 25,
-            slowAmount: tower.slowAmount ? tower.slowAmount * 0.6 : 0.6,
+            slowAmount: 0.3,
             canHitStealth: true,
             towerWorth: tower.towerWorth + 20000,
             path: 1
@@ -652,7 +653,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           description: "Bends reality itself, nearly stopping enemies entirely.",
           effect: (tower) => ({
             explosionRadius: 35,
-            slowAmount: tower.slowAmount ? tower.slowAmount * 0.7 : 0.7,
+            slowAmount: 0.15,
             slowDuration: 7000,
             attackInterval: tower.attackInterval - 300,
             canHitArmored: true,
@@ -1075,7 +1076,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         explosionRadius: tower.explosionRadius * 1.5,
         attack: tower.attack * 1.5,
         slowAmount: 0.4,
-        slowDuration: 4000,
+        slowDuration: 2000,
         canHitStealth: true,
         towerWorth: tower.towerWorth + 25000,
         path: 2
@@ -1091,8 +1092,8 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         explosionRadius: tower.explosionRadius * 2,
         attack: tower.attack * 2.5,
         slowAmount: 0.3,
-        slowDuration: 5000,
-        stunDuration: 1000,
+        slowDuration: 4000,
+        stunDuration: 1200,
         canHitStealth: true,
         towerWorth: tower.towerWorth + 150000
       })

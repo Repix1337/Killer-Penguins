@@ -824,30 +824,38 @@ useEffect(() => {
               enemy.maxHp *= 1.5;
               enemy.speed *= 1.2;
               enemy.stunReduction *= 0.5;
+              enemy.slowReduction *= 0.5;
               setEnemies(prev => [...prev, enemy]);
               setEnemyCount(prev => prev + (type61 === 'MEGABOSS' ? 100 : 1));
             }
             break;
           
-          case round >= 66:
-            if (enemyCount < getEnemyLimit(round) * 2) { // Double enemy limit
-              // Ultimate challenge with enhanced enemies
-              const type66 = enemyCount % 100 === 0 ? 'MEGABOSS' :
-                            enemyCount % 2 === 0 ? 'SPEEDYGIGATANK' :
-                            'SPAWNER';
-              const enemy = createNewEnemy(type66);
-              // Significantly enhanced stats for endless mode
-              enemy.hp *= 2 + (round - 65) * 0.1; // Scales with rounds
-              enemy.maxHp *= 2 + (round - 65) * 0.1;
-              enemy.speed *= 1.4;
-              enemy.slowReduction = 0.4;
-              enemy.stunReduction = 0.5;
-              enemy.regen *= 1.5;
-              setEnemies(prev => [...prev, enemy]);
-              setEnemyCount(prev => prev + (type66 === 'MEGABOSS' ? 100 : 1));
-            }
-            break;
-      }
+            case round >= 66:
+              if (enemyCount < getEnemyLimit(round) * 2) { // Double enemy limit
+                  // Ultimate challenge with enhanced enemies
+                  const type66 = enemyCount % 50 === 0 ? 'MEGABOSS' :
+                                enemyCount % 2 === 0 ? 'SPEEDYGIGATANK' :
+                                'SPAWNER';
+                  const enemy = createNewEnemy(type66);
+                  
+                  // Logarithmic scaling for speed
+                  const speedIncrease = Math.log(round - 65) * 0.25 + (round - 65) * 0.005;
+                  const newSpeed = enemy.speed * (1 + speedIncrease); // Apply scaling
+                  
+                  enemy.speed = newSpeed;
+                  enemy.baseSpeed = newSpeed;
+                  enemy.hp *= 2 + (round - 65) * 0.1; // Scales with rounds
+                  enemy.maxHp *= 2 + (round - 65) * 0.1;
+                  enemy.slowReduction = 0.3;
+                  enemy.stunReduction = 0.2;
+                  enemy.regen *= 1.5;
+          
+                  setEnemies(prev => [...prev, enemy]);
+                  setEnemyCount(prev => prev + (type66 === "MEGABOSS" ? 25 : 1));
+              } 
+              break;
+          }
+          
     }
   
 
@@ -971,9 +979,9 @@ const moveEnemy = useCallback(() => {
   setEnemies(prevEnemies =>
     prevEnemies
       .map((enemy) => {
-        if (enemy.positionX < 28) {
+        if (enemy.positionX < 29.5) {
           return { ...enemy, positionX: enemy.positionX + enemy.speed, positionY: enemy.positionY - enemy.speed / 10};
-        } else if (enemy.positionX >= 28 && enemy.positionX < 52 && enemy.positionY > 20) {
+        } else if (enemy.positionX >= 29.5 && enemy.positionX < 52 && enemy.positionY > 20) {
           return { ...enemy, positionY: enemy.positionY - (enemy.speed * 2), positionX: enemy.positionX + enemy.speed / 3 };
         } else if (enemy.positionY <= 20 && enemy.positionX < 53) {
           return { ...enemy, positionX: enemy.positionX + enemy.speed };
@@ -2592,7 +2600,7 @@ const WinScreen = () => {
   return (
     <>
    <div 
-      className='relative min-h-[75vh]  w-full overflow-hidden' 
+      className='relative min-h-[75vh]  w-full overflow-x-hidden' 
       suppressHydrationWarning
       onClick={handleOutsideClick}
     >

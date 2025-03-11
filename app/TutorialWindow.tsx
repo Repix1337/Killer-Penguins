@@ -295,6 +295,20 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
         <div className="space-y-6">
             {/* Tower Upgrades section update */}
             <div className="bg-sky-800/80 p-4 rounded-lg border border-cyan-400/30">
+                <h3 className="text-xl text-white mb-2">Patch Notes 11.03.2025</h3>
+                <div className="mt-6 space-y-4">
+                    <h4 className="text-lg text-white">Slower</h4>
+                    <p className="text-gray-300">•Path 1 Nerfed: His max slow is now 85%.</p>
+                </div>
+                <div className="mt-6 space-y-4">
+                    <h4 className="text-lg text-white">Slower</h4>
+                    <p className="text-gray-300">•Path 1 Nerfed: His max slow is now 85%.</p>
+                </div>
+                <div className="mt-6 space-y-4">
+                    <h4 className="text-lg text-white">Systems</h4>
+                    <p className="text-gray-300">•Fixed enemies spawn after round 65.</p>
+                    <p className="text-gray-300">•After round 65 enemies will now gain more speed every round.</p>
+                </div>
                 <h3 className="text-xl text-white mb-2">Patch Notes 10.03.2025</h3>
                 
                 {/* Reworked Tower Paths section */}
