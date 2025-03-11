@@ -306,6 +306,7 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
                 </div>
                 <div className="mt-6 space-y-4">
                     <h4 className="text-lg text-white">Systems</h4>
+                    <p className="text-gray-300">•New stats menu ui.</p>
                     <p className="text-gray-300">•Fixed enemies spawn after round 65.</p>
                     <p className="text-gray-300">•After round 65 enemies will now gain more speed every round.</p>
                 </div>

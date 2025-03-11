@@ -43,8 +43,8 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onClose }) => {
 
   return (
     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl shadow-lg w-2/4 p-6 border border-blue-500/30 animate-scaleUp  ">
-        <div className="flex justify-between items-center mb-6 ">
+      <div className="bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl shadow-lg w-2/4 p-6 border overflow-y-scroll border-blue-500/30 animate-scaleUp  ">
+        <div className="flex justify-between items-center mb-6 overflow-y-scroll ">
           <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
             Top 10 Players
           </h2>
@@ -66,11 +66,11 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onClose }) => {
         ) : error ? (
           <div className="text-red-500 text-center py-8">{error}</div>
         ) : (
-          <div className="space-y-1 ">
+          <div className="space-y-1   ">
             {leaderboardData.map((entry, index) => (
               <div 
                 key={entry.id || index}
-                className="flex items-center  overflow-y-scroll justify-between p-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 transition-colors"
+                className="flex items-center   justify-between p-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <span className={`w-6 text-center font-bold ${

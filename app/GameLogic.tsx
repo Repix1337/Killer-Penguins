@@ -2057,7 +2057,7 @@ useEffect(() => {
           onClick={(e) => e.stopPropagation()}
         >
           {/* Left Panel - Tower Info & Stats */}
-          <div className='flex flex-col space-y-3 w-2/3 p-3 bg-gray-950/80 rounded-lg border border-blue-900/30 shadow-lg'>
+          <div className='flex flex-col space-y-3 w-1/2 p-3 bg-gray-950/80 rounded-lg border border-blue-900/30 shadow-lg'>
             <div className='text-white'>
               <h1 className="text-xl font-bold mb-1 text-blue-400 flex items-center">
                 <img src={selectedTower.src} alt="Tower" className="w-8 h-8 mr-2" />
@@ -2081,7 +2081,7 @@ useEffect(() => {
               {/* Stats Section - Side by side layout */}
               <div className="flex gap-2 mb-2">
                 {/* Primary Stats - Left side */}
-                <div className="w-1/2">
+                <div className="w-2/3">
                   <div className="text-sm font-semibold text-gray-300 mb-1">Primary Stats</div>
                   <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-2"></div>
                   <div className="grid grid-cols-2 gap-2">
@@ -2100,7 +2100,7 @@ useEffect(() => {
                 </div>
                 
                 {/* Special Abilities - Right side */}
-                <div className="w-1/2">
+                <div className="w-1/3">
                   <div className="text-sm font-semibold text-gray-300 mb-1">Special Abilities</div>
                   <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-2"></div>
                   <div className="grid grid-cols-1 gap-2">
@@ -2318,7 +2318,7 @@ useEffect(() => {
           </div>
           
           {/* Right Panel - Upgrades - Compact */}
-          <div className='w-1/3 space-y-2'>
+          <div className='w-1/2 space-y-2'>
             <h2 className="text-lg font-bold text-blue-400 mb-2">Upgrades</h2>
             
             <div className="max-h-64 overflow-y-auto pr-1">
