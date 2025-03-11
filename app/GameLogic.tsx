@@ -2504,7 +2504,7 @@ const GameOverScreen = () => {
   };
 
   return showGameOver && (
-    <div className='absolute top-0 left-0 w-full h-full bg-black bg-opacity-75 flex items-center justify-center z-50'>
+    <div className='absolute top-0 left-0 w-full h-full bg-black bg-opacity-75 overflow-hidden flex items-center justify-center z-50'>
       <div className='bg-gradient-to-br from-slate-900 to-slate-800 text-white p-12 rounded-2xl 
         text-center border-4 border-blue-500 shadow-2xl transform scale-100 animate-pop-in'>
         <span className='text-yellow-400 text-6xl'>⛔</span>
@@ -2556,7 +2556,7 @@ const GameOverScreen = () => {
 };
 const WinScreen = () => {
   return showWinScreen && (
-    <div className='absolute top-0 left-0 w-full h-full bg-black bg-opacity-75 flex items-center justify-center z-50'>
+    <div className='absolute top-0 left-0 overflow-hidden w-full h-full bg-black bg-opacity-75 flex items-center justify-center z-50'>
       <div className='bg-gradient-to-br from-slate-900 to-slate-800 text-white p-12 rounded-2xl 
         text-center border-4 border-blue-500 shadow-2xl transform scale-100 animate-pop-in'>
         <div className='animate-bounce mb-6'>
@@ -2600,7 +2600,7 @@ const WinScreen = () => {
   return (
     <>
    <div 
-      className='relative min-h-[75vh]  w-full overflow-x-hidden' 
+      className='relative min-h-[73vh]  w-full ' 
       suppressHydrationWarning
       onClick={handleOutsideClick}
     >
