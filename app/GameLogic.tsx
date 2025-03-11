@@ -1366,7 +1366,6 @@ const actualDamage = Math.min(
   ((1 + ((enemy.accelerationValue ?? 0.1) * (enemy.acceleratedHitCount)))),
   enemy.hp
 );
-              console.log(actualDamage)
               totalDamageDealt += actualDamage;
               
               
@@ -2373,14 +2372,6 @@ useEffect(() => {
     </div>
   );
   
-  // New component for section headers
-  const SectionHeader = ({ title }: { title: string }) => (
-    <div className="mb-3 mt-5">
-      <h3 className="text-lg font-semibold text-gray-300">{title}</h3>
-      <div className="h-px bg-gradient-to-r from-blue-500 to-transparent"></div>
-    </div>
-  );
-  
   const closeUpgradeMenu = () => {
     setShowUpgradeMenu(false);
   }
@@ -2460,7 +2451,6 @@ useEffect(() => {
     // Create a Set to track unique combinations of source and target
     const uniqueEffects = new Set();
     
-    console.log("All attack effects:", attackEffects);
     const animationDuration = 100 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1);
 
     return attackEffects

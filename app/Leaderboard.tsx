@@ -66,11 +66,11 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onClose }) => {
         ) : error ? (
           <div className="text-red-500 text-center py-8">{error}</div>
         ) : (
-          <div className="space-y-1 overflow-y-scroll">
+          <div className="space-y-1 ">
             {leaderboardData.map((entry, index) => (
               <div 
                 key={entry.id || index}
-                className="flex items-center justify-between p-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 transition-colors"
+                className="flex items-center  overflow-y-scroll justify-between p-2 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <span className={`w-6 text-center font-bold ${
