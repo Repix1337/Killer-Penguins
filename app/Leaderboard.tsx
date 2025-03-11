@@ -42,9 +42,9 @@ const Leaderboard: React.FC<LeaderboardProps> = ({ onClose }) => {
   }, []);
 
   return (
-    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl shadow-lg w-2/4 p-6 border overflow-y-scroll border-blue-500/30 animate-scaleUp  ">
-        <div className="flex justify-between items-center mb-6 overflow-y-scroll ">
+    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 max-h-[450px]">
+    <div className="bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl shadow-lg w-2/4 p-6 border border-blue-500/30 animate-scaleUp overflow-y-scroll max-h-[400px]">
+        <div className="flex justify-between items-center mb-6 ">
           <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
             Top 10 Players
           </h2>
