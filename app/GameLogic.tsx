@@ -151,7 +151,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     enemyPositionX: number; 
     enemyPositionY: number;
     effectSrc: string; 
-    timestamp?: number 
+    timestamp: number 
   }[]>([]);
   const [enemyCount, setEnemyCount] = useState(0);
   const [showUpgradeMenu, setShowUpgradeMenu] = useState(false);
@@ -1059,7 +1059,7 @@ const moveEnemy = useCallback(() => {
       );
   
       // Add new effects
-      setAttackEffects(prevEffects => [...prevEffects, ...newEffects]);
+      setAttackEffects(prevEffects => [ ...prevEffects, ...newEffects]);
   
       // Handle enemy updates and damage
       setEnemies(prevEnemies => {
@@ -2286,24 +2286,53 @@ useEffect(() => {
   };
   // Component for attack animation
   const attackAnimation = () => {
-    return attackEffects.map((effect) => (
-      <img
-        src={effect.effectSrc}
-        key={effect.id}
-        className='pointer-events-none animate-slide h-6 w-6 absolute'
-        style={{
-          '--tower-positionX': `${effect.towerPositionX + 1}%`,
-          '--tower-positionY': `${effect.towerPositionY + 2.5}%`,
-          '--enemy-positionX': `${effect.enemyPositionX + 1.5}%`,
-          '--enemy-positionY': `${effect.enemyPositionY}%`,
-          left: `${effect.towerPositionX}%`,
-          animationDuration: `${100 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)}ms`,
-          filter: 'drop-shadow(0 0 2px rgba(0,0,0,1)) brightness(1.2) contrast(1.2)',
-          mixBlendMode: 'normal',
-          zIndex: 20
-        } as React.CSSProperties}
-      />
-    ));
+    // Create a Set to track unique combinations of source and target
+    const uniqueEffects = new Set();
+    
+    console.log("All attack effects:", attackEffects);
+    const animationDuration = 100 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1);
+
+    return attackEffects
+      .filter(effect => {
+        // Create a unique key for each tower-enemy pair
+        const effectKey = `${effect.towerPositionX}-${effect.towerPositionY}-${effect.enemyPositionX}-${effect.enemyPositionY}`;
+        
+        // Check if animation should be complete based on timestamp
+        const now = Date.now();
+        const animationEndTime = effect.timestamp + animationDuration;
+        
+        // Filter out completed animations
+        if (now > animationEndTime) {
+          return false;
+        }
+        
+        // If we've seen this effect before, filter it out
+        if (uniqueEffects.has(effectKey)) {
+          return false;
+        }
+        
+        // Otherwise, add it to our set and keep it
+        uniqueEffects.add(effectKey);
+        return true;
+      })
+      .map((effect) => (
+        <img
+          src={effect.effectSrc}
+          key={effect.id}
+          className='pointer-events-none animate-slide h-6 w-6 absolute'
+          style={{
+            '--tower-positionX': `${effect.towerPositionX + 1}%`,
+            '--tower-positionY': `${effect.towerPositionY + 2.5}%`,
+            '--enemy-positionX': `${effect.enemyPositionX + 1.5}%`,
+            '--enemy-positionY': `${effect.enemyPositionY}%`,
+            left: `${effect.towerPositionX}%`,
+            animationDuration: `${animationDuration}ms`,
+            filter: 'drop-shadow(0 0 2px rgba(0,0,0,1)) brightness(1.2) contrast(1.2)',
+            mixBlendMode: 'normal',
+            zIndex: 20
+          } as React.CSSProperties}
+        />
+      ));
   };
   
   
