@@ -779,6 +779,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 1,
           description: "Creates acidic puddles that deal continuous damage.",
           effect: (tower) => ({
+            hasLingering: true,
             attackType: 'lingering',
             lingeringDamage: tower.poisonDamage * 0.04,
             lingeringRadius: 15,

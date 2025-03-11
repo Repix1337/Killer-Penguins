@@ -2053,139 +2053,300 @@ useEffect(() => {
         <div 
           data-upgrade-menu
           className='absolute top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-800 
-            flex items-start justify-between p-8 rounded-lg gap-8 shadow-xl border-2 border-blue-500'
-          style={{left: selectedTower.positionX < 50 ? '70%' : '30%', width: '800px'}}
+            flex items-start justify-between p-4 rounded-lg gap-4 shadow-xl border-2 border-blue-500'
+          style={{left: selectedTower.positionX < 50 ? '65%' : '35%', width: '800px'}}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Left Panel - Tower Info & Stats */}
-          <div className='flex flex-col space-y-6 w-1/2'>
+          <div className='flex flex-col space-y-3 w-2/3 p-3 bg-gray-950/80 rounded-lg border border-blue-900/30 shadow-lg'>
             <div className='text-white'>
-              <h1 className="text-3xl font-bold mb-2 text-blue-400">
+              <h1 className="text-xl font-bold mb-1 text-blue-400 flex items-center">
+                <img src={selectedTower.src} alt="Tower" className="w-8 h-8 mr-2" />
                 {selectedTower.type.charAt(0).toUpperCase() + selectedTower.type.slice(1)} Tower
               </h1>
-              <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-4"></div>
+              <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-3"></div>
               
-              {/* Tower Image and Basic Info */}
-              <div className="flex items-center gap-4 mb-6">
-                <img src={selectedTower.src} alt="Tower" className="w-16 h-16" />
-                <div>
-                  <p className="text-sm text-gray-400">Level: {Math.max(selectedTower.path1Level, selectedTower.path2Level)}</p>
-                  <p className="text-sm text-gray-400">Total Value: ${Math.floor(selectedTower.towerWorth)}</p>
+              {/* Tower Basic Info - Compact version */}
+              <div className="flex items-center gap-2 mb-3 bg-gray-900/50 p-2 rounded-lg border border-blue-800/20">
+                <img src={selectedTower.src} alt="Tower" className="w-12 h-12 p-1 bg-blue-900/30 rounded-lg shadow-md" />
+                <div className="flex-1 text-xs">
+                  <div className="grid grid-cols-2 gap-1">
+                    <div>Level: <span className="text-blue-300 font-bold">{Math.max(selectedTower.path1Level, selectedTower.path2Level)}</span></div>
+                    <div>Value: <span className="text-green-300 font-bold">${Math.floor(selectedTower.towerWorth)}</span></div>
+                    <div>Path 1: <span className="text-blue-300">{selectedTower.path1Level}</span></div>
+                    <div>Path 2: <span className="text-blue-300">{selectedTower.path2Level}</span></div>
+                  </div>
                 </div>
               </div>
-  
-              {/* Stats Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <StatBlock label="Attack Damage" value={Math.floor(selectedTower.attack)} />
-                <StatBlock label="Attack Speed" value={`${Math.floor(selectedTower.attackInterval)}ms`} />
-                <StatBlock label="Range" value={Math.floor(selectedTower.radius)} />
-                <StatBlock label="Attack Type" value={selectedTower.attackType} />
-                <StatBlock label="Targets Stealth" value={selectedTower.canHitStealth ? "Yes" : "No"} />
-                <StatBlock label="Targets Armored" value={selectedTower.canHitArmored ? "Yes" : "No"} />
+      
+              {/* Stats Section - Side by side layout */}
+              <div className="flex gap-2 mb-2">
+                {/* Primary Stats - Left side */}
+                <div className="w-1/2">
+                  <div className="text-sm font-semibold text-gray-300 mb-1">Primary Stats</div>
+                  <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-2"></div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <StatBlock label="Attack" value={Math.floor(selectedTower.attack)} icon="⚔️" />
+                    <StatBlock label="Speed" value={`${Math.floor(selectedTower.attackInterval)}ms`} icon="⚡" />
+                    <StatBlock label="Range" value={Math.floor(selectedTower.radius)} icon="📏" />
+                    <StatBlock label="Type" value={selectedTower.attackType} icon="🎯" />
+                    <StatBlock label="Target" value={selectedTower.targettingType} icon="👁️" />
+                    <StatBlock 
+                      label="Total Damage" 
+                      value={Math.floor(selectedTower.damageDone).toLocaleString()} 
+                      highlight={true}
+                      icon="💥"
+                    />
+                  </div>
+                </div>
                 
-                {selectedTower.hasCritical && (
-                  <>
-                    <StatBlock 
-                      label="Crit Chance" 
-                      value={`${(selectedTower.criticalChance || 0) * 100}%`} 
-                    />
-                    <StatBlock 
-                      label="Crit Multiplier" 
-                      value={`${selectedTower.criticalMultiplier}x`} 
-                    />
-                  </>
-                )}
-                
-                {selectedTower.slowAmount && (
-                  <>
-                    <StatBlock 
-                      label="Slow Amount" 
-                      value={`${Math.floor((1 - selectedTower.slowAmount) * 100)}%`} 
-                    />
-                    <StatBlock 
-                      label="Slow Duration" 
-                      value={`${selectedTower.slowDuration}ms`} 
-                    />
-                  </>
-                )}
-  
-                {selectedTower.poisonDamage > 0 && (
-                  <StatBlock 
-                    label="Poison Total Damage" 
-                    value={selectedTower.poisonDamage * 4} 
-                  />
-                )}
-  
-                {selectedTower.canStun && (
-                  <StatBlock 
-                    label="Stun Duration" 
-                    value={`${selectedTower.stunDuration}ms`} 
-                  />
-                )}
-  
-                {selectedTower.explosionRadius > 0 && (
-                  <StatBlock 
-                    label="Explosion Radius" 
-                    value={Math.floor(selectedTower.explosionRadius)} 
-                  />
-                )}
-  
-                <StatBlock 
-                  label="Total Damage" 
-                  value={Math.floor(selectedTower.damageDone)} 
-                  highlight={true}
-                />
+                {/* Special Abilities - Right side */}
+                <div className="w-1/2">
+                  <div className="text-sm font-semibold text-gray-300 mb-1">Special Abilities</div>
+                  <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-2"></div>
+                  <div className="grid grid-cols-1 gap-2">
+                    {selectedTower.hasCritical && (
+                      <>
+                        <StatBlock 
+                          label="Crit Chance" 
+                          value={`${((selectedTower.criticalChance || 0) * 100).toFixed(1)}%`} 
+                          icon="✨"
+                        />
+                        <StatBlock 
+                          label="Crit Mult" 
+                          value={`${selectedTower.criticalMultiplier}x`} 
+                          icon="⚡"
+                        />
+                      </>
+                    )}
+                    
+                    {selectedTower.slowAmount && (
+                      <>
+                        <StatBlock 
+                          label="Slow" 
+                          value={`${Math.floor((1 - selectedTower.slowAmount) * 100)}%`} 
+                          icon="❄️"
+                        />
+                        <StatBlock 
+                          label="Duration" 
+                          value={`${selectedTower.slowDuration}ms`} 
+                          icon="⏱️"
+                        />
+                      </>
+                    )}
+    
+                    {selectedTower.poisonDamage > 0 && (
+                      <>
+                        <StatBlock 
+                          label="Poison/Sec" 
+                          value={selectedTower.poisonDamage} 
+                          icon="☠️"
+                        />
+                        <StatBlock 
+                          label="Total Poison" 
+                          value={selectedTower.poisonDamage * 4} 
+                          icon="⚗️"
+                        />
+                      </>
+                    )}
+    
+                    {selectedTower.canStun && (
+                      <StatBlock 
+                        label="Stun" 
+                        value={`${selectedTower.stunDuration}ms`} 
+                        icon="⭐"
+                      />
+                    )}
+    
+                    {selectedTower.explosionRadius > 0 && (
+                      <StatBlock 
+                        label="Explosion Radius" 
+                        value={Math.floor(selectedTower.explosionRadius)} 
+                        icon="💥"
+                      />
+                    )}
+    
+                    {selectedTower.bossDamageMultiplier && (
+                      <StatBlock 
+                        label="Boss Dmg" 
+                        value={`${selectedTower.bossDamageMultiplier}x`} 
+                        icon="👑"
+                      />
+                    )}
+    
+                    {selectedTower.canExecute && (
+                      <StatBlock 
+                        label="Execute" 
+                        value={`${(selectedTower.executeTreshhold || 0)}%`} 
+                        icon="⚰️"
+                      />
+                    )}
+                    
+                    {selectedTower.acceleration && (
+                      <StatBlock 
+                        label="Acceleration" 
+                        value={`${selectedTower.acceleration}`} 
+                        icon="🚀"
+                      />
+                    )}
+                    {selectedTower.accelerationValue && (
+                      <StatBlock 
+                        label="Acceleration" 
+                        value={`${(selectedTower.accelerationValue || 0) * 100}%`} 
+                        icon="🚀"
+                      />
+                    )}
+                    
+                    {selectedTower.canMark && (
+                      <StatBlock 
+                        label="Mark Bonus" 
+                        value={`${(selectedTower.markedDamageMultiplier|| 0) * 100}%`} 
+                        icon="🎯"
+                      />
+                    )}
+                  </div>
+                </div>
               </div>
+      
+              {/* Area Effects Section */}
+              {(selectedTower.chainCount || selectedTower.hasLingering) && (
+                <div className="mb-2">
+                  <div className="text-sm font-semibold text-gray-300 mb-1">Area Effects</div>
+                  <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-2"></div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {selectedTower.chainCount && (
+                      <>
+                        <StatBlock 
+                          label="Chain Count" 
+                          value={selectedTower.chainCount} 
+                          icon="⛓️"
+                        />
+                        <StatBlock 
+                          label="Chain Range" 
+                          value={selectedTower.chainRange} 
+                          icon="🔗"
+                        />
+                      </>
+                    )}
+    
+                    {selectedTower.hasLingering && (
+                      <>
+                        <StatBlock 
+                          label="Lingering Dmg" 
+                          value={selectedTower.lingeringDamage} 
+                          icon="🔥"
+                        />
+                        <StatBlock 
+                          label="Linger Radius" 
+                          value={selectedTower.lingeringRadius} 
+                          icon="⭕"
+                        />
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+      
+              {/* Target Capabilities - Simplified */}
+              <div className="mb-2">
+                <div className="text-sm font-semibold text-gray-300 mb-1">Capabilities</div>
+                <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-2"></div>
+                <div className="flex justify-between text-xs px-1">
+                  <div>
+                    Stealth: <span className={selectedTower.canHitStealth ? "text-green-400" : "text-red-400"}>
+                      {selectedTower.canHitStealth ? "✓" : "✗"}
+                    </span>
+                  </div>
+                  <div>
+                    Armored: <span className={selectedTower.canHitArmored ? "text-green-400" : "text-red-400"}>
+                      {selectedTower.canHitArmored ? "✓" : "✗"}
+                    </span>
+                  </div>
+                  <div>
+                    Stop Regen: <span className={selectedTower.canStopRegen ? "text-green-400" : "text-red-400"}>
+                      {selectedTower.canStopRegen ? "✓" : "✗"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+      
+              {/* Special Upgrades - Compact */}
+              {selectedTower.hasSpecialUpgrade && (
+                <div className="mb-2">
+                  <div className="text-sm font-semibold text-gray-300 mb-1">Special</div>
+                  <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-2"></div>
+                  <div className="p-2 rounded bg-purple-900/40 border border-purple-500/30 text-xs">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="text-purple-300 font-bold">Special Upgrade</div>
+                        <div className="text-gray-400">
+                          {selectedTower.specialUpgradeAvailable ? "Available" : "Locked"}
+                        </div>
+                      </div>
+                      {selectedTower.specialUpgradeAvailable && (
+                        <button 
+                          className="bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 text-xs rounded
+                            transition-all duration-200 shadow-md"
+                        >
+                          Upgrade
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-  
-            {/* Control Buttons */}
-            <div className="flex gap-4 mt-4">
+      
+            {/* Control Buttons - Compact */}
+            <div className="flex gap-2 mt-2">
               <button 
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg
-                  transition-all duration-200 shadow-md"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg
+                  transition-all duration-200 shadow-md flex items-center justify-center text-sm"
                 onClick={() => sellTower(selectedTower.towerWorth)}
               >
+                <span className="mr-1">💰</span>
                 Sell (${Math.floor(selectedTower.towerWorth * 0.75)})
               </button>
               <button 
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg
-                  transition-all duration-200 shadow-md"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg
+                  transition-all duration-200 shadow-md flex items-center justify-center text-sm"
                 onClick={changeTowerTargetting}
               >
-                Target: {selectedTower.targettingType}
+                <span className="mr-1">🎯</span>
+                {selectedTower.targettingType}
               </button>
             </div>
           </div>
-  
-          {/* Right Panel - Upgrades */}
-          <div className='w-1/2 space-y-4'>
-            <h2 className="text-2xl font-bold text-blue-400 mb-4">Upgrades</h2>
-            {availableUpgrades.map((upgrade) => (
-              <button 
-                key={upgrade.name}
-                className={`w-full text-left p-4 rounded-lg transition-all duration-200 shadow-md
-                  ${upgrade.path === 1 
-                    ? 'bg-gradient-to-r from-red-900 to-red-800 hover:from-red-800 hover:to-red-700 border-l-4 border-red-500' 
-                    : 'bg-gradient-to-r from-blue-900 to-blue-800 hover:from-blue-800 hover:to-blue-700 border-l-4 border-blue-500'}
-                  ${money < upgrade.cost ? 'opacity-50 cursor-not-allowed' : 'hover:scale-102'}`}
-                onClick={() => performUpgrade(selectedTower, upgrade)}
-                disabled={money < upgrade.cost}
-              >
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-bold text-white">{upgrade.name}</span>
-                  <span className="text-sm text-gray-300">${upgrade.cost}</span>
-                  
-
-                </div>
-                <p className="text-sm text-gray-300">{upgrade.description}</p>
-                <span className="text-sm text-green-300">Upgrades left:{Math.abs(upgrade.requires - 6)}</span>
-
-              </button>
-            ))}
-  
+          
+          {/* Right Panel - Upgrades - Compact */}
+          <div className='w-1/3 space-y-2'>
+            <h2 className="text-lg font-bold text-blue-400 mb-2">Upgrades</h2>
+            
+            <div className="max-h-64 overflow-y-auto pr-1">
+              {availableUpgrades.map((upgrade) => (
+                <button 
+                  key={upgrade.name}
+                  className={`w-full text-left p-3 rounded-lg transition-all duration-200 shadow-md mb-2
+                    ${upgrade.path === 1 
+                      ? 'bg-gradient-to-r from-red-900 to-red-800 hover:from-red-800 hover:to-red-700 border-l-4 border-red-500' 
+                      : 'bg-gradient-to-r from-blue-900 to-blue-800 hover:from-blue-800 hover:to-blue-700 border-l-4 border-blue-500'}
+                    ${money < upgrade.cost ? 'opacity-50 cursor-not-allowed' : 'hover:scale-102'}`}
+                  onClick={() => performUpgrade(selectedTower, upgrade)}
+                  disabled={money < upgrade.cost}
+                >
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-white text-sm">{upgrade.name}</span>
+                    <span className="text-xs text-gray-300">${upgrade.cost}</span>
+                  </div>
+                  <p className="text-xs text-gray-300 mt-1">{upgrade.description}</p>
+                  <span className="text-xs text-green-300">Upgrades left: {Math.abs(upgrade.requires - 6)}</span>
+                </button>
+              ))}
+            </div>
+      
             <button 
-              className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg
-                transition-all duration-200 shadow-md mt-6"
+              className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg
+                transition-all duration-200 shadow-md mt-2 text-sm"
               onClick={closeUpgradeMenu}
             >
               Close
@@ -2193,23 +2354,33 @@ useEffect(() => {
           </div>
         </div>
       );
-    }
-    return null;
-  };
-  
+    }}  
   // Add this helper component for stats
-  const StatBlock = ({ label, value, highlight = false }: { 
+  const StatBlock = ({ label, value, highlight = false, icon = null }: { 
     label: string; 
-    value: string | number; 
-    highlight?: boolean 
+    value: string | number | undefined; 
+    highlight?: boolean;
+    icon?: string | null;
   }) => (
-    <div className={`p-2 rounded ${highlight ? 'bg-blue-900/50' : 'bg-gray-900/50'}`}>
-      <div className="text-xs text-gray-400">{label}</div>
-      <div className={`text-sm ${highlight ? 'text-blue-300 font-bold' : 'text-white'}`}>
-        {value}
+    <div className={`p-3 rounded flex items-center ${highlight ? 'bg-blue-900/60 border border-blue-500/50' : 'bg-gray-900/60 border border-blue-700/20'} transition-all hover:shadow-lg hover:scale-102`}>
+      {icon && <div className="mr-2 text-lg text-blue-300">{icon}</div>}
+      <div className="flex-1">
+        <div className="text-xs font-medium text-gray-400">{label}</div>
+        <div className={`text-sm ${highlight ? 'text-blue-300 font-bold' : 'text-white'}`}>
+          {value}
+        </div>
       </div>
     </div>
   );
+  
+  // New component for section headers
+  const SectionHeader = ({ title }: { title: string }) => (
+    <div className="mb-3 mt-5">
+      <h3 className="text-lg font-semibold text-gray-300">{title}</h3>
+      <div className="h-px bg-gradient-to-r from-blue-500 to-transparent"></div>
+    </div>
+  );
+  
   const closeUpgradeMenu = () => {
     setShowUpgradeMenu(false);
   }
