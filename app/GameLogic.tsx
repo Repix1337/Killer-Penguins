@@ -886,37 +886,36 @@ useEffect(() => {
                   const newSpeed = enemy.speed * (1 + speedIncrease); // Apply scaling
                   enemy.speed = newSpeed;
                   enemy.baseSpeed = newSpeed;
-                  enemy.hp *= 4 + (round - 65) * 0.1; // Scales with rounds
-                  enemy.maxHp *= 4 + (round - 65) * 0.1;
+                  enemy.hp *= 5 + (round - 65) * 0.1; // Scales with rounds
+                  enemy.maxHp *= 5 + (round - 65) * 0.1;
                   enemy.slowReduction = 0.3;
                   enemy.stunReduction = 0.2;
                   enemy.regen *= 1.5;
           
                   setEnemies(prev => [...prev, enemy]);
-                  setEnemyCount(prev => prev + (type66 === "MEGABOSS" ? 32 : 2));
+                  setEnemyCount(prev => prev + (type66 === "MEGABOSS" ? 32 : 3));
               } 
               break;
               case round >= 150:
               if (enemyCount < getEnemyLimit(round) * 2) { // Double enemy limit
                   // Ultimate challenge with enhanced enemies
-                  const type66 = enemyCount % 50 === 0 ? 'ULTRABOSS' :
-                                enemyCount % 2 === 0 ? 'SPEEDYGIGATANK' :
-                                'MEGABOSSSPAWNER';
+                  const type66 = enemyCount % 56 === 0 ? 'ULTRABOSS' :
+                                'MEGABOSS';
                   const enemy = createNewEnemy(type66);
                   
                   // Logarithmic scaling for speed
-                  const speedIncrease = 1.5 * (Math.log(round - 65) * 0.25 + (round - 65) * 0.005);
+                  const speedIncrease = 1.75 * (Math.log(round - 65) * 0.25 + (round - 65) * 0.005);
                   const newSpeed = enemy.speed * (1 + speedIncrease); // Apply scaling
                   enemy.speed = newSpeed;
                   enemy.baseSpeed = newSpeed;
-                  enemy.hp *= 4 + (round - 65) * 0.15; // Scales with rounds
-                  enemy.maxHp *= 4 + (round - 65) * 0.15;
+                  enemy.hp *= 6+ (round - 65) * 0.15; // Scales with rounds
+                  enemy.maxHp *=6 + (round - 65) * 0.15;
                   enemy.slowReduction = 0.2;
                   enemy.stunReduction = 0.15;
                   enemy.regen *= 1.5;
           
                   setEnemies(prev => [...prev, enemy]);
-                  setEnemyCount(prev => prev + (type66 === "ULTRABOSS" ? 36 : 2));
+                  setEnemyCount(prev => prev + (type66 === "ULTRABOSS" ? 40 : 4));
               } 
               break;
           }
