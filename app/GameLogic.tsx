@@ -1787,7 +1787,7 @@ useEffect(() => {
             <HealthBar enemy={enemy} />
           </div>
           <Image
-            src={enemy.src}
+            src={"/"+enemy.src}
             alt='enemy'
             width={40} // width of the image
             height={40} // height of the image
