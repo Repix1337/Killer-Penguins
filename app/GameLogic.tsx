@@ -888,8 +888,8 @@ useEffect(() => {
                   const enemy = createNewEnemy(type66);
                   
                   // Logarithmic scaling for speed
-                  const speedIncrease = Math.log(round + 1) ** 2 - 15.46;
-                  const newSpeed = enemy.speed * speedIncrease; // Apply scaling
+                  const speedIncrease = 1.5 * (Math.log(round - 65) * 0.25 + (round - 65) * 0.005);
+                  const newSpeed = enemy.speed * (1 + speedIncrease); // Apply scaling
                   enemy.speed = newSpeed;
                   enemy.baseSpeed = newSpeed;
                   enemy.hp *= 4 + (round - 65) * 0.1; // Scales with rounds
@@ -911,7 +911,7 @@ useEffect(() => {
                   const enemy = createNewEnemy(type66);
                   
                   // Logarithmic scaling for speed
-                  const speedIncrease = Math.log(round + 1) ** 2 - 15.46;
+                  const speedIncrease = 1.5 * (Math.log(round - 65) * 0.25 + (round - 65) * 0.005);
                   const newSpeed = enemy.speed * (1 + speedIncrease); // Apply scaling
                   enemy.speed = newSpeed;
                   enemy.baseSpeed = newSpeed;
@@ -1214,7 +1214,6 @@ const moveEnemy = useCallback(() => {
                     hp: ((tower.healthReduction && !enemy.hasReducedHealth ? enemy.hp * (1 - tower.healthReduction)  : enemy.hp) - (enemy.type === "boss" ? actualDamage * (tower.bossDamageMultiplier ?? 1) : actualDamage)),
                     hasReducedHealth: tower.healthReduction ? true : false,
                   };
-                  console.log(updatedEnemy)
                   // Remove armor if tower can hit armored enemies
                   if (tower.canHitArmored && enemy.isArmored) {
                     updatedEnemy = {
