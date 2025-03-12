@@ -792,7 +792,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         },
         {
           name: "Mutagenic Corruption",
-          cost: 8000,
+          cost: 10000,
           requires: 3,
           path: 1,
           description: "Hyper-toxic venom.",
@@ -806,13 +806,13 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         },
         {
           name: "Biohazard Warfare",
-          cost: 15000,
+          cost: 25000,
           requires: 4,
           path: 1,
           description: "Unleashes extreme poison devastation.",
           effect: (tower) => ({
-            poisonDamage: tower.poisonDamage * 3,
-            lingeringDamage: tower.poisonDamage * 0.08,
+            poisonDamage: tower.poisonDamage * 2.5,
+            lingeringDamage: tower.poisonDamage * 0.06,
             lingeringDuration: 3000,
             attack: tower.attack * 1.5,
             src: '/gasSpitterSpecial1.png',
@@ -827,11 +827,11 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 1,
           description: "A lethal biological weapon that dissolves all.",
           effect: (tower) => ({
-            poisonDamage: tower.poisonDamage * 3.5,
+            poisonDamage: tower.poisonDamage * 5,
             attack: tower.attack * 2,
             lingeringRadius: 25,
             lingeringDuration: 4000,
-            lingeringDamage: tower.poisonDamage * 0.13,
+            lingeringDamage: tower.poisonDamage * 0.11,
             canHitArmored: true,
             canHitStealth: true,
             towerWorth: tower.towerWorth + 150000
