@@ -21,12 +21,10 @@ const Menu: React.FC = () => {
     const [showLeaderboard, setShowLeaderboard] = React.useState(false);
 
     const { 
-        showDamageNumbers,
         showRangeIndicators,
         showHealthBars,
         autoStartRounds,
         confirmTowerSell,
-        setShowDamageNumbers,
         setShowRangeIndicators,
         setShowHealthBars,
         setAutoStartRounds,
@@ -181,11 +179,6 @@ const Menu: React.FC = () => {
                         Visual Settings
                     </h4>
                     <div className="setting-options">
-                        <SettingToggle
-                            checked={showDamageNumbers}
-                            onChange={(e) => setShowDamageNumbers(e.target.checked)}
-                            label="Show Damage Numbers"
-                        />
                         <SettingToggle
                             checked={showRangeIndicators}
                             onChange={(e) => setShowRangeIndicators(e.target.checked)}

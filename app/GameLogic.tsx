@@ -179,15 +179,9 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   const [showGameOver, setShowGameOver] = useState(false);
   const [showWinScreen, setShowWinScreen] = useState(false);
   const [hasWon, setHasWon] = useState(false);
-  const [damageNumbers, setDamageNumbers] = useState<Array<{
-    id: string;
-    damage: number;
-    x: number;
-    y: number;
-    timestamp: number;
-  }>>([]);
+ 
   const [lingeringEffects, setLingeringEffects] = useState<LingeringEffect[]>([]);
-  const { showDamageNumbers, showRangeIndicators, showHealthBars, confirmTowerSell, autoStartRounds } = useSettings();
+  const {  showRangeIndicators, showHealthBars, confirmTowerSell, autoStartRounds } = useSettings();
   // Add this new useEffect for visibility tracking
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -1194,15 +1188,7 @@ const moveEnemy = useCallback(() => {
                 const damage = baseDamage * damageMultiplier;
                 const actualDamage = Math.min(damage, enemy.hp);
                 explosionDamageTotal += actualDamage;
-                if (showDamageNumbers) {  // Add this check
-                  setDamageNumbers(prev => [...prev, {
-                    id: uuidv4(),
-                    damage: actualDamage,
-                    x: enemy.positionX,
-                    y: enemy.positionY,
-                    timestamp: Date.now()
-                  }]);
-                }
+                
           
                 const newHp = enemy.isArmored && !tower.canHitArmored ? 
                   enemy.hp : 
@@ -1358,15 +1344,7 @@ const moveEnemy = useCallback(() => {
                   isTargeted: true
                 };
               }
-              if (showDamageNumbers) {  // Add this check
-                setDamageNumbers(prev => [...prev, {
-                  id: uuidv4(),
-                  damage: chainDamage,
-                  x: enemy.positionX,
-                  y: enemy.positionY,
-                  timestamp: Date.now()
-                }]);
-              }
+              
               return enemy;
             });
             
@@ -1478,15 +1456,7 @@ const actualDamage = Math.min(
                 };
               }
               
-              if (showDamageNumbers) {  // Add this check
-                setDamageNumbers(prev => [...prev, {
-                  id: uuidv4(),
-                  damage: actualDamage,
-                  x: enemy.positionX,
-                  y: enemy.positionY,
-                  timestamp: Date.now()
-                }]);
-              }
+             
               // Apply damage based on armor
               updatedEnemy.hp = enemy.isArmored && !tower.canHitArmored ? 
                 enemy.hp : 
@@ -1730,44 +1700,9 @@ useEffect(() => {
     );
   };
 
-  const DamageNumber = ({ damage, x, y }: { damage: number; x: number; y: number }) => {
-    if (!showDamageNumbers) return null;
-    
-    // Add randomness to prevent overlap
-    const random = Math.random();
-    
-    return (
-      <div
-        className="animate-float-up"
-        style={{ 
-          left: `${x}%`, 
-          top: `${y - 2}%`,
-          '--random': random,
-          color: damage >= 100 ? '#ff4444' : 
-                 damage >= 50 ? '#ff8844' : 
-                 '#ffffff',
-          textShadow: '0 2px 0 rgba(0,0,0,0.8)',
-          fontSize: damage >= 100 ? '1.25rem' : '1rem',
-          fontWeight: 'bold'
-        } as React.CSSProperties}
-      >
-        {Math.floor(damage)}
-      </div>
-    );
-  };
+ 
 
-  useEffect(() => {
-    if (damageNumbers.length > 0) {
-      const cleanupTimeout = setTimeout(() => {
-        const now = Date.now();
-        setDamageNumbers(prev => 
-          prev.filter(num => now - num.timestamp < 1000)
-        );
-      }, 500); // Run cleanup every second
-  
-      return () => clearTimeout(cleanupTimeout);
-    }
-  }, [damageNumbers]);
+ 
   // Create enemy elements
   const createEnemy = () => {
     if (round > 0) {
@@ -1944,15 +1879,7 @@ useEffect(() => {
                     hasChanges = true;
                     const newHp = Math.max(0, enemy.hp - totalDamage);
 
-                    if (showDamageNumbers) {
-                        setDamageNumbers(prev => [...prev, {
-                            id: uuidv4(),
-                            damage: totalDamage,
-                            x: enemy.positionX,
-                            y: enemy.positionY,
-                            timestamp: currentTime
-                        }]);
-                    }
+                    
 
                     // Check for kill
                     if ((newHp <= 0 && enemy.hp > 0) || enemy.executed) {
@@ -2191,8 +2118,49 @@ useEffect(() => {
                       <StatBlock label="Execute" value={`${(selectedTower.executeTreshhold || 0)}%`} icon="⚰️" />
                     )}
       
+      {selectedTower.canExecute && (
+                      <StatBlock 
+                        label="Execute" 
+                        value={`${(selectedTower.executeTreshhold || 0)}%`} 
+                        icon="⚰️"
+                      />
+                    )}
+                    
                     {selectedTower.acceleration && (
-                      <StatBlock label="Acceleration" value={`${selectedTower.acceleration}`} icon="🚀" />
+                      <StatBlock 
+                        label="Acceleration" 
+                        value={`${selectedTower.acceleration}`} 
+                        icon="🚀"
+                      />
+                    )}
+                    {selectedTower.accelerationValue && (
+                      <StatBlock 
+                        label="Acceleration" 
+                        value={`${(selectedTower.accelerationValue || 0) * 100}%`} 
+                        icon="🚀"
+                      />
+                    )}
+                    
+                    {selectedTower.canMark && (
+                      <StatBlock 
+                        label="Mark Bonus" 
+                        value={`${(selectedTower.markedDamageMultiplier|| 0) * 100}%`} 
+                        icon="🎯"
+                      />
+                    )}
+                    {selectedTower.enemyCurrentHpDmgMultiplier && (
+                      <StatBlock 
+                        label="Current enemy hp %dmg" 
+                        value={`${(selectedTower.enemyCurrentHpDmgMultiplier|| 0) * 100}%`} 
+                        icon="🎯"
+                      />
+                    )}
+                    {selectedTower.healthReduction && (
+                      <StatBlock 
+                        label="% Health reduction" 
+                        value={`${(selectedTower.healthReduction|| 0) * 100}%`} 
+                        icon="🎯"
+                      />
                     )}
                   </div>
                 </div>
@@ -2818,14 +2786,6 @@ const WinScreen = () => {
   )}
 </div>
       {createEnemy()}
-      {damageNumbers.map(num => (
-  <DamageNumber
-    key={num.id}
-    damage={num.damage}
-    x={num.x}
-    y={num.y}
-  />
-))}
       {attackAnimation()}
       {renderExplosions()}
       {LingeringEffects()}

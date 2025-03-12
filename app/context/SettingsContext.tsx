@@ -10,12 +10,10 @@ const getLocalStorageItem = (key: string): string | null => {
 };
 
 interface SettingsContextType {
-  showDamageNumbers: boolean;
   showRangeIndicators: boolean;
   showHealthBars: boolean;
   autoStartRounds: boolean;
   confirmTowerSell: boolean;
-  setShowDamageNumbers: (value: boolean) => void;
   setShowRangeIndicators: (value: boolean) => void;
   setShowHealthBars: (value: boolean) => void;
   setAutoStartRounds: (value: boolean) => void;
@@ -25,9 +23,7 @@ interface SettingsContextType {
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [showDamageNumbers, setShowDamageNumbersState] = useState(() => 
-    getLocalStorageItem('showDamageNumbers') === 'true'
-  );
+  
   const [showRangeIndicators, setShowRangeIndicatorsState] = useState(() => 
     getLocalStorageItem('showRangeIndicators') === 'true'
   );
@@ -44,10 +40,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 
   // Create wrapper functions to update both state and localStorage
-  const setShowDamageNumbers = (value: boolean) => {
-    setShowDamageNumbersState(value);
-    localStorage.setItem('showDamageNumbers', value.toString());
-  };
+  
 
   const setShowRangeIndicators = (value: boolean) => {
     setShowRangeIndicatorsState(value);
@@ -71,12 +64,10 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   return (
     <SettingsContext.Provider value={{
-      showDamageNumbers,
       showRangeIndicators,
       showHealthBars,
       autoStartRounds,
       confirmTowerSell,
-      setShowDamageNumbers,
       setShowRangeIndicators,
       setShowHealthBars,
       setAutoStartRounds,
