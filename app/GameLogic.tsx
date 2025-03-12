@@ -2065,7 +2065,7 @@ useEffect(() => {
       const towerConfig = TOWER_TYPES[selectedTowerType.toUpperCase() as keyof typeof TOWER_TYPES];
       if (towerConfig && money >= towerConfig.price) {
         (event.target as HTMLImageElement).src = towerConfig.src;
-        (event.target as HTMLImageElement).className = 'absolute w-16 h-16 z-10 hover:opacity-75 transition-opacity';
+        (event.target as HTMLImageElement).className = 'absolute sm:w-7 sm:h-7 md:w-16 md:h-16 z-10 hover:opacity-75 transition-opacity';
         setMoney((prevMoney) => prevMoney - towerConfig.price);
         setTower((prevTower) => [...prevTower, createNewTower(selectedTowerType.toUpperCase() as keyof typeof TOWER_TYPES, positionX, positionY, newTowerId)]);
       }
@@ -2107,23 +2107,24 @@ useEffect(() => {
       return (
         <div 
           data-upgrade-menu
-          className='absolute top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 bg-slate-800 
-            flex items-start justify-between p-4 rounded-lg gap-4 shadow-xl border-2 border-blue-500'
-          style={{left: selectedTower.positionX < 50 ? '65%' : '35%', width: '800px'}}
+          className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 
+            bg-slate-800 flex flex-col md:flex-row items-start justify-between p-2 md:p-4 rounded-lg gap-2 md:gap-4 
+            shadow-xl border-2 border-blue-500 w-[95vw] max-w-[700px] md:max-w-[700px] md:w-[700px] text-sm'
+          style={{left: selectedTower.positionX < 50 ? '65%' : '35%'}}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Left Panel - Tower Info & Stats */}
-          <div className='flex flex-col space-y-3 w-1/2 p-3 bg-gray-950/80 rounded-lg border border-blue-900/30 shadow-lg'>
+          <div className='flex flex-col space-y-2 w-full md:w-1/2 p-2 md:p-3 bg-gray-950/80 rounded-lg border border-blue-900/30 shadow-lg'>
             <div className='text-white'>
-              <h1 className="text-xl font-bold mb-1 text-blue-400 flex items-center">
-                <img src={selectedTower.src} alt="Tower" className="w-8 h-8 mr-2" />
+              <h1 className="text-sm md:text-xl font-bold mb-1 text-blue-400 flex items-center">
+                <img src={selectedTower.src} alt="Tower" className="w-5 h-5 mr-1 md:w-8 md:h-8 md:mr-2" />
                 {selectedTower.type.charAt(0).toUpperCase() + selectedTower.type.slice(1)} Tower
               </h1>
-              <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-3"></div>
+              <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-2"></div>
               
-              {/* Tower Basic Info - Compact version */}
-              <div className="flex items-center gap-2 mb-3 bg-gray-900/50 p-2 rounded-lg border border-blue-800/20">
-                <img src={selectedTower.src} alt="Tower" className="w-12 h-12 p-1 bg-blue-900/30 rounded-lg shadow-md" />
+              {/* Tower Basic Info */}
+              <div className="flex items-center gap-2 mb-2 bg-gray-900/50 p-1 md:p-2 rounded-lg border border-blue-800/20">
+                <img src={selectedTower.src} alt="Tower" className="w-8 h-8 md:w-10 md:h-10 p-1 bg-blue-900/30 rounded-lg shadow-md" />
                 <div className="flex-1 text-xs">
                   <div className="grid grid-cols-2 gap-1">
                     <div>Level: <span className="text-blue-300 font-bold">{Math.max(selectedTower.path1Level, selectedTower.path2Level)}</span></div>
@@ -2134,193 +2135,98 @@ useEffect(() => {
                 </div>
               </div>
       
-              {/* Stats Section - Side by side layout */}
-              <div className="flex gap-2 mb-2">
-                {/* Primary Stats - Left side */}
-                <div className="w-2/3">
-                  <div className="text-sm font-semibold text-gray-300 mb-1">Primary Stats</div>
-                  <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-2"></div>
-                  <div className="grid grid-cols-2 gap-2">
+              {/* Stats Section - Collapsed on mobile, expandable */}
+              <div className="flex flex-col md:flex-row gap-2 mb-2">
+                <div className="w-full md:w-2/3">
+                  <div className="text-xs font-semibold text-gray-300 mb-1">Primary Stats</div>
+                  <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-1 md:mb-2"></div>
+                  <div className="grid grid-cols-2 gap-1 md:gap-2">
                     <StatBlock label="Attack" value={Math.floor(selectedTower.attack)} icon="⚔️" />
                     <StatBlock label="Speed" value={`${Math.floor(selectedTower.attackInterval)}ms`} icon="⚡" />
                     <StatBlock label="Range" value={Math.floor(selectedTower.radius)} icon="📏" />
                     <StatBlock label="Type" value={selectedTower.attackType} icon="🎯" />
                     <StatBlock label="Target" value={selectedTower.targettingType} icon="👁️" />
-                    <StatBlock 
-                      label="Total Damage" 
-                      value={Math.floor(selectedTower.damageDone).toLocaleString()} 
-                      highlight={true}
-                      icon="💥"
-                    />
+                    <StatBlock label="Total Damage" value={Math.floor(selectedTower.damageDone).toLocaleString()} highlight={true} icon="💥" />
                   </div>
                 </div>
-                
-                {/* Special Abilities - Right side */}
-                <div className="w-1/3">
-                  <div className="text-sm font-semibold text-gray-300 mb-1">Special Abilities</div>
-                  <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-2"></div>
-                  <div className="grid grid-cols-1 gap-2">
+      
+                {/* Special Abilities */}
+                <div className="w-full md:w-1/3">
+                  <div className="text-xs font-semibold text-gray-300 mb-1">Special Abilities</div>
+                  <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-1 md:mb-2"></div>
+                  <div className="grid grid-cols-2 md:grid-cols-1 gap-1 md:gap-2">
                     {selectedTower.hasCritical && (
                       <>
-                        <StatBlock 
-                          label="Crit Chance" 
-                          value={`${((selectedTower.criticalChance || 0) * 100).toFixed(1)}%`} 
-                          icon="✨"
-                        />
-                        <StatBlock 
-                          label="Crit Mult" 
-                          value={`${selectedTower.criticalMultiplier}x`} 
-                          icon="⚡"
-                        />
+                        <StatBlock label="Crit Chance" value={`${((selectedTower.criticalChance || 0) * 100).toFixed(1)}%`} icon="✨" />
+                        <StatBlock label="Crit Mult" value={`${selectedTower.criticalMultiplier}x`} icon="⚡" />
                       </>
                     )}
-                    
+      
                     {selectedTower.slowAmount && (
                       <>
-                        <StatBlock 
-                          label="Slow" 
-                          value={`${Math.floor((1 - selectedTower.slowAmount) * 100)}%`} 
-                          icon="❄️"
-                        />
-                        <StatBlock 
-                          label="Duration" 
-                          value={`${selectedTower.slowDuration}ms`} 
-                          icon="⏱️"
-                        />
+                        <StatBlock label="Slow" value={`${Math.floor((1 - selectedTower.slowAmount) * 100)}%`} icon="❄️" />
+                        <StatBlock label="Duration" value={`${selectedTower.slowDuration}ms`} icon="⏱️" />
                       </>
                     )}
-    
+      
                     {selectedTower.poisonDamage > 0 && (
                       <>
-                        <StatBlock 
-                          label="Poison/Sec" 
-                          value={selectedTower.poisonDamage} 
-                          icon="☠️"
-                        />
-                        <StatBlock 
-                          label="Total Poison" 
-                          value={selectedTower.poisonDamage * 4} 
-                          icon="⚗️"
-                        />
+                        <StatBlock label="Poison/Sec" value={selectedTower.poisonDamage} icon="☠️" />
+                        <StatBlock label="Total Poison" value={selectedTower.poisonDamage * 4} icon="⚗️" />
                       </>
                     )}
-    
+      
                     {selectedTower.canStun && (
-                      <StatBlock 
-                        label="Stun" 
-                        value={`${selectedTower.stunDuration}ms`} 
-                        icon="⭐"
-                      />
+                      <StatBlock label="Stun" value={`${selectedTower.stunDuration}ms`} icon="⭐" />
                     )}
-    
+      
                     {selectedTower.explosionRadius > 0 && (
-                      <StatBlock 
-                        label="Explosion Radius" 
-                        value={Math.floor(selectedTower.explosionRadius)} 
-                        icon="💥"
-                      />
+                      <StatBlock label="Explosion Radius" value={Math.floor(selectedTower.explosionRadius)} icon="💥" />
                     )}
-    
+      
                     {selectedTower.bossDamageMultiplier && (
-                      <StatBlock 
-                        label="Boss Dmg" 
-                        value={`${selectedTower.bossDamageMultiplier}x`} 
-                        icon="👑"
-                      />
+                      <StatBlock label="Boss Dmg" value={`${selectedTower.bossDamageMultiplier}x`} icon="👑" />
                     )}
-    
+      
                     {selectedTower.canExecute && (
-                      <StatBlock 
-                        label="Execute" 
-                        value={`${(selectedTower.executeTreshhold || 0)}%`} 
-                        icon="⚰️"
-                      />
+                      <StatBlock label="Execute" value={`${(selectedTower.executeTreshhold || 0)}%`} icon="⚰️" />
                     )}
-                    
+      
                     {selectedTower.acceleration && (
-                      <StatBlock 
-                        label="Acceleration" 
-                        value={`${selectedTower.acceleration}`} 
-                        icon="🚀"
-                      />
-                    )}
-                    {selectedTower.accelerationValue && (
-                      <StatBlock 
-                        label="Acceleration" 
-                        value={`${(selectedTower.accelerationValue || 0) * 100}%`} 
-                        icon="🚀"
-                      />
-                    )}
-                    
-                    {selectedTower.canMark && (
-                      <StatBlock 
-                        label="Mark Bonus" 
-                        value={`${(selectedTower.markedDamageMultiplier|| 0) * 100}%`} 
-                        icon="🎯"
-                      />
-                    )}
-                    {selectedTower.enemyCurrentHpDmgMultiplier && (
-                      <StatBlock 
-                        label="Current enemy hp %dmg" 
-                        value={`${(selectedTower.enemyCurrentHpDmgMultiplier|| 0) * 100}%`} 
-                        icon="🎯"
-                      />
-                    )}
-                    {selectedTower.healthReduction && (
-                      <StatBlock 
-                        label="% Health reduction" 
-                        value={`${(selectedTower.healthReduction|| 0) * 100}%`} 
-                        icon="🎯"
-                      />
+                      <StatBlock label="Acceleration" value={`${selectedTower.acceleration}`} icon="🚀" />
                     )}
                   </div>
                 </div>
               </div>
       
-              {/* Area Effects Section */}
+              {/* Area Effects - Only show if relevant */}
               {(selectedTower.chainCount || selectedTower.hasLingering) && (
                 <div className="mb-2">
-                  <div className="text-sm font-semibold text-gray-300 mb-1">Area Effects</div>
-                  <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-2"></div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="text-xs font-semibold text-gray-300 mb-1">Area Effects</div>
+                  <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-1 md:mb-2"></div>
+                  <div className="grid grid-cols-2 gap-1 md:gap-2">
                     {selectedTower.chainCount && (
                       <>
-                        <StatBlock 
-                          label="Chain Count" 
-                          value={selectedTower.chainCount} 
-                          icon="⛓️"
-                        />
-                        <StatBlock 
-                          label="Chain Range" 
-                          value={selectedTower.chainRange} 
-                          icon="🔗"
-                        />
+                        <StatBlock label="Chain Count" value={selectedTower.chainCount} icon="⛓️" />
+                        <StatBlock label="Chain Range" value={selectedTower.chainRange} icon="🔗" />
                       </>
                     )}
-    
+      
                     {selectedTower.hasLingering && (
                       <>
-                        <StatBlock 
-                          label="Lingering Dmg" 
-                          value={selectedTower.lingeringDamage} 
-                          icon="🔥"
-                        />
-                        <StatBlock 
-                          label="Linger Radius" 
-                          value={selectedTower.lingeringRadius} 
-                          icon="⭕"
-                        />
+                        <StatBlock label="Lingering Dmg" value={selectedTower.lingeringDamage} icon="🔥" />
+                        <StatBlock label="Linger Radius" value={selectedTower.lingeringRadius} icon="⭕" />
                       </>
                     )}
                   </div>
                 </div>
               )}
       
-              {/* Target Capabilities - Simplified */}
+              {/* Target Capabilities - More compact on mobile */}
               <div className="mb-2">
-                <div className="text-sm font-semibold text-gray-300 mb-1">Capabilities</div>
-                <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-2"></div>
-                <div className="flex justify-between text-xs px-1">
+                <div className="text-xs font-semibold text-gray-300 mb-1">Capabilities</div>
+                <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-1 md:mb-2"></div>
+                <div className="flex justify-between text-xs">
                   <div>
                     Stealth: <span className={selectedTower.canHitStealth ? "text-green-400" : "text-red-400"}>
                       {selectedTower.canHitStealth ? "✓" : "✗"}
@@ -2339,11 +2245,11 @@ useEffect(() => {
                 </div>
               </div>
       
-              {/* Special Upgrades - Compact */}
+              {/* Special Upgrades */}
               {selectedTower.hasSpecialUpgrade && (
                 <div className="mb-2">
-                  <div className="text-sm font-semibold text-gray-300 mb-1">Special</div>
-                  <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-2"></div>
+                  <div className="text-xs font-semibold text-gray-300 mb-1">Special</div>
+                  <div className="h-px bg-gradient-to-r from-blue-500 to-transparent mb-1 md:mb-2"></div>
                   <div className="p-2 rounded bg-purple-900/40 border border-purple-500/30 text-xs">
                     <div className="flex justify-between items-center">
                       <div>
@@ -2353,10 +2259,7 @@ useEffect(() => {
                         </div>
                       </div>
                       {selectedTower.specialUpgradeAvailable && (
-                        <button 
-                          className="bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 text-xs rounded
-                            transition-all duration-200 shadow-md"
-                        >
+                        <button className="bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 text-xs rounded transition-all duration-200 shadow-md">
                           Upgrade
                         </button>
                       )}
@@ -2366,36 +2269,25 @@ useEffect(() => {
               )}
             </div>
       
-            {/* Control Buttons - Compact */}
-            <div className="flex gap-2 mt-2">
-              <button 
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg
-                  transition-all duration-200 shadow-md flex items-center justify-center text-sm"
-                onClick={() => sellTower(selectedTower.towerWorth)}
-              >
-                <span className="mr-1">💰</span>
-                Sell (${Math.floor(selectedTower.towerWorth * 0.75)})
+            {/* Control Buttons */}
+            <div className="flex gap-2 mt-1">
+              <button className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-1 md:py-2 px-2 md:px-4 rounded-lg transition-all duration-200 shadow-md text-xs" onClick={() => sellTower(selectedTower.towerWorth)}>
+                <span className="mr-1">💰</span> Sell (${Math.floor(selectedTower.towerWorth * 0.75)})
               </button>
-              <button 
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg
-                  transition-all duration-200 shadow-md flex items-center justify-center text-sm"
-                onClick={changeTowerTargetting}
-              >
-                <span className="mr-1">🎯</span>
-                {selectedTower.targettingType}
+              <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 md:py-2 px-2 md:px-4 rounded-lg transition-all duration-200 shadow-md text-xs" onClick={changeTowerTargetting}>
+                <span className="mr-1">🎯</span> {selectedTower.targettingType}
               </button>
             </div>
           </div>
-          
-          {/* Right Panel - Upgrades - Compact */}
-          <div className='w-1/2 space-y-2'>
-            <h2 className="text-lg font-bold text-blue-400 mb-2">Upgrades</h2>
-            
-            <div className="max-h-64 overflow-y-auto pr-1">
+      
+          {/* Right Panel - Upgrades */}
+          <div className="w-full md:w-1/2 space-y-1 md:space-y-2">
+            <h2 className="text-sm md:text-lg font-bold text-blue-400 mb-1 md:mb-2">Upgrades</h2>
+            <div className="max-h-48 md:max-h-64 overflow-y-auto pr-1">
               {availableUpgrades.map((upgrade) => (
                 <button 
                   key={upgrade.name}
-                  className={`w-full text-left p-3 rounded-lg transition-all duration-200 shadow-md mb-2
+                  className={`w-full text-left p-2 md:p-3 rounded-lg transition-all duration-200 shadow-md mb-1 md:mb-2
                     ${upgrade.path === 1 
                       ? 'bg-gradient-to-r from-red-900 to-red-800 hover:from-red-800 hover:to-red-700 border-l-4 border-red-500' 
                       : 'bg-gradient-to-r from-blue-900 to-blue-800 hover:from-blue-800 hover:to-blue-700 border-l-4 border-blue-500'}
@@ -2404,18 +2296,20 @@ useEffect(() => {
                   disabled={money < upgrade.cost}
                 >
                   <div className="flex justify-between items-center">
-                    <span className="font-bold text-white text-sm">{upgrade.name}</span>
+                    <span className="font-bold text-white text-xs">{upgrade.name}</span>
                     <span className="text-xs text-gray-300">${upgrade.cost}</span>
                   </div>
                   <p className="text-xs text-gray-300 mt-1">{upgrade.description}</p>
-                  <span className="text-xs text-green-300">Upgrades left: {Math.abs(upgrade.requires - 6)}</span>
+                  <div className="flex justify-between text-xs mt-1">
+                    <span className="text-gray-500">{upgrade.path === 1 ? 'Path 1' : 'Path 2'}</span>
+                    <span className="text-green-300">Upgrades left: {Math.abs(upgrade.requires - 6)}</span>
+                  </div>
                 </button>
               ))}
             </div>
-      
             <button 
-              className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg
-                transition-all duration-200 shadow-md mt-2 text-sm"
+              className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-1 md:py-2 px-4 rounded-lg
+                transition-all duration-200 shadow-md mt-1 md:mt-2 text-xs md:text-sm"
               onClick={closeUpgradeMenu}
             >
               Close
@@ -2423,6 +2317,8 @@ useEffect(() => {
           </div>
         </div>
       );
+      
+      
     }}  
   // Add this helper component for stats
   const StatBlock = ({ label, value, highlight = false, icon = null }: { 
@@ -2908,7 +2804,7 @@ const WinScreen = () => {
             key={index}
             id={existingTower?.id || `building-site-${index}`}
             src={existingTower ? existingTower.src : '/buildingSite.png'}
-            className='absolute w-14 h-14 z-10 hover:opacity-75 transition-opacity'
+            className='absolute sm:w-7 md:w-14 sm:h-7 md:h-14 z-10 hover:opacity-75 transition-opacity'
             style={{ 
               top: pos.top, 
               left: pos.left,
