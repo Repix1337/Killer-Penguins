@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useSettings } from './context/SettingsContext';
 import { saveGameResult } from '@/app/saveGameResult';
 import { towerUpgrades } from './towerUpgrades';
+import Image from 'next/image';
 
 
 // Define the props for the Spawn component
@@ -1785,12 +1786,13 @@ useEffect(() => {
           <div className="absolute" style={{ width: '40px' }}>
             <HealthBar enemy={enemy} />
           </div>
-          <img
+          <Image
             src={enemy.src}
             alt='enemy'
-            className='w-10 h-10'
+            width={40} // width of the image
+            height={40} // height of the image
+            className='w-10 h-10' // Optional, for styling purposes
           />
-          
         </div>
       ));
     }
