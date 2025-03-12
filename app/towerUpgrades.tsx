@@ -979,7 +979,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       description: "Unleashes nuclear-level devastation.",
       effect: (tower) => ({
-        attack: tower.attack * 3.5,
+        attack: tower.attack * 2.5,
         explosionRadius: tower.explosionRadius * 1.25,
         attackInterval: tower.attackInterval - 500,
         bossDamageMultiplier: 3,
@@ -996,11 +996,11 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       description: "Apocalyptic blasts erase everything in their path.",
       effect: (tower) => ({
-        attack: tower.attack * 4,
-        explosionRadius: tower.explosionRadius * 1.5,
+        attack: tower.attack * 3,
+        explosionRadius: tower.explosionRadius * 1.4,
         attackInterval: tower.attackInterval - 1250,
         criticalChance: 0.5,
-        bossDamageMultiplier: 6,
+        bossDamageMultiplier: 5,
         criticalMultiplier: 5,
         canHitStealth: true,
         towerWorth: tower.towerWorth + 150000
@@ -1086,7 +1086,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 2,
       description: "The ultimate life-force drain, reducing enemy max health by 30% and dealing massive damage.",
       effect: (tower) => ({
-        healthReduction: 0.25,
+        healthReduction: 0.225,
         attackInterval: tower.attackInterval - 1500,
         explosionRadius: tower.explosionRadius * 1.25,
         stunDuration: 500,
