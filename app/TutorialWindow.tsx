@@ -315,8 +315,8 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
                 </div>
                 <div className="mt-6 space-y-4">
                     <h4 className="text-lg text-white">Sniper</h4>
-                    <p className="text-gray-300">•Path 1 nerf: Reduced it's max dmg from about 23 000 to about 15 000'.</p>
-                    <p className="text-gray-300">•Path 2 buff: Reduced it's max attack interval from 150 to 70.</p>
+                    <p className="text-gray-300">•Path 1 nerf: Reduced its max dmg from about 23 000 to about 15 000.</p>
+                    <p className="text-gray-300">•Path 2 buff: Reduced its max attack interval from 150 to 70.</p>
 
                 </div>
                 <div className="mt-6 space-y-4">
