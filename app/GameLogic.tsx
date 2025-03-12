@@ -440,7 +440,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
     },
     SPEEDYGIGATANK: {
       src: 'speedyGigaTank.png',
-      hp: 5000,
+      hp: 10000,
       damage: 1000,
       type: 'speedygigatank',
       speed: 0.5,    
