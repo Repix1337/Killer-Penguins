@@ -888,8 +888,8 @@ useEffect(() => {
                   const enemy = createNewEnemy(type66);
                   
                   // Logarithmic scaling for speed
-                  const speedIncrease = Math.log(round - 65) * 0.25 + (round - 65) * 0.005;
-                  const newSpeed = enemy.speed * (1 + speedIncrease); // Apply scaling
+                  const speedIncrease = Math.log(round + 1) ** 2 - 15.46;
+                  const newSpeed = enemy.speed * speedIncrease; // Apply scaling
                   enemy.speed = newSpeed;
                   enemy.baseSpeed = newSpeed;
                   enemy.hp *= 4 + (round - 65) * 0.1; // Scales with rounds
