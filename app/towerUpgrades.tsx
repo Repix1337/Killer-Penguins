@@ -782,7 +782,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           effect: (tower) => ({
             hasLingering: true,
             attackType: 'lingering',
-            lingeringDamage: tower.poisonDamage * 0.04,
+            lingeringDamage: tower.poisonDamage * 0.03,
             lingeringRadius: 15,
             attackInterval: tower.attackInterval + 1200,
             lingeringDuration: 2500,
