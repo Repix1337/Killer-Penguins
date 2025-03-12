@@ -53,12 +53,16 @@ interface Enemy {
   stunSourceId?: string;
   stunStartTime?: number;
   canSpawn?: boolean;
+  spawnType?: "SPEEDYMEGATANK" | "SPEEDYGIGATANK" | "BASIC" | "STEALTH" | "TANK" | 
+  "SPEEDY" | "STEALTHYTANK" | "STEALTHYSPEEDY" | "REGENTANK" | 
+  "SPEEDYREGENTANK" | "BOSS" | "ULTRATANKS" | "MEGABOSSSPAWNER";
   executed: boolean;
   acceleratedHitCount: number;
   accelerationValue?: number;
   marked: boolean;
   markedDamageMultiplier?: number;
   markedExplosion?: boolean;
+  hasReducedHealth: boolean;
 }
 
 // Define the Tower interface
@@ -118,6 +122,9 @@ interface Tower {
   canMark?: boolean
   markedDamageMultiplier?: number
   markedExplosion?: boolean
+  enemyCurrentHpDmgMultiplier?: number
+  healthReduction?: number
+
 }
 interface TowerUpgrade {
   name: string;
@@ -132,6 +139,7 @@ interface LingeringEffect {
   positionX: number;
   positionY: number;
   damage: number;
+  enemyCurrentHpDmgMultiplier?: number
   radius: number;
   timestamp: number;
   canStopRegen: boolean;
@@ -244,7 +252,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       src: 'stealthyTank.png',
       hp: 250,
       damage: 20,
-      type: 'stealthytank',
+      type: 'stealth',
       speed: 0.1875,    // from 0.125 * 1.5
       baseSpeed: 0.1875, // from 0.125 * 1.5
       regen: 0,
@@ -255,7 +263,7 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       src: 'stealthySpeedy.png',
       hp: 50,
       damage: 50,
-      type: 'stealthyspeedy',
+      type: 'stealth',
       speed: 1.5,    // from 1.0 * 1.5
       baseSpeed: 1.5, // from 1.0 * 1.5
       regen: 0,
@@ -378,6 +386,19 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       stunReduction: 0.4,
       slowReduction: 0.4,
     },
+    ULTRABOSS: {
+      src: 'megaBoss.png',
+      hp: 500000,
+      damage: 1000,
+      type: 'boss',
+      speed: 0.3,    
+      baseSpeed: 0.3, 
+      regen: 50000,
+      canRegen: true,
+      isArmored: false,
+      stunReduction: 0.2,
+      slowReduction: 0.2,
+    },
     SPAWNER: {
       src: 'boss.png',
       hp: 2000,
@@ -389,6 +410,33 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
       canRegen: false,
       isArmored: false,
       canSpawn: true,
+      spawnType: "SPEEDYMEGATANK",
+    },
+    GIGASPAWNER: {
+      src: 'boss.png',
+      hp: 5000,
+      damage: 100,
+      type: 'spawner',
+      speed: 0.2,    
+      baseSpeed: 0.2, 
+      regen: 0,
+      canRegen: false,
+      isArmored: false,
+      canSpawn: true,
+      spawnType: "SPEEDYGIGATANK",
+    },
+    MEGABOSSSPAWNER: {
+      src: 'boss.png',
+      hp: 25000,
+      damage: 100,
+      type: 'spawner',
+      speed: 0.2,    
+      baseSpeed: 0.2, 
+      regen: 0,
+      canRegen: false,
+      isArmored: false,
+      canSpawn: true,
+      spawnType: "MEGABOSS",
     },
     SPEEDYGIGATANK: {
       src: 'speedyGigaTank.png',
@@ -626,6 +674,7 @@ const createNewEnemy = (type: keyof typeof ENEMY_TYPES, positionX?: number, posi
     executed: false,
     marked: false,
     acceleratedHitCount: 1,
+    hasReducedHealth: false,
     ...enemyStats
   };
 };
@@ -794,7 +843,7 @@ useEffect(() => {
             if (enemyCount < getEnemyLimit(round)) {
               const type51 = enemyCount % 100 === 0 ? 'MEGABOSS' :
                             enemyCount % 3 === 0 ? 'SPEEDYGIGATANK' :
-                            enemyCount % 2 === 0 ? 'ARMOREDSPEEDYMEGATANK' : 'SPAWNER';
+                            enemyCount % 2 === 0 ? 'ARMOREDSPEEDYMEGATANK' : 'GIGASPAWNER';
               setEnemies(prev => [...prev, createNewEnemy(type51)]);
               setEnemyCount(prev => prev + (type51 === 'MEGABOSS' ? 50 : 1));
             }
@@ -806,7 +855,7 @@ useEffect(() => {
               const type56 = enemyCount % 150 === 0 ? 'MEGABOSS' :
                             enemyCount % 4 === 0 ? 'ARMOREDULTRATANK' :
                             enemyCount % 3 === 0 ? 'SPEEDYGIGATANK' :
-                            enemyCount % 2 === 0 ? 'ARMOREDSPEEDYMEGATANK' : 'SPAWNER';
+                            enemyCount % 2 === 0 ? 'ARMOREDSPEEDYMEGATANK' : 'GIGASPAWNER';
               setEnemies(prev => [...prev, createNewEnemy(type56)]);
               setEnemyCount(prev => prev + (type56 === 'MEGABOSS' ? 75 : 1));
             }
@@ -817,7 +866,7 @@ useEffect(() => {
               // Super challenging wave with multiple MEGABOSS spawns
               const type61 = enemyCount % 120 === 0 ? 'MEGABOSS' :
                             enemyCount % 3 === 0 ? 'ARMOREDSPEEDYMEGATANK' :
-                            enemyCount % 2 === 0 ? 'SPAWNER' : 'SPEEDYGIGATANK';
+                            enemyCount % 2 === 0 ? 'GIGASPAWNER' : 'SPEEDYGIGATANK';
               const enemy = createNewEnemy(type61);
               // Increase base stats for these rounds
               enemy.hp *= 1.5;
@@ -830,18 +879,17 @@ useEffect(() => {
             }
             break;
           
-            case round >= 66:
+            case round >= 66 && round <= 149:
               if (enemyCount < getEnemyLimit(round) * 2) { // Double enemy limit
                   // Ultimate challenge with enhanced enemies
                   const type66 = enemyCount % 50 === 0 ? 'MEGABOSS' :
                                 enemyCount % 2 === 0 ? 'SPEEDYGIGATANK' :
-                                'SPAWNER';
+                                'GIGASPAWNER';
                   const enemy = createNewEnemy(type66);
                   
                   // Logarithmic scaling for speed
                   const speedIncrease = Math.log(round - 65) * 0.25 + (round - 65) * 0.005;
                   const newSpeed = enemy.speed * (1 + speedIncrease); // Apply scaling
-                  
                   enemy.speed = newSpeed;
                   enemy.baseSpeed = newSpeed;
                   enemy.hp *= 2 + (round - 65) * 0.1; // Scales with rounds
@@ -852,6 +900,29 @@ useEffect(() => {
           
                   setEnemies(prev => [...prev, enemy]);
                   setEnemyCount(prev => prev + (type66 === "MEGABOSS" ? 25 : 1));
+              } 
+              break;
+              case round >= 150:
+              if (enemyCount < getEnemyLimit(round) * 2) { // Double enemy limit
+                  // Ultimate challenge with enhanced enemies
+                  const type66 = enemyCount % 50 === 0 ? 'ULTRABOSS' :
+                                enemyCount % 2 === 0 ? 'SPEEDYGIGATANK' :
+                                'MEGABOSSSPAWNER';
+                  const enemy = createNewEnemy(type66);
+                  
+                  // Logarithmic scaling for speed
+                  const speedIncrease = Math.log(round - 65) * 0.25 + (round - 65) * 0.005;
+                  const newSpeed = enemy.speed * (1 + speedIncrease); // Apply scaling
+                  enemy.speed = newSpeed;
+                  enemy.baseSpeed = newSpeed;
+                  enemy.hp *= 2 + (round - 65) * 0.15; // Scales with rounds
+                  enemy.maxHp *= 2 + (round - 65) * 0.15;
+                  enemy.slowReduction = 0.2;
+                  enemy.stunReduction = 0.15;
+                  enemy.regen *= 1.5;
+          
+                  setEnemies(prev => [...prev, enemy]);
+                  setEnemyCount(prev => prev + (type66 === "ULTRABOSS" ? 35 : 1));
               } 
               break;
           }
@@ -1101,6 +1172,7 @@ const moveEnemy = useCallback(() => {
                 positionX: primaryTarget.positionX,
                 positionY: primaryTarget.positionY,
                 damage: tower.lingeringDamage || tower.attack * 0.1,
+                enemyCurrentHpDmgMultiplier: tower.enemyCurrentHpDmgMultiplier ?? 0,
                 radius: tower.lingeringRadius || 15,
                 timestamp: Date.now(),
                 duration: tower.lingeringDuration || 2000,
@@ -1138,9 +1210,11 @@ const moveEnemy = useCallback(() => {
           
                   let updatedEnemy = {
                     ...enemy,
-                    hp: enemy.hp - (enemy.type === "boss" ? actualDamage * (tower.bossDamageMultiplier ?? 1) : actualDamage)
+                    maxHp: tower.healthReduction && !enemy.hasReducedHealth ? enemy.maxHp * (1 - tower.healthReduction)  : enemy.maxHp,
+                    hp: ((tower.healthReduction && !enemy.hasReducedHealth ? enemy.hp * (1 - tower.healthReduction)  : enemy.hp) - (enemy.type === "boss" ? actualDamage * (tower.bossDamageMultiplier ?? 1) : actualDamage)),
+                    hasReducedHealth: tower.healthReduction ? true : false,
                   };
-            
+                  console.log(updatedEnemy)
                   // Remove armor if tower can hit armored enemies
                   if (tower.canHitArmored && enemy.isArmored) {
                     updatedEnemy = {
@@ -1150,26 +1224,17 @@ const moveEnemy = useCallback(() => {
                     };
                   }
                 if (newHp <= 0 && enemy.hp > 0) {
-                if(enemy.canSpawn && round >= 50){
+                if(enemy.canSpawn && enemy.spawnType){
                   const spawnBatch = async () => {
                     for (let i = 0; i < 5; i++){
                       // Add a small delay between spawns
                       await new Promise(resolve => setTimeout(resolve, 50));
-                      setEnemies(prev => [...prev, createNewEnemy('SPEEDYGIGATANK', enemy.positionX, enemy.positionY)]);
+                      setEnemies(prev => [...prev, createNewEnemy((enemy.spawnType ?? 'ARMOREDSPEEDYMEGATANK'), enemy.positionX, enemy.positionY)]);
                     }
                   };
                   spawnBatch();
                 }
-                else if(enemy.canSpawn && round < 50){
-                  const spawnBatch = async () => {
-                    for (let i = 0; i < 5; i++){
-                      // Add a small delay between spawns
-                      await new Promise(resolve => setTimeout(resolve, 50));
-                      setEnemies(prev => [...prev, createNewEnemy('SPEEDYMEGATANK', enemy.positionX, enemy.positionY)]);
-                    }
-                  };
-                  spawnBatch();
-              }
+                
               grantMoneyForKill(enemy);
             }
                 // Apply additional effects like stun/slow
@@ -1313,6 +1378,7 @@ const moveEnemy = useCallback(() => {
               positionX: targets[0].positionX,
               positionY: targets[0].positionY,
               damage: tower.lingeringDamage || tower.attack * 0.1,
+              enemyCurrentHpDmgMultiplier: tower.enemyCurrentHpDmgMultiplier ?? 0,
               radius: tower.lingeringRadius || 10,
               timestamp: Date.now(),
               duration: tower.lingeringDuration || 2000,
@@ -1429,26 +1495,16 @@ const actualDamage = Math.min(
                 updatedEnemy.executed = (updatedEnemy.hp / enemy.maxHp) * 100 <= (tower.executeTreshhold ?? 1);
                 // Then check for kill and grant money
               if ((updatedEnemy.hp <= 0 && enemy.hp > 0) || enemy.executed) {
-                if(enemy.canSpawn && round >= 50){
+                if(enemy.canSpawn && enemy.spawnType){
                   const spawnBatch = async () => {
                     for (let i = 0; i < 5; i++){
                       // Add a small delay between spawns
                       await new Promise(resolve => setTimeout(resolve, 50));
-                      setEnemies(prev => [...prev, createNewEnemy('SPEEDYGIGATANK', enemy.positionX, enemy.positionY)]);
+                      setEnemies(prev => [...prev, createNewEnemy((enemy.spawnType ?? 'ARMOREDSPEEDYMEGATANK'), enemy.positionX, enemy.positionY)]);
                     }
                   };
                   spawnBatch();
                 }
-                else if(enemy.canSpawn && round < 50){
-                  const spawnBatch = async () => {
-                    for (let i = 0; i < 5; i++){
-                      // Add a small delay between spawns
-                      await new Promise(resolve => setTimeout(resolve, 50));
-                      setEnemies(prev => [...prev, createNewEnemy('SPEEDYMEGATANK', enemy.positionX, enemy.positionY)]);
-                    }
-                  };
-                  spawnBatch();
-              }
               
               grantMoneyForKill(enemy);
             }
@@ -1586,7 +1642,16 @@ const getFurthestEnemyInRadius = (
   });
 
   // Sort enemies based on targeting type
-  if (targettingType === "highestMaxHp") {
+  if (targettingType === "stealth") {
+    // First sort by stealth status (stealth enemies first), then by progress
+    enemiesWithProgress.sort((a, b) => {
+      // If one is stealth and the other isn't, prioritize the stealth enemy
+      if (a.type === "stealth" && b.type !== "stealth") return -1;
+      if (a.type !== "stealth" && b.type === "stealth") return 1;
+      // If both have same stealth status, sort by progress (further along first)
+      return b.progress - a.progress;
+    });
+  } else if (targettingType === "highestMaxHp") {
     enemiesWithProgress.sort((a, b) => b.maxHp - a.maxHp);
   } else if (targettingType === "last") {
     enemiesWithProgress.reverse();
@@ -1857,7 +1922,7 @@ useEffect(() => {
                     const distance = Math.sqrt(dx * dx + dy * dy);
 
                     if (distance <= effect.radius) {
-                        totalDamage += effect.damage;
+                        totalDamage += effect.damage + ((enemy.hp * (effect.enemyCurrentHpDmgMultiplier ?? 0)) / 20);
 
                         // If the effect can stop regen, mark enemy as inside regen-stopping area
                         if (effect.canStopRegen) {
@@ -1955,26 +2020,16 @@ useEffect(() => {
           const newHp = enemy.hp - actualPoisonDamage;
           // Only grant money if the poison damage kills the enemy
           if (newHp <= 0 && enemy.hp > 0) {
-            if(enemy.canSpawn && round >= 50){
+            if(enemy.canSpawn && enemy.spawnType){
               const spawnBatch = async () => {
                 for (let i = 0; i < 5; i++){
                   // Add a small delay between spawns
                   await new Promise(resolve => setTimeout(resolve, 50));
-                  setEnemies(prev => [...prev, createNewEnemy('SPEEDYGIGATANK', enemy.positionX, enemy.positionY)]);
+                  setEnemies(prev => [...prev, createNewEnemy((enemy.spawnType ?? 'ARMOREDSPEEDYMEGATANK'), enemy.positionX, enemy.positionY)]);
                 }
               };
               spawnBatch();
             }
-            else if(enemy.canSpawn && round < 50){
-              const spawnBatch = async () => {
-                for (let i = 0; i < 5; i++){
-                  // Add a small delay between spawns
-                  await new Promise(resolve => setTimeout(resolve, 50));
-                  setEnemies(prev => [...prev, createNewEnemy('SPEEDYMEGATANK', enemy.positionX, enemy.positionY)]);
-                }
-              };
-              spawnBatch();
-          }
           grantMoneyForKill(enemy);
         }
   
@@ -2203,6 +2258,20 @@ useEffect(() => {
                         icon="🎯"
                       />
                     )}
+                    {selectedTower.enemyCurrentHpDmgMultiplier && (
+                      <StatBlock 
+                        label="Current enemy hp %dmg" 
+                        value={`${(selectedTower.enemyCurrentHpDmgMultiplier|| 0) * 100}%`} 
+                        icon="🎯"
+                      />
+                    )}
+                    {selectedTower.healthReduction && (
+                      <StatBlock 
+                        label="% Health reduction" 
+                        value={`${(selectedTower.healthReduction|| 0) * 100}%`} 
+                        icon="🎯"
+                      />
+                    )}
                   </div>
                 </div>
               </div>
@@ -2361,7 +2430,7 @@ useEffect(() => {
     highlight?: boolean;
     icon?: string | null;
   }) => (
-    <div className={`p-3 rounded flex items-center ${highlight ? 'bg-blue-900/60 border border-blue-500/50' : 'bg-gray-900/60 border border-blue-700/20'} transition-all hover:shadow-lg hover:scale-102`}>
+    <div className={`p-2 rounded flex items-center ${highlight ? 'bg-blue-900/60 border border-blue-500/50' : 'bg-gray-900/60 border border-blue-700/20'} transition-all hover:shadow-lg hover:scale-102`}>
       {icon && <div className="mr-2 text-lg text-blue-300">{icon}</div>}
       <div className="flex-1">
         <div className="text-xs font-medium text-gray-400">{label}</div>
@@ -2423,8 +2492,10 @@ useEffect(() => {
           targettingType: t.targettingType === "first" 
             ? "highestMaxHp" 
             : t.targettingType === "highestMaxHp" 
-            ? "last" 
-            : "first" 
+            ? "last"
+            : t.targettingType === "last" && t.canHitStealth 
+            ? "stealth" 
+            : "first"
         } : t
     ))
   }
@@ -2530,7 +2601,7 @@ useEffect(() => {
       return (
         <div
           key={effect.id}
-          className="absolute rounded-full animate-explosion z-[5]"
+          className="absolute pointer-events-none rounded-full animate-explosion z-[5]"
           style={{
             left: `${effect.positionX}%`,
             top: `${effect.positionY}%`,

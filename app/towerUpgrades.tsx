@@ -52,6 +52,8 @@ interface Tower {
   accelerationValue?: number
   canMark?: boolean
   markedDamageMultiplier?: number
+  enemyCurrentHpDmgMultiplier?: number
+  healthReduction?: number
 }
 
 interface TowerUpgrade {
@@ -128,7 +130,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       effect: (tower) => ({
         acceleration: true,
         accelerationValue: 0.15,
-        attackInterval: tower.attackInterval - 150,
+        attackInterval: tower.attackInterval - 200,
         attack: tower.attack * 1.25,
         towerWorth: tower.towerWorth + 25000,
         path: 1
@@ -143,7 +145,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       effect: (tower) => ({
         acceleration: true,
         accelerationValue: 0.25,
-        attackInterval: tower.attackInterval - 250,
+        attackInterval: tower.attackInterval - 300,
         attack: tower.attack * 1.5,
         canHitStealth: true,
         canHitArmored: true,
@@ -305,7 +307,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 1,
           description: "Perfect accuracy with godlike destructive force.",
           effect: (tower) => ({
-            attack: tower.attack * 8,
+            attack: tower.attack * 5,
             criticalChance: 0.8,
             stunDuration: 500,
             canHitStealth: true,
@@ -388,7 +390,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           description: "A relentless storm of unstoppable firepower.",
           effect: (tower) => ({
             attackType: 'quadruple',
-            attackInterval: tower.attackInterval - 160,
+            attackInterval: tower.attackInterval - 220,
             attack: tower.attack * 1.2,
             canHitStealth: true,
             canHitArmored: true,
@@ -624,7 +626,6 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 1,
           description: "Expands slow radius and amplifies its effect.",
           effect: (tower) => ({
-            explosionRadius: 20,
             slowAmount: 0.4,
             slowDuration: 4000,
             towerWorth: tower.towerWorth + 8000,
@@ -638,7 +639,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 1,
           description: "Achieves near-total enemy immobilization.",
           effect: (tower) => ({
-            explosionRadius: 25,
+            explosionRadius: 20,
             slowAmount: 0.3,
             canHitStealth: true,
             towerWorth: tower.towerWorth + 20000,
@@ -652,7 +653,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 1,
           description: "Bends reality itself, nearly stopping enemies entirely.",
           effect: (tower) => ({
-            explosionRadius: 35,
+            explosionRadius: 22.5 ,
             slowAmount: 0.15,
             slowDuration: 7000,
             attackInterval: tower.attackInterval - 300,
@@ -724,7 +725,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           effect: (tower) => ({
             attack: tower.attack * 2,
             stunDuration: 1000,
-            attackInterval: tower.attackInterval + 750,
+            attackInterval: tower.attackInterval + 500,
             towerWorth: tower.towerWorth + 20000,
             path: 2
           })
@@ -737,7 +738,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           description: "A frost-bound apocalypse, freezing all in its wake.",
           effect: (tower) => ({
             attack: tower.attack * 3,
-            attackInterval: tower.attackInterval + 2500,
+            attackInterval: tower.attackInterval + 1500,
             stunDuration: 2500,
             canHitStealth: true,
             canHitArmored: true,
@@ -826,11 +827,11 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 1,
           description: "A lethal biological weapon that dissolves all.",
           effect: (tower) => ({
-            poisonDamage: tower.poisonDamage * 4,
+            poisonDamage: tower.poisonDamage * 3.5,
             attack: tower.attack * 2,
             lingeringRadius: 25,
             lingeringDuration: 4000,
-            lingeringDamage: tower.poisonDamage * 0.15,
+            lingeringDamage: tower.poisonDamage * 0.13,
             canHitArmored: true,
             canHitStealth: true,
             towerWorth: tower.towerWorth + 150000
@@ -925,8 +926,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       description: "Enhances explosion power, dealing increased damage.",
       effect: (tower) => ({
-        attack: tower.attack + 100,
-        explosionRadius: tower.explosionRadius * 1.1,
+        attack: tower.attack + 150,
         towerWorth: tower.towerWorth + 800,
         path: 1
       })
@@ -964,7 +964,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       description: "Explosions leave fiery destruction in their wake.",
       effect: (tower) => ({
         attack: tower.attack * 1.75,
-        explosionRadius: tower.explosionRadius * 1.3,
+        explosionRadius: tower.explosionRadius * 1.15,
         bossDamageMultiplier: 1.25,
         src: '/mortarSpecial.png',
         canHitStealth: true,
@@ -979,9 +979,10 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       description: "Unleashes nuclear-level devastation.",
       effect: (tower) => ({
-        attack: tower.attack * 2.5,
-        explosionRadius: tower.explosionRadius * 1.4,
-        bossDamageMultiplier: 1.5,
+        attack: tower.attack * 3.5,
+        explosionRadius: tower.explosionRadius * 1.25,
+        attackInterval: tower.attackInterval - 500,
+        bossDamageMultiplier: 3,
         criticalChance: 0.3,
         criticalMultiplier: 2,
         towerWorth: tower.towerWorth + 30000,
@@ -995,107 +996,101 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       description: "Apocalyptic blasts erase everything in their path.",
       effect: (tower) => ({
-        attack: tower.attack * 5,
-        explosionRadius: tower.explosionRadius * 2,
-        attackInterval: tower.attackInterval - 1000,
+        attack: tower.attack * 4,
+        explosionRadius: tower.explosionRadius * 1.5,
+        attackInterval: tower.attackInterval - 1250,
         criticalChance: 0.5,
-        bossDamageMultiplier: 3,
+        bossDamageMultiplier: 6,
         criticalMultiplier: 5,
         canHitStealth: true,
         towerWorth: tower.towerWorth + 150000
       })
     },
 
-    // Path 2 - Tactical Support
+    // Path 2 - Vital Attrition
     {
-      name: "EMP Shock",
+      name: "Enhanced Explosives",
       cost: 1000,
       requires: 0,
       path: 2,
-      description: "Shells temporarily disable enemy movement.",
+      description: "Improved shells with greater explosive power and range.",
       effect: (tower) => ({
-        canStun: true,
-        stunDuration: 100,
         explosionRadius: tower.explosionRadius * 1.1,
+        canHitStealth: true,
         towerWorth: tower.towerWorth + 1000,
         path: 2
       })
     },
     {
-      name: "Cryo Payload",
+      name: "Precision Targeting",
       cost: 2500,
       requires: 1,
       path: 2,
-      description: "Freezing explosions drastically slow enemies.",
+      description: "Advanced targeting systems.",
       effect: (tower) => ({
-        slowAmount: 0.7,
-        slowDuration: 2000,
+        attackInterval: tower.attackInterval - 500,
         explosionRadius: tower.explosionRadius * 1.2,
         towerWorth: tower.towerWorth + 2500,
         path: 2
       })
     },
     {
-      name: "Seismic Bombardment",
+      name: "Cellular Disruption",
       cost: 5000,
       requires: 2,
       path: 2,
-      description: "Massive control effects slow and stun enemies.",
+      description: "Shells now contain compounds that reduce enemy maximum health by 15%.",
       effect: (tower) => ({
-        explosionRadius: tower.explosionRadius * 1.3,
-        stunDuration: 300,
-        slowAmount: 0.6,
+        healthReduction: 0.05, // Reduces max HP by 15%
         attack: tower.attack + 50,
         towerWorth: tower.towerWorth + 5000,
         path: 2
       })
     },
     {
-      name: "Thunderous Reckoning",
+      name: "Degenerative Payload",
       cost: 10000,
       requires: 3,
       path: 2,
-      description: "Unleashes devastating waves of disruption.",
+      description: "Enhanced formula reduces enemy maximum health by 25% and increases damage.",
       effect: (tower) => ({
-        explosionRadius: tower.explosionRadius * 1.4,
-        slowAmount: 0.5,
-        slowDuration: 3000,
-        stunDuration: 400,
-        attack: tower.attack + 100,
+        healthReduction: 0.1,
+        attack: tower.attack + 120,
+        canStun: true,
+        stunDuration: 150,
         src: '/mortarSpecial2.png',
         towerWorth: tower.towerWorth + 12000,
         path: 2
       })
     },
     {
-      name: "Tactical Superiority",
+      name: "Entropic Bombardment",
       cost: 22500,
       requires: 4,
       path: 2,
-      description: "The battlefield bends to your command.",
+      description: "Devastating shells reduce enemy maximum health by 40% and can detect stealth units.",
       effect: (tower) => ({
-        explosionRadius: tower.explosionRadius * 1.5,
-        attack: tower.attack * 1.5,
-        slowAmount: 0.4,
-        slowDuration: 2000,
-        canHitStealth: true,
+        healthReduction: 0.15,
+        explosionRadius: tower.explosionRadius * 1.15,
+        attackInterval: tower.attackInterval - 1000,
+        stunDuration: 250,
+        attack: tower.attack * 1.6,
         towerWorth: tower.towerWorth + 25000,
         path: 2
       })
     },
     {
-      name: "Commander's Wrath",
+      name: "Existential Decay",
       cost: 150000,
       requires: 5,
       path: 2,
-      description: "Unstoppable control, rendering enemies helpless.",
+      description: "The ultimate life-force drain, reducing enemy max health by 30% and dealing massive damage.",
       effect: (tower) => ({
-        explosionRadius: tower.explosionRadius * 2,
-        attack: tower.attack * 2.5,
-        slowAmount: 0.3,
-        slowDuration: 4000,
-        stunDuration: 1200,
-        canHitStealth: true,
+        healthReduction: 0.25,
+        attackInterval: tower.attackInterval - 1500,
+        explosionRadius: tower.explosionRadius * 1.25,
+        stunDuration: 500,
+        attack: tower.attack * 3,
         towerWorth: tower.towerWorth + 150000
       })
     }
@@ -1121,10 +1116,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       description: "Specialized anti-armor rounds for maximum penetration.",
       effect: (tower) => ({
-        attack: tower.attack + 75,
-        hasCritical: true,
-        criticalChance: 0.2,
-        criticalMultiplier: 2,
+        attack: tower.attack + 125,
         towerWorth: tower.towerWorth + 2000
       })
     },
@@ -1136,6 +1128,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       description: "Extreme armor penetration with increased damage output.",
       effect: (tower) => ({
         attack: tower.attack * 1.5,
+        hasCritical: true,
         criticalChance: 0.3,
         criticalMultiplier: 2.5,
         towerWorth: tower.towerWorth + 4500
@@ -1209,7 +1202,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       description: "Creates multiple small but powerful explosions.",
       effect: (tower) => ({
         explosionRadius: tower.explosionRadius * 1.3,
-        attackInterval: tower.attackInterval - 125,
+        attackInterval: tower.attackInterval - 300,
         attack: tower.attack + 15,
         towerWorth: tower.towerWorth + 2500
       })
@@ -1225,7 +1218,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         lingeringDamage: tower.attack * 0.03,
         lingeringRadius: 13,
         attackInterval: tower.attackInterval + 1000,
-        lingeringDuration: 3000,
+        lingeringDuration: 2500,
         attack: tower.attack + 75,
         explosionRadius: tower.explosionRadius * 1.3,
         towerWorth: tower.towerWorth + 5000
@@ -1239,8 +1232,9 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       description: "Devastating explosive payloads leave scorched earth behind.",
       effect: (tower) => ({
         lingeringRadius: 18,
-        lingeringDuration: 4000,
-        attack: tower.attack * 1.4,
+        lingeringDuration: 3000,
+        attack: tower.attack * 1.5,
+        enemyCurrentHpDmgMultiplier: 0.02, 
         explosionRadius: tower.explosionRadius * 1.4,
         src: '/cannonSpecial2.png',
         towerWorth: tower.towerWorth + 12000
@@ -1254,10 +1248,11 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       description: "Harnesses the power of a miniature sun to incinerate enemies.",
       effect: (tower) => ({
         lingeringRadius: 22,
-        lingeringDuration: 5000,
-        attack: tower.attack * 1.5,
+        lingeringDuration: 3500,
+        attack: tower.attack * 2,
         explosionRadius: tower.explosionRadius * 1.5,
         canHitArmored: true,
+        enemyCurrentHpDmgMultiplier: 0.045, 
         towerWorth: tower.towerWorth + 25000
       })
     },
@@ -1268,10 +1263,11 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 2,
       description: "Unleashes an explosion of cosmic proportions.",
       effect: (tower) => ({
-        lingeringDamage: tower.attack * 0.06,
-        lingeringRadius: 25,
-        lingeringDuration: 6000,
-        attack: tower.attack * 2,
+        lingeringDamage: tower.attack * 0.1,
+        lingeringRadius: 27,
+        lingeringDuration: 4500,
+        attack: tower.attack * 2.5,
+        enemyCurrentHpDmgMultiplier: 0.085, 
         explosionRadius: tower.explosionRadius * 2,
         canHitArmored: true,
         canHitStealth: true,

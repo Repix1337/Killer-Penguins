@@ -295,6 +295,37 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
         <div className="space-y-6">
             {/* Tower Upgrades section update */}
             <div className="bg-sky-800/80 p-4 rounded-lg border border-cyan-400/30">
+                <h2 className="text-xl text-white mb-2">Patch Notes 12.03.2025</h2>
+                <div className="mt-6 space-y-4">
+                    <h4 className="text-lg text-white">Cannon</h4>
+                    <p className="text-gray-300">•Path 2 small rework: Now this path focuses on dealing current enemy percent dmg.</p>
+                </div>
+                <div className="mt-6 space-y-4">
+                    <h4 className="text-lg text-white">Mortar</h4>
+                    <p className="text-gray-300">•Path 2 rework: Now this path focuses on reducing enemy max health and stuns.</p>
+                </div>
+                <div className="mt-6 space-y-4">
+                    <h4 className="text-lg text-white">Basic</h4>
+                    <p className="text-gray-300">•Path 1 nerf: Can no longer literally one shot bosses.</p>
+                </div>
+                <div className="mt-6 space-y-4">
+                    <h4 className="text-lg text-white">Slower</h4>
+                    <p className="text-gray-300">•Path 1 nerf: His explosion radius got significantly reduced.</p>
+                    <p className="text-gray-300">•Path 2 buff: Attack interval reduced.</p>
+                </div>
+                <div className="mt-6 space-y-4">
+                    <h4 className="text-lg text-white">Sniper</h4>
+                    <p className="text-gray-300">•Path 1 nerf: Reduced it's max dmg from about 23 000 to about 15 000'.</p>
+                    <p className="text-gray-300">•Path 2 buff: Reduced it's max attack interval from 150 to 70.</p>
+
+                </div>
+                <div className="mt-6 space-y-4">
+                    <h4 className="text-lg text-white">Systems</h4>
+                    <p className="text-gray-300">•Further upgrade adjustments.</p>
+                    <p className="text-gray-300">•Added new spawner enemies types.</p>
+                    <p className="text-gray-300">•Added stealth focused targetting type.</p>
+                    <p className="text-gray-300">•Since round 150, two new enemies will start to appear: Ultra Boss and Mega Boss spawner.</p>
+                </div>
                 <h3 className="text-xl text-white mb-2">Patch Notes 11.03.2025</h3>
                 <div className="mt-6 space-y-4">
                     <h4 className="text-lg text-white">Slower</h4>
