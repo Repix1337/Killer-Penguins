@@ -165,6 +165,8 @@ const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, 
   const [enemyCount, setEnemyCount] = useState(0);
   const [showUpgradeMenu, setShowUpgradeMenu] = useState(false);
   const [selectedTowerID, setSelectedTowerID] = useState('');
+  const [showEnemyAlert, setShowEnemyAlert] = useState(false);
+  const [enemyAlertDescription, setEnemyAlertDescription] = useState('');
   const [explosionEffects, setExplosionEffects] = useState<{
       id: string;
       positionX: number;
@@ -718,6 +720,10 @@ useEffect(() => {
           setEnemies(prev => [...prev, createNewEnemy('BASIC')]);
           setEnemyCount(prev => prev + 1);
         }
+        if (round === 4 && enemies.length === 0){
+          setShowEnemyAlert(true)
+          setEnemyAlertDescription("Stealth enemies are coming next round! Make sure u have stealth detection")
+        }
         break;
 
       case round === 5:
@@ -735,6 +741,10 @@ useEffect(() => {
         setEnemies(prev => [...prev, createNewEnemy(type10)]);
         setEnemyCount(prev => prev + 1);
         }
+        if (round === 12 && enemies.length === 0){
+          setShowEnemyAlert(true)
+          setEnemyAlertDescription("Armored Enemies are coming next round! Make sure u have explosion towers")
+        }
         break;
       case round >= 13 && round <= 15:
         if (enemyCount < getEnemyLimit(round)) {
@@ -751,6 +761,10 @@ useEffect(() => {
                       enemyCount % 3 === 1 ? 'SPEEDY' : 'TANK';
         setEnemies(prev => [...prev, createNewEnemy(type15)]);
         setEnemyCount(prev => prev + 1);
+        }
+        if (round === 21 && enemies.length === 0){
+          setShowEnemyAlert(true)
+          setEnemyAlertDescription("Regen Enemies are coming next round! Make sure u have enough dmg or you can stop your regen")
         }
         break;
 
@@ -775,6 +789,10 @@ useEffect(() => {
         const type26 = enemyCount % 2 === 0 ? 'STEALTHYTANK' : 'SPEEDYREGENTANK';
         setEnemies(prev => [...prev, createNewEnemy(type26)]);
         setEnemyCount(prev => prev + 1);
+        }
+        if (round === 31 && enemies.length === 0){
+          setShowEnemyAlert(true)
+          setEnemyAlertDescription("Bosses are coming next round! Make sure u are strong enough")
         }
         break;
 
@@ -810,6 +828,10 @@ useEffect(() => {
           ]);
           setEnemyCount(prev => prev + 1);
         }
+        if (round === 44 && enemies.length === 0){
+          setShowEnemyAlert(true)
+          setEnemyAlertDescription("Mega Boss are coming next round! Make sure u are strong enough")
+        }
         break;
 
       case round === 45:
@@ -826,6 +848,10 @@ useEffect(() => {
               type46 === 'MEGABOSS' ? createNewEnemy(type46) : createNewEnemy(type46)
             ]);
             setEnemyCount(prev => prev + 1);
+            if (round === 49 && enemies.length === 0){
+              setShowEnemyAlert(true)
+              setEnemyAlertDescription("Last round is coming! Prepare for ultimate battle")
+            }
           }
         break;
         case round === 50:
@@ -2721,6 +2747,32 @@ const WinScreen = () => {
     </div>
   )
 }
+const enemyAlert = () => {
+  return showEnemyAlert &&   (
+    <div 
+    className="absolute top-[25vh] left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 
+      bg-slate-800 flex flex-col justify-center items-center p-4 md:p-6 rounded-lg gap-4 
+      shadow-xl border-2 border-blue-500 w-[95vw] max-w-[700px] md:w-[700px] text-sm"
+  >
+    <div className="flex justify-between items-center mb-6 w-full">
+      <h1 className="text-4xl font-bold bg-gradient-to-r from-red-400 to-pink-500 
+        bg-clip-text text-transparent mb-4 mt-3 animate-pulse mx-auto">
+        ALERT
+      </h1>
+      <button 
+        onClick={() => setShowEnemyAlert(false)}
+        className="p-2 hover:bg-slate-700/50 rounded-lg transition-colors 
+        text-3xl font-extrabold text-red-600">
+        X
+      </button>
+    </div>
+  
+    <div className="text-red-300 text-lg md:text-xl font-semibold text-center px-4 py-2 bg-red-900/30 rounded-lg shadow-md border border-red-500">
+      {enemyAlertDescription}
+    </div>
+  </div>
+  )
+}
   return (
     <>
    <div 
@@ -2788,8 +2840,10 @@ const WinScreen = () => {
       {attackAnimation()}
       {renderExplosions()}
       {LingeringEffects()}
+
     </div>
     {upgradeTower()}
+    {enemyAlert()}
     {GameOverScreen()}
     {WinScreen()}
     </>
