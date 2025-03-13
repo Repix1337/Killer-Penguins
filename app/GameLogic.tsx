@@ -2550,17 +2550,19 @@ const grantMoneyForKill = useCallback((enemy: Enemy) => {
     let reward = enemy.maxHp / 6.5;
     
     // Apply round-based reduction more explicitly
-    let multiplier = 1;
+    let multiplier;
     if (round >= 33 && round < 42) {
       multiplier = 0.085;  // 7% of original reward
     } else if (round > 22 && round < 33) {
       multiplier = 0.3;   // 30% of original reward
     }else if (round >= 42) {
       multiplier = 0.065;   // 5.5% of original reward
+    }else if (round <= 22) {
+      multiplier = 1;   // 5.5% of original reward
     }
     
     // Apply multiplier to reward
-    reward = reward * multiplier;
+    reward = reward * (multiplier ?? 1);
     
     // Ensure the reward is at least 1
     reward = Math.max(1, Math.floor(reward));
