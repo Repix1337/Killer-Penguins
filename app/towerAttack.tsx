@@ -1,17 +1,21 @@
  
- import React, {useCallback} from 'react';
+ import React from 'react';
+ import { Enemy } from './EnemyInterface';
+ import { EnemyType } from './EnemyInterface';
+ import { Tower } from './TowerInterface';
+ import { AttackEffect, ExplosionEffect, LingeringEffect } from './EffectInterfaces';
 
  type TowerAttackDependencies = {
-    setTower: React.Dispatch<React.SetStateAction<Tower[]>>;
-    setEnemies: React.Dispatch<React.SetStateAction<Enemy[]>>;
-    setAttackEffects: React.Dispatch<React.SetStateAction<any[]>>;
-    setExplosionEffects: React.Dispatch<React.SetStateAction<any[]>>;
-    setLingeringEffects: React.Dispatch<React.SetStateAction<any[]>>;
-    isPaused: boolean;
-    isSpeedUp: number;
-    uuidv4: () => string;
-    createNewEnemy: (type: EnemyType, x: number, y: number) => Enemy;
-    grantMoneyForKill: (enemy: Enemy) => void;
+  setTower: React.Dispatch<React.SetStateAction<Tower[]>>;
+  setEnemies: React.Dispatch<React.SetStateAction<Enemy[]>>;
+  setAttackEffects: React.Dispatch<React.SetStateAction<AttackEffect[]>>;
+  setExplosionEffects: React.Dispatch<React.SetStateAction<ExplosionEffect[]>>;
+  setLingeringEffects: React.Dispatch<React.SetStateAction<LingeringEffect[]>>;
+  isPaused: boolean;
+  isSpeedUp: number;
+  uuidv4: () => string;
+  createNewEnemy: (type: EnemyType, x: number, y: number) => Enemy;
+  grantMoneyForKill: (enemy: Enemy) => void;
   };
   
   export const towerAttack = (

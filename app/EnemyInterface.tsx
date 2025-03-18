@@ -1,10 +1,10 @@
-type EnemyType = "SPEEDYMEGATANK" | "SPEEDYGIGATANK" | "MEGABOSS" | "BASIC" | "STEALTH" | 
+export type EnemyType = "SPEEDYMEGATANK" | "SPEEDYGIGATANK" | "MEGABOSS" | "BASIC" | "STEALTH" | 
                 "TANK" | "SPEEDY" | "STEALTHYTANK" | "STEALTHYSPEEDY" | "REGENTANK" | 
                 "SPEEDYREGENTANK" | "BOSS" | "ULTRATANKS" | "ARMOREDSPEEDYMEGATANK" | 
-                "MEGABOSSSPAWNER" | /* Add other enemy types here */
+                "MEGABOSSSPAWNER" | 
                 string;
 
-interface Enemy {
+export interface Enemy {
     id: string;
     positionX: number;
     positionY: number;
@@ -33,8 +33,8 @@ interface Enemy {
     stunStartTime?: number;
     canSpawn?: boolean;
     spawnType?: "SPEEDYMEGATANK" | "SPEEDYGIGATANK" | "BASIC" | "STEALTH" | "TANK" | 
-    "SPEEDY" | "STEALTHYTANK" | "STEALTHYSPEEDY" | "REGENTANK" | 
-    "SPEEDYREGENTANK" | "BOSS" | "ULTRATANKS" | "MEGABOSSSPAWNER";
+"SPEEDY" | "STEALTHYTANK" | "STEALTHYSPEEDY" | "REGENTANK" | 
+"SPEEDYREGENTANK" | "BOSS" | "ULTRATANKS" | "MEGABOSSSPAWNER" | "ARMOREDSPEEDYMEGATANK";
     executed: boolean;
     acceleratedHitCount: number;
     accelerationValue?: number;
@@ -42,4 +42,4 @@ interface Enemy {
     markedDamageMultiplier?: number;
     markedExplosion?: boolean;
     hasReducedHealth: boolean;
-  }
+}

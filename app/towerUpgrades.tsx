@@ -1,3 +1,4 @@
+import { Tower } from "./TowerInterface";
 interface TowerUpgrade {
     name: string;
     cost: number;

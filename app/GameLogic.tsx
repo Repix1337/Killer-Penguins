@@ -6,8 +6,9 @@ import { saveGameResult } from '@/app/saveGameResult';
 import { towerUpgrades } from './towerUpgrades';
 import Image from 'next/image';
 import { towerAttack } from './towerAttack';
-
-
+import { Tower } from './TowerInterface';
+import { Enemy } from './EnemyInterface';
+import { LingeringEffect } from './EffectInterfaces';
 
 // Define the props for the Spawn component
 interface SpawnProps {
@@ -33,19 +34,6 @@ interface TowerUpgrade {
   path: number;
   effect: (tower: Tower) => Partial<Tower>;
   requires: number; // Previous upgrade level required
-}
-interface LingeringEffect {
-  id: string;
-  positionX: number;
-  positionY: number;
-  damage: number;
-  enemyCurrentHpDmgMultiplier?: number
-  radius: number;
-  timestamp: number;
-  canStopRegen: boolean;
-  color: string;
-  duration: number;
-  towerId: string; // Add this field
 }
 
 const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp,setIsSpeedUp, isSpeedUp,setIsPaused,canPause, isPaused, setCanPause, selectedTowerType }) => {
