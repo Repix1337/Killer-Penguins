@@ -2,8 +2,10 @@
 import React from 'react'
 import Spawn from './GameLogic'
 import Menu from './Menu'
-
-const GameInterface = () => {
+interface SpawnProps {
+  gameMode: string;
+}
+const GameInterface: React.FC<SpawnProps> = ({gameMode}) => {
     const [renderMenu, setRenderMenu] = React.useState(false)
     const [round, setRound] = React.useState(0)
     const [HealthPoints, setHealthPoints] = React.useState(100)
@@ -14,8 +16,11 @@ const GameInterface = () => {
     const [selectedTowerType, setSelectedTowerType] = React.useState('');
 
     const onClick = () => {
-      if (round < 1) {
+      if (round < 1 && gameMode === 'normal') {
         setRound(1);
+      }
+      else if (round < 1 && gameMode === 'sandbox') {
+        
       }
     }
 

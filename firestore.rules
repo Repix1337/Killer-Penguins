@@ -3,9 +3,10 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /leaderboard/{document} {
       allow read: if true;  // Anyone can read leaderboard entries
-      allow create: if request.resource.data.roundRecord is number
-                   && request.resource.data.username is string
-                   && request.resource.data.timestamp is timestamp;
+       allow create: if request.auth != null && 
+                   request.resource.data.roundRecord is number &&
+                   request.resource.data.username is string &&
+                   request.resource.data.timestamp is timestamp;
     }
   }
 }
