@@ -14,14 +14,39 @@ const GameInterface: React.FC<SpawnProps> = ({gameMode}) => {
     const [isPaused, setIsPaused] = React.useState(false);
     const [canPause, setCanPause] = React.useState(false);
     const [selectedTowerType, setSelectedTowerType] = React.useState('');
+    const [sandboxInput, setSandboxInput] = React.useState({
+        round: '',
+        money: '',
+        hp: ''
+    });
+
+    const handleSandboxInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setSandboxInput(prev => ({
+            ...prev,
+            [name]: value
+        }));
+
+        // Immediately update money and HP when changed
+        if (gameMode === 'sandbox' && round < 1) {
+            if (name === 'money') {
+                const newMoney = parseInt(value) || 0;
+                setMoney(Math.max(newMoney, 0));
+            } else if (name === 'hp') {
+                const newHp = parseInt(value) || 1;
+                setHealthPoints(Math.max(newHp, 1));
+            }
+        }
+    };
 
     const onClick = () => {
-      if (round < 1 && gameMode === 'normal') {
-        setRound(1);
-      }
-      else if (round < 1 && gameMode === 'sandbox') {
-        
-      }
+        if (round < 1 && gameMode === 'normal') {
+            setRound(1);
+        }
+        else if (round < 1 && gameMode === 'sandbox') {
+            const newRound = parseInt(sandboxInput.round) || 1;
+            setRound(Math.max(newRound, 1)); 
+        }
     }
 
     const handleSpeedUp = () => {
@@ -51,6 +76,41 @@ const GameInterface: React.FC<SpawnProps> = ({gameMode}) => {
                   bg-gradient-to-r from-slate-800 to-slate-700 min-h-[10vh] shadow-lg border-b-2 border-blue-500/50
                    sm:gap-2 sm:text-sm sm:p-1">
     
+    {/* Add sandbox controls */}
+    {gameMode === 'sandbox' && (
+      <div className="flex gap-2 items-center">
+        <div className="flex items-center gap-1">
+          <input
+            type="number"
+            name="round"
+            placeholder="Round"
+            value={sandboxInput.round}
+            onChange={handleSandboxInput}
+            className="w-24 px-2 py-1 rounded bg-slate-700 text-white text-sm"
+            min="1"
+          />
+          <input
+            type="number"
+            name="money"
+            placeholder="Money"
+            value={sandboxInput.money}
+            onChange={handleSandboxInput}
+            className="w-24 px-2 py-1 rounded bg-slate-700 text-white text-sm"
+            min="0"
+          />
+          <input
+            type="number"
+            name="hp"
+            placeholder="HP"
+            value={sandboxInput.hp}
+            onChange={handleSandboxInput}
+            className="w-24 px-2 py-1 rounded bg-slate-700 text-white text-sm"
+            min="1"
+          />
+        </div>
+      </div>
+    )}
+
     <button
       className={`px-4 py-2 rounded-lg shadow-md transition-all duration-200 
       ${round < 1 ? 'bg-green-500 hover:bg-green-600 animate-pulse' : 'bg-slate-600'}
@@ -126,6 +186,7 @@ const GameInterface: React.FC<SpawnProps> = ({gameMode}) => {
           setCanPause={setCanPause}
           canPause={canPause}
           selectedTowerType={selectedTowerType}
+          gameMode={gameMode}
         />
         
         {/* Tower Selection Panel */}

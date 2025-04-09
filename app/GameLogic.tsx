@@ -25,6 +25,7 @@ interface SpawnProps {
   canPause: boolean;
   setCanPause: React.Dispatch<React.SetStateAction<boolean>>;
   selectedTowerType: string;
+  gameMode: string;
 }
 
 interface TowerUpgrade {
@@ -36,7 +37,7 @@ interface TowerUpgrade {
   requires: number; // Previous upgrade level required
 }
 
-const Spawn: React.FC<SpawnProps> = ({ round, setHealthPoints, money, setMoney, setRound, hp,setIsSpeedUp, isSpeedUp,setIsPaused,canPause, isPaused, setCanPause, selectedTowerType }) => {
+const Spawn: React.FC<SpawnProps> = ({ gameMode, round, setHealthPoints, money, setMoney, setRound, hp,setIsSpeedUp, isSpeedUp,setIsPaused,canPause, isPaused, setCanPause, selectedTowerType }) => {
   // Game state
   const [enemies, setEnemies] = useState<Enemy[]>([]);
   const [tower, setTower] = useState<Tower[]>([]);
@@ -838,7 +839,7 @@ useEffect(() => {
 
   const spawnInterval = setInterval(
     spawnEnemies,
-    (round === 32 ? (isSpeedUp ? 2500 : 1250) : Math.max(1000 / round, 50)) / 
+    (round === 32 ? (isSpeedUp ? 2500 : 1250) : Math.max(1000 / round, 75)) / 
     (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)
   );
 
@@ -852,7 +853,7 @@ const lastRound = useRef(round); // Store the last valid round
 useEffect(() => {
   if (isPaused) return;
 
-  if (round !== lastRound.current + 1 && round !== 0) {
+  if (round !== lastRound.current + 1 && round !== 0 && gameMode === "normal") {
     alert("Kys");
     resetGame();
     return;
@@ -2042,15 +2043,15 @@ useEffect(() => {
   });
 }, [enemies, grantMoneyForKill]);
  useEffect(() => {
-  if (hp > 101) {
+  if (hp > 101 && gameMode === "normal") {
     alert('kys');
     resetGame()
   }
-  if (round < 30 && money > 1000000) {
+  if (round < 30 && money > 1000000 && gameMode === "normal") {
     alert('kys');
     resetGame()
   }
-  if (round >= 150 && money < 10000) {
+  if (round >= 150 && money < 10000 && gameMode === "normal") {
     alert('kys');
     resetGame()
   }
@@ -2120,7 +2121,7 @@ const GameOverScreen = () => {
         </h2>
         <p className='text-xl text-blue-300 mb-8'>You made it to round {round}!</p>
         
-        {!isSaved ? (
+        {!isSaved && gameMode === "normal" ? (
           <div className='mb-6 space-y-4'>
             <input
               type="text"
@@ -2143,6 +2144,8 @@ const GameOverScreen = () => {
               Save Score
             </button>
           </div>
+        ) : gameMode === "sandbox" ? (
+          <p className='text-sm text-green-400 mb-4'>Can't save on sandbox</p>
         ) : (
           <p className='text-sm text-green-400 mb-4'>Score saved successfully!</p>
         )}
