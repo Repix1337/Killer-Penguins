@@ -2145,7 +2145,7 @@ const GameOverScreen = () => {
             </button>
           </div>
         ) : gameMode === "sandbox" ? (
-          <p className='text-sm text-green-400 mb-4'>Can't save on sandbox</p>
+          <p className='text-sm text-green-400 mb-4'>Cant save on sandbox</p>
         ) : (
           <p className='text-sm text-green-400 mb-4'>Score saved successfully!</p>
         )}
