@@ -1392,7 +1392,7 @@ useEffect(() => {
 useEffect(() => {
   if (!isPageVisible || isPaused) return;
            
-  const POISON_TICK_RATE = isSpeedUp === 2 ? 3.33 : isSpeedUp ? 5 : 10;
+  const POISON_TICK_RATE = isSpeedUp === 2 ? 3 : isSpeedUp ? 5 : 10;
   
   const poisonInterval = setInterval(() => {
     const currentTime = Date.now();
@@ -1407,7 +1407,6 @@ useEffect(() => {
         if (!poisonTower?.poisonDamage) return enemy;
 
         const POISON_DURATION = (poisonTower.poisonDuration ?? 4000) / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1);
-        const TOTAL_TICKS = POISON_DURATION / POISON_TICK_RATE;
 
         if (currentTime - enemy.poisonStartTime >= POISON_DURATION) {
           return {
