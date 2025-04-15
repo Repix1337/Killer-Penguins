@@ -989,7 +989,38 @@ const Spawn: React.FC<SpawnProps> = ({
       }
     }
   }, [enemies.length, enemyCount, round, isSpeedUp, isPaused, autoStartRounds,gameMode,resetGame,setCanPause,setIsPaused,setRound]);
+  const grantMoneyForKill = useCallback(
+    (enemy: Enemy) => {
+      if (!processedEnemies.has(enemy.id)) {
+        processedEnemies.add(enemy.id);
 
+        // Base reward calculation
+        let reward = enemy.maxHp / 6.5;
+
+        // Apply round-based reduction more explicitly
+        let multiplier;
+        if (round >= 33 && round < 42) {
+          multiplier = 0.09; // 7% of original reward
+        } else if (round > 22 && round < 33) {
+          multiplier = 0.35; // 30% of original reward
+        } else if (round >= 42) {
+          multiplier = 0.065; // 5.5% of original reward
+        } else if (round <= 22) {
+          multiplier = 1; // 5.5% of original reward
+        }
+
+        // Apply multiplier to reward
+        reward = reward * (multiplier ?? 1);
+
+        // Ensure the reward is at least 1
+        reward = Math.max(1, Math.floor(reward));
+
+        // Update money
+        setMoney((prev) => prev + reward);
+      }
+    },
+    [processedEnemies, round,setMoney]
+  );
   // Modify the round change effect to handle round starts
   useEffect(() => {
     if (round > 0) {
@@ -1013,6 +1044,28 @@ const Spawn: React.FC<SpawnProps> = ({
       }
     }
   }, [isPaused,autoStartRounds, enemies.length, enemyCount, round,setRound,setEnemies,setEnemyCount,]);
+  const sellTower = useCallback((towerPrice: number) => {
+    if (confirmTowerSell) {
+      const confirmed = window.confirm(
+        "Are you sure you want to sell this tower?"
+      );
+      if (!confirmed) return;
+    }
+
+    setMoney((prevMoney) => prevMoney + towerPrice / 1.5);
+    setTower((prevTower) => prevTower.filter((t) => t.id !== selectedTowerID));
+
+    const towerElement = document.getElementById(
+      selectedTowerID
+    ) as HTMLImageElement;
+    if (towerElement) {
+      towerElement.src = "/buildingSite.png";
+      towerElement.id = `building-site-${uuidv4()}`;
+    }
+
+    setShowUpgradeMenu(false);
+  }, [confirmTowerSell, selectedTowerID, setMoney, setTower, setShowUpgradeMenu]);
+
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (!isPageVisible) return;
@@ -1063,7 +1116,7 @@ const Spawn: React.FC<SpawnProps> = ({
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [isPageVisible, canPause, isPaused, isSpeedUp, selectedTowerID, tower, confirmTowerSell,setIsPaused, setIsSpeedUp]);
+  }, [isPageVisible, canPause, isPaused, isSpeedUp,sellTower, selectedTowerID, tower, confirmTowerSell,setIsPaused, setIsSpeedUp]);
   const moveEnemy = useCallback(() => {
     if (!isPageVisible || isPaused) return;
 
@@ -1162,10 +1215,11 @@ const Spawn: React.FC<SpawnProps> = ({
     isPaused,
     isSpeedUp,
     createNewEnemy,
+    grantMoneyForKill
   ]);
 
   // Get the furthest enemy within a certain radius from the tower
-  const getFurthestEnemyInRadius = (
+  const getFurthestEnemyInRadius = useCallback((
     towerPositionX: number,
     towerPositionY: number,
     towerType: string,
@@ -1307,7 +1361,7 @@ const Spawn: React.FC<SpawnProps> = ({
       // Single target
       return enemiesWithProgress.slice(0, 1);
     }
-  };
+  }, [enemies]);
 
   // Tower targeting system - updates target when enemies move
   useEffect(() => {
@@ -1395,20 +1449,20 @@ const Spawn: React.FC<SpawnProps> = ({
   };
 
   // Reduce player's health points if enemies reach the end
-  const damagePlayer = (enemies: Enemy[]) => {
+  const damagePlayer = useCallback((enemies: Enemy[]) => {
     enemies.forEach((enemy) => {
       if (enemy.positionX > 99) {
-        // Changed from >= 100 to > 95
         setHealthPoints((prevHealthPoints) => prevHealthPoints - enemy.damage);
         setEnemies((prevEnemies) =>
           prevEnemies.filter((e) => e.id !== enemy.id)
-        ); // Remove the enemy that dealt damage
+        );
       }
     });
-  };
+  }, [setHealthPoints, setEnemies]);
+
   useEffect(() => {
     damagePlayer(enemies);
-  }, [enemies, tower,damagePlayer]);
+  }, [enemies, tower, damagePlayer]);
   useEffect(() => {
     if (!isPageVisible || isPaused) return;
 
@@ -1579,7 +1633,7 @@ const Spawn: React.FC<SpawnProps> = ({
     }, LINGERING_TICK_RATE);
 
     return () => clearInterval(lingeringInterval);
-  }, [isPageVisible, isPaused, lingeringEffects]);
+  }, [isPageVisible, isPaused, lingeringEffects,grantMoneyForKill]);
 
   useEffect(() => {
     if (!isPageVisible || isPaused) return;
@@ -1673,7 +1727,7 @@ const Spawn: React.FC<SpawnProps> = ({
     }, POISON_TICK_RATE);
 
     return () => clearInterval(poisonInterval);
-  }, [enemies, tower, isPageVisible, isSpeedUp, isPaused, setMoney, createNewEnemy]);
+  }, [enemies, tower, isPageVisible, isSpeedUp, isPaused, setMoney, createNewEnemy,grantMoneyForKill]);
   // Buy towers and place them on the map
   const buyTowers = (
     event: React.MouseEvent<HTMLImageElement>,
@@ -2320,27 +2374,6 @@ const Spawn: React.FC<SpawnProps> = ({
     );
   };
 
-  const sellTower = (towerPrice: number) => {
-    if (confirmTowerSell) {
-      const confirmed = window.confirm(
-        "Are you sure you want to sell this tower?"
-      );
-      if (!confirmed) return;
-    }
-
-    setMoney((prevMoney) => prevMoney + towerPrice / 1.5);
-    setTower((prevTower) => prevTower.filter((t) => t.id !== selectedTowerID));
-
-    const towerElement = document.getElementById(
-      selectedTowerID
-    ) as HTMLImageElement;
-    if (towerElement) {
-      towerElement.src = "/buildingSite.png";
-      towerElement.id = `building-site-${uuidv4()}`;
-    }
-
-    setShowUpgradeMenu(false);
-  };
   // Component for attack animation
   const attackAnimation = () => {
     // Create a Set to track unique combinations of source and target
@@ -2485,38 +2518,7 @@ const Spawn: React.FC<SpawnProps> = ({
     }
   }, [enemies.length, enemyCount, round,processedEnemies]);
 
-  const grantMoneyForKill = useCallback(
-    (enemy: Enemy) => {
-      if (!processedEnemies.has(enemy.id)) {
-        processedEnemies.add(enemy.id);
-
-        // Base reward calculation
-        let reward = enemy.maxHp / 6.5;
-
-        // Apply round-based reduction more explicitly
-        let multiplier;
-        if (round >= 33 && round < 42) {
-          multiplier = 0.09; // 7% of original reward
-        } else if (round > 22 && round < 33) {
-          multiplier = 0.35; // 30% of original reward
-        } else if (round >= 42) {
-          multiplier = 0.065; // 5.5% of original reward
-        } else if (round <= 22) {
-          multiplier = 1; // 5.5% of original reward
-        }
-
-        // Apply multiplier to reward
-        reward = reward * (multiplier ?? 1);
-
-        // Ensure the reward is at least 1
-        reward = Math.max(1, Math.floor(reward));
-
-        // Update money
-        setMoney((prev) => prev + reward);
-      }
-    },
-    [processedEnemies, round,setMoney]
-  );
+  
 
   // Add this near your other useEffects
   useEffect(() => {
