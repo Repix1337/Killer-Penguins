@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useSettings } from "./context/SettingsContext";
@@ -113,7 +113,7 @@ const Spawn: React.FC<SpawnProps> = ({
   const [processedEnemies] = useState(() => new Set<string>());
 
   // First, extract enemy types as constants
-  const ENEMY_TYPES = {
+  const ENEMY_TYPES = useMemo(() => ({
     BASIC: {
       src: "basicEnemy.png",
       hp: 100,
@@ -357,7 +357,7 @@ const Spawn: React.FC<SpawnProps> = ({
       canRegen: false,
       isArmored: true,
     },
-  };
+  }), []);
 
   // Add this near ENEMY_TYPES constant
   const TOWER_TYPES = {
@@ -524,7 +524,7 @@ const Spawn: React.FC<SpawnProps> = ({
   };
 
   // Add this helper function
-  const resetGame = () => {
+  const resetGame = useCallback(() => {
     // Only target towers on the game board, not in the selection panel
     const buildingSites = document.querySelectorAll(
       'img[id^="building-site-"], [id^="tower-"]'
@@ -548,7 +548,7 @@ const Spawn: React.FC<SpawnProps> = ({
     setShowGameOver(false);
     setShowWinScreen(false);
     setIsPaused(false);
-  };
+  }, [setRound, setEnemyCount, setHealthPoints, setMoney, setEnemies, setTower, setShowUpgradeMenu, setShowGameOver, setShowWinScreen, setIsPaused]);
 
   // Then create a helper function for creating new towers
   const createNewTower = (
@@ -572,7 +572,7 @@ const Spawn: React.FC<SpawnProps> = ({
   });
 
   // Then, create helper function for spawning enemies
-  const createNewEnemy = (
+  const createNewEnemy = useCallback((
     type: keyof typeof ENEMY_TYPES,
     positionX?: number,
     positionY?: number
@@ -595,13 +595,13 @@ const Spawn: React.FC<SpawnProps> = ({
       hasReducedHealth: false,
       ...enemyStats,
     };
-  };
+  }, [ENEMY_TYPES]);
   useEffect(() => {
     if (hp <= 0) {
       setIsPaused(true);
       setShowGameOver(true);
     }
-  }, [hp]);
+  }, [hp,setIsPaused]);
 
   const getEnemyLimit = (round: number) => {
     switch (true) {
@@ -949,6 +949,8 @@ const Spawn: React.FC<SpawnProps> = ({
     isSpeedUp,
     isPaused,
     hasWon,
+    createNewEnemy,
+    setIsPaused
   ]);
 
   const lastRound = useRef(round); // Store the last valid round
@@ -986,7 +988,7 @@ const Spawn: React.FC<SpawnProps> = ({
         setIsPaused(true);
       }
     }
-  }, [enemies.length, enemyCount, round, isSpeedUp, isPaused, autoStartRounds]);
+  }, [enemies.length, enemyCount, round, isSpeedUp, isPaused, autoStartRounds,gameMode,resetGame,setCanPause,setIsPaused,setRound]);
 
   // Modify the round change effect to handle round starts
   useEffect(() => {
@@ -999,7 +1001,7 @@ const Spawn: React.FC<SpawnProps> = ({
         setCanPause(false);
       }
     }
-  }, [round, autoStartRounds]);
+  }, [round, autoStartRounds,setCanPause]);
 
   // Add a new effect to handle manual round advancement
   useEffect(() => {
@@ -1010,7 +1012,7 @@ const Spawn: React.FC<SpawnProps> = ({
         setEnemyCount(0);
       }
     }
-  }, [isPaused]);
+  }, [isPaused,autoStartRounds, enemies.length, enemyCount, round,setRound,setEnemies,setEnemyCount,]);
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (!isPageVisible) return;
@@ -1061,7 +1063,7 @@ const Spawn: React.FC<SpawnProps> = ({
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [isPageVisible, canPause, isPaused, isSpeedUp, selectedTowerID, tower]);
+  }, [isPageVisible, canPause, isPaused, isSpeedUp, selectedTowerID, tower, confirmTowerSell,setIsPaused, setIsSpeedUp]);
   const moveEnemy = useCallback(() => {
     if (!isPageVisible || isPaused) return;
 
@@ -1134,7 +1136,7 @@ const Spawn: React.FC<SpawnProps> = ({
     return () => clearInterval(interval);
   }, [round, isPageVisible, isSpeedUp, isPaused]); // Add isPaused to dependencies
 
-  const handleTowerAttack = (tower: Tower, targets: Enemy[]) => {
+  const handleTowerAttack = useCallback((tower: Tower, targets: Enemy[]) => {
     towerAttack(tower, targets, {
       setTower,
       setEnemies,
@@ -1151,7 +1153,16 @@ const Spawn: React.FC<SpawnProps> = ({
       ) => Enemy,
       grantMoneyForKill,
     });
-  };
+  }, [
+    setTower,
+    setEnemies,
+    setAttackEffects,
+    setExplosionEffects,
+    setLingeringEffects,
+    isPaused,
+    isSpeedUp,
+    createNewEnemy,
+  ]);
 
   // Get the furthest enemy within a certain radius from the tower
   const getFurthestEnemyInRadius = (
@@ -1161,7 +1172,6 @@ const Spawn: React.FC<SpawnProps> = ({
     radius: number,
     canHitStealth: boolean,
     attackType: string,
-    attackDamage: number,
     targettingType: string
   ) => {
     const enemiesInRadius = enemies.filter((enemy) => {
@@ -1317,12 +1327,11 @@ const Spawn: React.FC<SpawnProps> = ({
             tower.radius,
             tower.canHitStealth,
             tower.attackType,
-            tower.attack,
             tower.targettingType
           ) ?? null,
       }))
     );
-  }, [enemies, isPageVisible, isPaused]);
+  }, [enemies, isPageVisible, isPaused, getFurthestEnemyInRadius]); // Add isPaused to dependencies
 
   // Tower attack execution - triggers attacks when targets are available
   useEffect(() => {
@@ -1399,7 +1408,7 @@ const Spawn: React.FC<SpawnProps> = ({
   };
   useEffect(() => {
     damagePlayer(enemies);
-  }, [enemies, tower]);
+  }, [enemies, tower,damagePlayer]);
   useEffect(() => {
     if (!isPageVisible || isPaused) return;
 
@@ -1664,7 +1673,7 @@ const Spawn: React.FC<SpawnProps> = ({
     }, POISON_TICK_RATE);
 
     return () => clearInterval(poisonInterval);
-  }, [enemies, tower, isPageVisible, isSpeedUp, isPaused, setMoney]);
+  }, [enemies, tower, isPageVisible, isSpeedUp, isPaused, setMoney, createNewEnemy]);
   // Buy towers and place them on the map
   const buyTowers = (
     event: React.MouseEvent<HTMLImageElement>,
@@ -2474,7 +2483,7 @@ const Spawn: React.FC<SpawnProps> = ({
       // Clear processed enemies when round is complete
       processedEnemies.clear();
     }
-  }, [enemies.length, enemyCount, round]);
+  }, [enemies.length, enemyCount, round,processedEnemies]);
 
   const grantMoneyForKill = useCallback(
     (enemy: Enemy) => {
@@ -2506,7 +2515,7 @@ const Spawn: React.FC<SpawnProps> = ({
         setMoney((prev) => prev + reward);
       }
     },
-    [processedEnemies, round]
+    [processedEnemies, round,setMoney]
   );
 
   // Add this near your other useEffects
@@ -2526,7 +2535,7 @@ const Spawn: React.FC<SpawnProps> = ({
       });
       return hasChanges ? updatedEnemies : prevEnemies;
     });
-  }, [enemies, grantMoneyForKill]);
+  }, [enemies, grantMoneyForKill,processedEnemies]);
   useEffect(() => {
     if (hp > 101 && gameMode === "normal") {
       alert("kys");
@@ -2540,7 +2549,7 @@ const Spawn: React.FC<SpawnProps> = ({
       alert("kys");
       resetGame();
     }
-  }, [hp, round, money]);
+  }, [hp, round, money,gameMode,resetGame]);
 
   // Add a helper function to calculate rotation
   const getTowerRotation = (tower: Tower, target: Enemy) => {
