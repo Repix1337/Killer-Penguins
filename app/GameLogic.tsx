@@ -1279,16 +1279,10 @@ useEffect(() => {
       setEnemies(prevEnemies => {
         let hasChanges = false;
         const updatedEnemies = prevEnemies.map(enemy => {
-          if (!enemy.isStunned || !enemy.stunSourceId || !enemy.stunStartTime) return enemy;
+          if (!enemy.isStunned || !enemy.stunSourceId || !enemy.stunStartTime || !enemy.stunDuration) return enemy;
           
-          // Find the tower that applied the effect
-          const effectTower = tower.find(t => t.id === enemy.stunSourceId);
-          if (!effectTower) return enemy;
-  
-          // If it's a stun (speed = 0), use the stun duration, otherwise use slow duration
-          const effectDuration = effectTower.stunDuration || 150 * enemy.stunReduction
-  
-          const adjustedDuration = effectDuration / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1);
+          // If it's a stun (speed = 0), use the stun duration
+          const adjustedDuration = enemy.stunDuration / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1);
           
           if (currentTime - enemy.stunStartTime >= adjustedDuration) {
             hasChanges = true;
@@ -1297,7 +1291,8 @@ useEffect(() => {
               speed: enemy.isSlowed ? enemy.baseSpeed * (enemy.slowValue ?? 1) : enemy.baseSpeed,
               isStunned: false,
               stunSourceId: undefined,
-              stunStartTime: undefined
+              stunStartTime: undefined,
+              stunDuration: undefined
             };
           }
           return enemy;
@@ -1308,7 +1303,7 @@ useEffect(() => {
     }, stunCheckInterval);
   
     return () => clearInterval(stunInterval);
-  }, [isPageVisible, isPaused, isSpeedUp, tower]);
+}, [isPageVisible, isPaused, isSpeedUp, tower]);
   useEffect(() => {
     if (!isPageVisible || isPaused) return;
 

@@ -160,13 +160,28 @@
             }
                 // Apply additional effects like stun/slow
                 if (tower.canStun) {
-                  updatedEnemy = {
-                    ...updatedEnemy,
-                    isStunned: true,
-                    stunSourceId: tower.id,
-                    stunStartTime: Date.now(),
-                    speed: 0
-                  };
+                  if (updatedEnemy.isStunned && updatedEnemy.stunStartTime && updatedEnemy.stunDuration) {
+                    // If already stunned, add to the remaining duration
+                    const remainingDuration = updatedEnemy.stunDuration - 
+                      (Date.now() - updatedEnemy.stunStartTime);
+                    const newDuration = Math.max(0, remainingDuration) + 
+                      (tower.stunDuration || 150) * (enemy.stunReduction || 1);
+                    
+                    updatedEnemy = {
+                      ...updatedEnemy,
+                      stunDuration: newDuration,
+                    };
+                  } else {
+                    // If not stunned, apply new stun
+                    updatedEnemy = {
+                      ...updatedEnemy,
+                      isStunned: true,
+                      stunSourceId: tower.id,
+                      stunStartTime: Date.now(),
+                      stunDuration: (tower.stunDuration || 150) * (enemy.stunReduction || 1),
+                      speed: 0
+                    };
+                  }
                 }
           
                 if (tower.slowAmount) {
@@ -350,13 +365,28 @@ const actualDamage = Math.min(
               
               // Apply stun effect if tower has it
               if (tower.canStun) {
-                updatedEnemy = {
-                  ...updatedEnemy,
-                  isStunned: true,
-                  stunSourceId: tower.id,
-                  stunStartTime: Date.now(),
-                  speed: 0
-                };
+                if (updatedEnemy.isStunned && updatedEnemy.stunStartTime && updatedEnemy.stunDuration) {
+                  // If already stunned, add to the remaining duration
+                  const remainingDuration = updatedEnemy.stunDuration - 
+                    (Date.now() - updatedEnemy.stunStartTime);
+                  const newDuration = Math.max(0, remainingDuration) + 
+                    (tower.stunDuration || 150) * (enemy.stunReduction || 1);
+                  
+                  updatedEnemy = {
+                    ...updatedEnemy,
+                    stunDuration: newDuration,
+                  };
+                } else {
+                  // If not stunned, apply new stun
+                  updatedEnemy = {
+                    ...updatedEnemy,
+                    isStunned: true,
+                    stunSourceId: tower.id,
+                    stunStartTime: Date.now(),
+                    stunDuration: (tower.stunDuration || 150) * (enemy.stunReduction || 1),
+                    speed: 0
+                  };
+                }
               }
           
               // Apply slow effect if tower has it

@@ -31,6 +31,7 @@ export interface Enemy {
     stunReduction: number;
     stunSourceId?: string;
     stunStartTime?: number;
+    stunDuration?: number;
     canSpawn?: boolean;
     spawnType?: "SPEEDYMEGATANK" | "SPEEDYGIGATANK" | "BASIC" | "STEALTH" | "TANK" | 
 "SPEEDY" | "STEALTHYTANK" | "STEALTHYSPEEDY" | "REGENTANK" | 
