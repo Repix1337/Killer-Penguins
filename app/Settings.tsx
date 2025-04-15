@@ -115,7 +115,7 @@ const Settings: React.FC<SettingsProps> = ({onClose}) => {
                 <div className="pt-6 border-t border-sky-700">
                     <button 
                         onClick={() => {
-                            if (confirm('Are you sure you want to reset all settings?')) {
+                            if (confirm('Are you sure you want to reset all settings? (Window will be reloaded)')) {
                                 localStorage.clear();
                                 window.location.reload();
                             }
