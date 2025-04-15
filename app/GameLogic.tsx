@@ -444,7 +444,7 @@ const TOWER_TYPES = {
     radius: 27,
     attackType: 'double',
     canHitStealth: false,
-    poisonDamage: 20,
+    poisonDamage: 25,
     maxPoisonDamage: 360,
     poisonDuration: 4000,
     hasSpecialUpgrade: false,
