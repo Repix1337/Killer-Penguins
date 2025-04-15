@@ -24,6 +24,7 @@ export interface Tower {
   slowDuration?: number;
   poisonDamage: number;
   maxPoisonDamage: number;
+  poisonDuration?: number;
   hasSpecialUpgrade: boolean;
   specialUpgradeAvailable: boolean;
   canStopRegen: boolean;

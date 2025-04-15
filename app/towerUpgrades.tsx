@@ -816,6 +816,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           description: "Creates deadly poison clouds upon impact.",
           effect: (tower) => ({
             poisonDamage: tower.poisonDamage * 2,
+            poisonDuration: (tower.poisonDuration ?? 4000) + 1000,
             towerWorth: tower.towerWorth + 4500,
             path: 2
           })
@@ -828,6 +829,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           description: "Expands poison cloud size and adds slowing effects.",
           effect: (tower) => ({
             poisonDamage: tower.poisonDamage * 3,
+            poisonDuration: (tower.poisonDuration ?? 4000) + 1000,
             towerWorth: tower.towerWorth + 12000,
             src: '/gasSpitterSpecial2.png',
             path: 2
@@ -855,6 +857,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           effect: (tower) => ({
             poisonDamage: tower.poisonDamage * 6,
             bossDamageMultiplier: 8,
+            poisonDuration: (tower.poisonDuration ?? 4000) + 2000,
             attackInterval: tower.attackInterval / 2,
             towerWorth: tower.towerWorth + 150000
           })

@@ -9,6 +9,7 @@ import { towerAttack } from './towerAttack';
 import { Tower } from './TowerInterface';
 import { Enemy } from './EnemyInterface';
 import { LingeringEffect } from './EffectInterfaces';
+import PopUp from './PopUp';
 
 // Define the props for the Spawn component
 interface SpawnProps {
@@ -94,8 +95,8 @@ const Spawn: React.FC<SpawnProps> = ({ gameMode, round, setHealthPoints, money, 
       hp: 100,
       damage: 5,
       type: 'basic',
-      speed: 0.225,    // from 0.150 * 1.5
-      baseSpeed: 0.225, // from 0.150 * 1.5
+      speed: 0.25,    // from 0.150 * 1.5
+      baseSpeed: 0.25, // from 0.150 * 1.5
       regen: 0,
       canRegen: false,
       isArmored: false,
@@ -105,8 +106,8 @@ const Spawn: React.FC<SpawnProps> = ({ gameMode, round, setHealthPoints, money, 
       hp: 50,
       damage: 10,
       type: 'stealth',
-      speed: 0.225,    // from 0.150 * 1.5
-      baseSpeed: 0.225, // from 0.150 * 1.5
+      speed: 0.25,    // from 0.150 * 1.5
+      baseSpeed: 0.25, // from 0.150 * 1.5
       regen: 0,
       canRegen: false,
       isArmored: false,
@@ -116,8 +117,8 @@ const Spawn: React.FC<SpawnProps> = ({ gameMode, round, setHealthPoints, money, 
       hp: 350,
       damage: 5,
       type: 'basic',
-      speed: 0.1875,    // from 0.125 * 1.5
-      baseSpeed: 0.1875, // from 0.125 * 1.5
+      speed: 0.2,    // from 0.125 * 1.5
+      baseSpeed: 0.2, // from 0.125 * 1.5
       regen: 0,
       canRegen: false,
       isArmored: false,
@@ -127,8 +128,8 @@ const Spawn: React.FC<SpawnProps> = ({ gameMode, round, setHealthPoints, money, 
       hp: 40,
       damage: 35,
       type: 'speedy',
-      speed: 1.5,    // from 1.0 * 1.5
-      baseSpeed: 1.5, // from 1.0 * 1.5
+      speed: 1.6,    // from 1.0 * 1.5
+      baseSpeed: 1.6, // from 1.0 * 1.5
       regen: 0,
       canRegen: false,
       isArmored: false,
@@ -138,8 +139,8 @@ const Spawn: React.FC<SpawnProps> = ({ gameMode, round, setHealthPoints, money, 
       hp: 250,
       damage: 20,
       type: 'stealth',
-      speed: 0.1875,    // from 0.125 * 1.5
-      baseSpeed: 0.1875, // from 0.125 * 1.5
+      speed: 0.2,    // from 0.125 * 1.5
+      baseSpeed: 0.2, // from 0.125 * 1.5
       regen: 0,
       canRegen: false,
       isArmored: false,
@@ -149,8 +150,8 @@ const Spawn: React.FC<SpawnProps> = ({ gameMode, round, setHealthPoints, money, 
       hp: 50,
       damage: 50,
       type: 'stealth',
-      speed: 1.5,    // from 1.0 * 1.5
-      baseSpeed: 1.5, // from 1.0 * 1.5
+      speed: 1.6,    // from 1.0 * 1.5
+      baseSpeed: 1.6, // from 1.0 * 1.5
       regen: 0,
       canRegen: false,
       isArmored: false,
@@ -160,8 +161,8 @@ const Spawn: React.FC<SpawnProps> = ({ gameMode, round, setHealthPoints, money, 
       hp: 400,
       damage: 50,
       type: 'regentank',
-      speed: 0.1875,    // from 0.125 * 1.5
-      baseSpeed: 0.1875, // from 0.125 * 1.5
+      speed: 0.2,    // from 0.125 * 1.5
+      baseSpeed: 0.2, // from 0.125 * 1.5
       regen: 75,
       canRegen: true,
       isArmored: false,
@@ -171,8 +172,8 @@ const Spawn: React.FC<SpawnProps> = ({ gameMode, round, setHealthPoints, money, 
       hp: 600,
       damage: 50,
       type: 'speedyregentank',
-      speed: 0.35,    // from 0.2 * 1.5
-      baseSpeed: 0.35, // from 0.2 * 1.5
+      speed: 0.375,    // from 0.2 * 1.5
+      baseSpeed: 0.375, // from 0.2 * 1.5
       regen: 125,
       canRegen: true,
       isArmored: false,
@@ -183,8 +184,8 @@ const Spawn: React.FC<SpawnProps> = ({ gameMode, round, setHealthPoints, money, 
       hp: 50000,
       damage: 1000,
       type: 'boss',
-      speed: 0.15,    
-      baseSpeed: 0.15, 
+      speed: 0.17,    
+      baseSpeed: 0.17, 
       regen: 1000,
       canRegen: true,
       isArmored: false,
@@ -197,8 +198,8 @@ const Spawn: React.FC<SpawnProps> = ({ gameMode, round, setHealthPoints, money, 
       hp: 1750,
       damage: 1000,
       type: 'ultratank',
-      speed: 0.15,    
-      baseSpeed: 0.15, 
+      speed: 0.17,    
+      baseSpeed: 0.17, 
       regen: 0,
       canRegen: false,
       isArmored: false,
@@ -208,8 +209,8 @@ const Spawn: React.FC<SpawnProps> = ({ gameMode, round, setHealthPoints, money, 
       hp: 125,
       damage: 30,
       type: 'armoredbasic',
-      speed: 0.2,    
-      baseSpeed: 0.2, 
+      speed: 0.225,    
+      baseSpeed: 0.225, 
       regen: 0,
       canRegen: false,
       isArmored: true,
@@ -219,8 +220,8 @@ const Spawn: React.FC<SpawnProps> = ({ gameMode, round, setHealthPoints, money, 
       hp: 400,
       damage: 400,
       type: 'armoredtank',
-      speed: 0.175,    
-      baseSpeed: 0.175, 
+      speed: 0.2,    
+      baseSpeed: 0.2, 
       regen: 0,
       canRegen: false,
       isArmored: true,
@@ -230,8 +231,8 @@ const Spawn: React.FC<SpawnProps> = ({ gameMode, round, setHealthPoints, money, 
       hp: 2000,
       damage: 1000,
       type: 'armoredultratank',
-      speed: 0.2,    
-      baseSpeed: 0.2, 
+      speed: 0.225,    
+      baseSpeed: 0.225, 
       regen: 0,
       canRegen: false,
       isArmored: true,
@@ -241,8 +242,8 @@ const Spawn: React.FC<SpawnProps> = ({ gameMode, round, setHealthPoints, money, 
       hp: 3500,
       damage: 1000,
       type: 'armoredultratank',
-      speed: 0.5,    
-      baseSpeed: 0.5, 
+      speed: 0.6,    
+      baseSpeed: 0.6, 
       regen: 0,
       canRegen: false,
       isArmored: true,
@@ -252,8 +253,8 @@ const Spawn: React.FC<SpawnProps> = ({ gameMode, round, setHealthPoints, money, 
       hp: 3000,
       damage: 1000,
       type: 'armoredultratank',
-      speed: 0.5,    
-      baseSpeed: 0.5, 
+      speed: 0.6,    
+      baseSpeed: 0.6, 
       regen: 0,
       canRegen: false,
       isArmored: true,
@@ -263,8 +264,8 @@ const Spawn: React.FC<SpawnProps> = ({ gameMode, round, setHealthPoints, money, 
       hp: 125000,
       damage: 1000,
       type: 'boss',
-      speed: 0.2,    
-      baseSpeed: 0.2, 
+      speed: 0.225,    
+      baseSpeed: 0.225, 
       regen: 5000,
       canRegen: true,
       isArmored: false,
@@ -272,12 +273,12 @@ const Spawn: React.FC<SpawnProps> = ({ gameMode, round, setHealthPoints, money, 
       slowReduction: 0.4,
     },
     ULTRABOSS: {
-      src: 'megaBoss.png',
+      src: 'boss.png',
       hp: 500000,
       damage: 1000,
       type: 'boss',
-      speed: 0.3,    
-      baseSpeed: 0.3, 
+      speed: 0.325,    
+      baseSpeed: 0.325, 
       regen: 50000,
       canRegen: true,
       isArmored: false,
@@ -445,6 +446,7 @@ const TOWER_TYPES = {
     canHitStealth: false,
     poisonDamage: 20,
     maxPoisonDamage: 360,
+    poisonDuration: 4000,
     hasSpecialUpgrade: false,
     specialUpgradeAvailable: false,
     canStopRegen: false,
@@ -813,7 +815,7 @@ useEffect(() => {
               case round >= 150:
               if (enemyCount < getEnemyLimit(round) * 2) { // Double enemy limit
                   // Ultimate challenge with enhanced enemies
-                  const type66 = enemyCount % 56 === 0 ? 'ULTRABOSS' :
+                  const type66 = enemyCount % 160 === 0 ? 'ULTRABOSS' :
                                 'MEGABOSS';
                   const enemy = createNewEnemy(type66);
                   
@@ -822,14 +824,14 @@ useEffect(() => {
                   const newSpeed = enemy.speed * (1 + speedIncrease); // Apply scaling
                   enemy.speed = newSpeed;
                   enemy.baseSpeed = newSpeed;
-                  enemy.hp *= 6+ (round - 65) * 0.15; // Scales with rounds
-                  enemy.maxHp *=6 + (round - 65) * 0.15;
+                  enemy.hp *= 16+ (round - 65) * 0.15; // Scales with rounds
+                  enemy.maxHp *=16 + (round - 65) * 0.15;
                   enemy.slowReduction = 0.2;
                   enemy.stunReduction = 0.15;
                   enemy.regen *= 1.5;
           
                   setEnemies(prev => [...prev, enemy]);
-                  setEnemyCount(prev => prev + (type66 === "ULTRABOSS" ? 40 : 4));
+                  setEnemyCount(prev => prev + (type66 === "ULTRABOSS" ? 112 : 16));
               } 
               break;
           }
@@ -839,7 +841,7 @@ useEffect(() => {
 
   const spawnInterval = setInterval(
     spawnEnemies,
-    (round === 32 ? (isSpeedUp ? 2500 : 1250) : Math.max(1000 / round, 75)) / 
+    (round === 32 ? (isSpeedUp ? 2500 : 1250) : Math.max(1000 / round, 125)) / 
     (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)
   );
 
@@ -967,7 +969,7 @@ const moveEnemy = useCallback(() => {
           return { ...enemy, positionY: enemy.positionY + enemy.speed * 2 };
         } else if (enemy.positionY >= 87 && enemy.positionX < 76.5) {
           return { ...enemy, positionX: enemy.positionX + enemy.speed };
-        } else if (enemy.positionX >= 76.5 && enemy.positionY > 51) {
+        } else if (enemy.positionX >= 76.5 && enemy.positionY > 53) {
           return { ...enemy, positionY: enemy.positionY - (enemy.speed * 2), positionX: enemy.positionX + enemy.speed / 10};
         } else {
           return { ...enemy, positionX: enemy.positionX + enemy.speed };
@@ -980,7 +982,7 @@ const moveEnemy = useCallback(() => {
   useEffect(() => {
     if (!isPageVisible || round <= 0 || isPaused) return; 
   
-    const interval = setInterval(moveEnemy, 22.5 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
+    const interval = setInterval(moveEnemy, 30 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
     return () => clearInterval(interval);
   }, [isPageVisible, round, isPaused, isSpeedUp, moveEnemy]);
 
@@ -1203,9 +1205,9 @@ useEffect(() => {
           <Image
             src={"/"+enemy.src}
             alt='enemy'
-            width={40} // width of the image
-            height={40} // height of the image
-            className='w-10 h-10' // Optional, for styling purposes
+            width={35} // width of the image
+            height={35} // height of the image
+            className='w-9 h-9' // Optional, for styling purposes
           />
         </div>
       ));
@@ -1387,79 +1389,83 @@ useEffect(() => {
     return () => clearInterval(lingeringInterval);
 }, [isPageVisible, isPaused, lingeringEffects]);
 
-  useEffect(() => {
-    if (!isPageVisible || isPaused) return;
-             
-    const POISON_TICK_RATE = isSpeedUp === 2 ? 3.33 : isSpeedUp ? 5 : 10; // Adjusted for 3x speed
-    const POISON_DURATION = isSpeedUp === 2 ? 1333 : isSpeedUp ? 2000 : 4000; // Adjusted for 3x speed
-    const TOTAL_TICKS = POISON_DURATION / POISON_TICK_RATE;
+useEffect(() => {
+  if (!isPageVisible || isPaused) return;
+           
+  const POISON_TICK_RATE = isSpeedUp === 2 ? 3.33 : isSpeedUp ? 5 : 10;
+  
+  const poisonInterval = setInterval(() => {
+    const currentTime = Date.now();
     
-    const poisonInterval = setInterval(() => {
-      const currentTime = Date.now();
+    setEnemies(prevEnemies => {
+      const poisonDamageByTower: { [key: string]: number } = {};
       
-      setEnemies(prevEnemies => {
-        const poisonDamageByTower: { [key: string]: number } = {};
-        
-        const updatedEnemies = prevEnemies.map(enemy => {
-          if (!enemy.isPoisoned || !enemy.poisonSourceId || !enemy.poisonStartTime) return enemy;
-  
-          if (currentTime - enemy.poisonStartTime >= POISON_DURATION) {
-            return {
-              ...enemy,
-              isPoisoned: false,
-              poisonSourceId: undefined,
-              poisonStartTime: undefined,
-              canRegen: enemy.regen > 0 ? true : enemy.canRegen
-            };
-          }
-  
-          const poisonTower = tower.find(t => t.id === enemy.poisonSourceId);
-          if (!poisonTower?.poisonDamage) return enemy;
-  
-          const damagePerTick = ((4 * poisonTower.poisonDamage) * (poisonTower.bossDamageMultiplier ?? 1)) / TOTAL_TICKS;
-          const actualPoisonDamage = Math.min(damagePerTick, enemy.hp);
-          
-          if (!poisonDamageByTower[poisonTower.id]) {
-            poisonDamageByTower[poisonTower.id] = 0;
-          }
-          poisonDamageByTower[poisonTower.id] += actualPoisonDamage;
-  
-          const newHp = enemy.hp - actualPoisonDamage;
-          // Only grant money if the poison damage kills the enemy
-          if (newHp <= 0 && enemy.hp > 0) {
-            if(enemy.canSpawn && enemy.spawnType){
-              const spawnBatch = async () => {
-                for (let i = 0; i < 5; i++){
-                  // Add a small delay between spawns
-                  await new Promise(resolve => setTimeout(resolve, 50));
-                  setEnemies(prev => [...prev, createNewEnemy((enemy.spawnType ?? 'ARMOREDSPEEDYMEGATANK'), enemy.positionX, enemy.positionY)]);
-                }
-              };
-              spawnBatch();
-            }
-          grantMoneyForKill(enemy);
-        }
-  
+      const updatedEnemies = prevEnemies.map(enemy => {
+        if (!enemy.isPoisoned || !enemy.poisonSourceId || !enemy.poisonStartTime) return enemy;
+
+        const poisonTower = tower.find(t => t.id === enemy.poisonSourceId);
+        if (!poisonTower?.poisonDamage) return enemy;
+
+        const POISON_DURATION = (poisonTower.poisonDuration ?? 4000) / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1);
+        const TOTAL_TICKS = POISON_DURATION / POISON_TICK_RATE;
+
+        if (currentTime - enemy.poisonStartTime >= POISON_DURATION) {
           return {
             ...enemy,
-            hp: newHp
+            isPoisoned: false,
+            poisonSourceId: undefined,
+            poisonStartTime: undefined,
+            canRegen: enemy.regen > 0 ? true : enemy.canRegen
           };
-        });
-  
-        // Update tower damage counters
-        setTower(prevTowers =>
-          prevTowers.map(t => ({
-            ...t,
-            damageDone: t.damageDone + (poisonDamageByTower[t.id] || 0)
-          }))
-        );
-  
-        return updatedEnemies;
+        }
+
+        // Calculate damage per tick based on poison damage per second
+        const speedMultiplier = isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1;
+        const damagePerSecond = poisonTower.poisonDamage * (enemy.type === "boss" ? (poisonTower.bossDamageMultiplier ?? 1) : 1 );
+        const damagePerTick = (damagePerSecond / (1000 / POISON_TICK_RATE)) * speedMultiplier;
+        const actualPoisonDamage = Math.min(damagePerTick, enemy.hp);
+        
+        if (!poisonDamageByTower[poisonTower.id]) {
+          poisonDamageByTower[poisonTower.id] = 0;
+        }
+        poisonDamageByTower[poisonTower.id] += actualPoisonDamage;
+
+        const newHp = enemy.hp - actualPoisonDamage;
+        const canRegen = poisonTower.canStopRegen ? false : enemy.canRegen;
+
+        if (newHp <= 0 && enemy.hp > 0) {
+          if(enemy.canSpawn && enemy.spawnType){
+            const spawnBatch = async () => {
+              for (let i = 0; i < 5; i++){
+                await new Promise(resolve => setTimeout(resolve, 50));
+                setEnemies(prev => [...prev, createNewEnemy((enemy.spawnType ?? 'ARMOREDSPEEDYMEGATANK'), enemy.positionX, enemy.positionY)]);
+              }
+            };
+            spawnBatch();
+          }
+          grantMoneyForKill(enemy);
+        }
+
+        return {
+          ...enemy,
+          hp: newHp,
+          canRegen: canRegen
+        };
       });
-    }, POISON_TICK_RATE);
-  
-    return () => clearInterval(poisonInterval);
-  }, [enemies, tower, isPageVisible, isSpeedUp, isPaused, setMoney]);
+
+      setTower(prevTowers =>
+        prevTowers.map(t => ({
+          ...t,
+          damageDone: t.damageDone + (poisonDamageByTower[t.id] || 0)
+        }))
+      );
+
+      return updatedEnemies;
+    });
+  }, POISON_TICK_RATE);
+
+  return () => clearInterval(poisonInterval);
+}, [enemies, tower, isPageVisible, isSpeedUp, isPaused, setMoney]);
   // Buy towers and place them on the map
   const buyTowers = (event: React.MouseEvent<HTMLImageElement>, positionX: number, positionY: number) => {
     if (selectedTowerType && (event.target as HTMLImageElement).src.includes('buildingSite')) {
@@ -1578,7 +1584,8 @@ useEffect(() => {
                     {selectedTower.poisonDamage > 0 && (
                       <>
                         <StatBlock label="Poison/Sec" value={selectedTower.poisonDamage} icon="☠️" />
-                        <StatBlock label="Total Poison" value={selectedTower.poisonDamage * 4} icon="⚗️" />
+                        <StatBlock label="Total Poison" value={selectedTower.poisonDamage * ((selectedTower.poisonDuration ?? 4000)/ 1000)} icon="⚗️" />
+                        <StatBlock label="Poison Duration" value={`${((selectedTower.poisonDuration ?? 4000)/ 1000)}s`} icon="⚗️" />
                       </>
                     )}
       
@@ -1895,7 +1902,7 @@ useEffect(() => {
         <img
           src={effect.effectSrc}
           key={effect.id}
-          className='pointer-events-none animate-slide h-6 w-6 absolute'
+          className='pointer-events-none animate-slide h-4 w-4 absolute'
           style={{
             '--tower-positionX': `${effect.towerPositionX + 1}%`,
             '--tower-positionY': `${effect.towerPositionY + 2.5}%`,
@@ -2111,9 +2118,7 @@ const GameOverScreen = () => {
   };
 
   return showGameOver && (
-    <div className='absolute top-0 left-0 w-full h-full bg-black bg-opacity-75 overflow-hidden flex items-center justify-center z-50'>
-      <div className='bg-gradient-to-br from-slate-900 to-slate-800 text-white p-12 rounded-2xl 
-        text-center border-4 border-blue-500 shadow-2xl transform scale-100 animate-pop-in'>
+    <PopUp>
         <span className='text-yellow-400 text-6xl'>⛔</span>
         <h2 className='text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 
           bg-clip-text text-transparent mb-4 mt-3 animate-pulse'>
@@ -2159,8 +2164,7 @@ const GameOverScreen = () => {
         >
           RESTART
         </button>
-      </div>
-    </div>
+        </PopUp>
   );
 };
 const WinScreen = () => {
