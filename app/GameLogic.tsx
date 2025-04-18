@@ -207,8 +207,8 @@ const Spawn: React.FC<SpawnProps> = ({
       hp: 50000,
       damage: 1000,
       type: "boss",
-      speed: 0.17,
-      baseSpeed: 0.17,
+      speed: 0.16,
+      baseSpeed: 0.16,
       regen: 1000,
       canRegen: true,
       isArmored: false,
@@ -936,7 +936,7 @@ const Spawn: React.FC<SpawnProps> = ({
 
     const spawnInterval = setInterval(
       spawnEnemies,
-      (round === 32 ? (isSpeedUp ? 2500 : 1250) : Math.max(1000 / round, 125)) /
+      (round === 32 ? (isSpeedUp ? 2500 : 1250) : Math.max(1000 / round, 80)) /
         (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)
     );
 
