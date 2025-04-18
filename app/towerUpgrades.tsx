@@ -67,12 +67,12 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
     {
       name: "Tempest Onslaught",
       cost: 25000,
-      description: "15% acceleration, -200 interval, +25% damage",
+      description: "20% acceleration, -200 interval, +25% damage",
       requires: 4,
       path: 1,
       effect: (tower) => ({
         acceleration: true,
-        accelerationValue: 0.15,
+        accelerationValue: 0.2,
         attackInterval: tower.attackInterval - 200,
         attack: tower.attack * 1.25,
         towerWorth: tower.towerWorth + 25000,
@@ -82,12 +82,12 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
     {
       name: "Endless Storm",
       cost: 150000,
-      description: "25% acceleration, -300 interval, +50% damage, hits stealth/armored",
+      description: "35% acceleration, -300 interval, +50% damage, hits stealth/armored",
       requires: 5,
       path: 1,
       effect: (tower) => ({
         acceleration: true,
-        accelerationValue: 0.25,
+        accelerationValue: 0.35,
         attackInterval: tower.attackInterval - 300,
         attack: tower.attack * 1.5,
         canHitStealth: true,
@@ -135,26 +135,28 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       },
       {
         name: "Annihilator Protocol",
-        cost: 17000,
+        cost: 15000,
         requires: 3,
         path: 2,
-        description: "Mark multiplier 1.3x, +50% damage",
+        description: "Mark multiplier 1.3x,-100 interval, +25% damage",
         effect: (tower) => ({
           markedDamageMultiplier: 1.3,
-          attack: tower.attack * 1.5,
+          attack: tower.attack * 1.25,
+          attackInterval: tower.attackInterval - 100,
           src: "/basicSpecial2.png",
           towerWorth: tower.towerWorth + 17000
         })
       },
       {
         name: "Tectonic Warhead",
-        cost: 35000,
+        cost: 25000,
         requires: 4,
         path: 2,
-        description: "Mark multiplier 1.6x, +125% damage",
+        description: "Mark multiplier 1.6x,-150 interval, +100% damage",
         effect: (tower) => ({
           markedDamageMultiplier: 1.6,
-          attack: tower.attack * 2.25,
+          attack: tower.attack * 2,
+          attackInterval: tower.attackInterval - 150,
           towerWorth: tower.towerWorth + 35000
         })
       },
@@ -163,10 +165,11 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         cost: 150000,
         requires: 5,
         path: 2,
-        description: "Mark multiplier 2.25x, +150% damage, hits stealth/armored",
+        description: "Mark multiplier 2.25x,-200 interval,+150% damage, hits stealth/armored",
         effect: (tower) => ({
           markedDamageMultiplier: 2.25,
           attack: tower.attack * 2.5,
+          attackInterval: tower.attackInterval - 200,
           canHitStealth: true,
           canHitArmored: true,
           towerWorth: tower.towerWorth + 150000
