@@ -10,7 +10,7 @@ import { Tower } from "./TowerInterface";
 import { Enemy } from "./EnemyInterface";
 import { LingeringEffect } from "./EffectInterfaces";
 import PopUp from "./PopUp";
-
+import Auth from './auth';
 // Define the props for the Spawn component
 interface SpawnProps {
   round: number;
@@ -27,6 +27,7 @@ interface SpawnProps {
   setCanPause: React.Dispatch<React.SetStateAction<boolean>>;
   selectedTowerType: string;
   gameMode: string;
+  user: any; // Add this line
 }
 
 interface TowerUpgrade {
@@ -53,6 +54,7 @@ const Spawn: React.FC<SpawnProps> = ({
   isPaused,
   setCanPause,
   selectedTowerType,
+  user,
 }) => {
   // Game state
   const [enemies, setEnemies] = useState<Enemy[]>([]);
@@ -87,9 +89,8 @@ const Spawn: React.FC<SpawnProps> = ({
   const [showWinScreen, setShowWinScreen] = useState(false);
   const [hasWon, setHasWon] = useState(false);
 
-  const [lingeringEffects, setLingeringEffects] = useState<LingeringEffect[]>(
-    []
-  );
+  const [lingeringEffects, setLingeringEffects] = useState<LingeringEffect[]>([]);
+  const [showAuth, setShowAuth] = useState(false);
   const {
     showRangeIndicators,
     showHealthBars,
@@ -2635,28 +2636,47 @@ const Spawn: React.FC<SpawnProps> = ({
           </p>
 
           {!isSaved && gameMode === "normal" ? (
-            <div className="mb-6 space-y-4">
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username"
-                className="w-full px-4 py-2 bg-slate-700 border border-blue-500 rounded-lg 
-                text-white placeholder-gray-400 focus:outline-none focus:ring-2 
-                focus:ring-blue-500"
-                maxLength={20}
-              />
-              {error && <p className="text-red-500 text-sm">{error}</p>}
-              <button
-                onClick={handleSave}
-                className="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 
-                rounded-lg text-lg font-bold transform transition duration-200 w-full
-                hover:scale-105 hover:shadow-lg hover:from-blue-500 hover:to-blue-700
-                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-              >
-                Save Score
-              </button>
-            </div>
+            <>
+              {user ? (
+                <div className="mb-6 space-y-4">
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Enter your username"
+                    className="w-full px-4 py-2 bg-slate-700 border border-blue-500 rounded-lg 
+                    text-white placeholder-gray-400 focus:outline-none focus:ring-2 
+                    focus:ring-blue-500"
+                    maxLength={20}
+                  />
+                  {error && <p className="text-red-500 text-sm">{error}</p>}
+                  <button
+                    onClick={handleSave}
+                    className="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 
+                    rounded-lg text-lg font-bold transform transition duration-200 w-full
+                    hover:scale-105 hover:shadow-lg hover:from-blue-500 hover:to-blue-700
+                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                  >
+                    Save Score
+                  </button>
+                </div>
+              ) : (
+                <div className="mb-6 space-y-4">
+                  <p className="text-sm text-yellow-400 mb-2">
+                    Login to save your score!
+                  </p>
+                  <button
+                    onClick={() => setShowAuth(true)}
+                    className="bg-gradient-to-r from-green-600 to-green-800 text-white px-8 py-3 
+                    rounded-lg text-lg font-bold transform transition duration-200 w-full
+                    hover:scale-105 hover:shadow-lg hover:from-green-500 hover:to-green-700
+                    focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
+                  >
+                    Login
+                  </button>
+                </div>
+              )}
+            </>
           ) : gameMode === "sandbox" ? (
             <p className="text-sm text-green-400 mb-4">Cant save on sandbox</p>
           ) : (
@@ -2838,6 +2858,7 @@ const Spawn: React.FC<SpawnProps> = ({
       {enemyAlert()}
       {GameOverScreen()}
       {WinScreen()}
+      {showAuth && <Auth onClose={() => setShowAuth(false)} />}
     </>
   );
 };

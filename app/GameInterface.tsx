@@ -7,11 +7,13 @@ interface SpawnProps {
   gameMode: string;
   setShowSettings: React.Dispatch<React.SetStateAction<boolean>>;
   showSettings: boolean;
+  user: any; 
 }
 const GameInterface: React.FC<SpawnProps> = ({
   gameMode,
   setShowSettings,
   showSettings,
+  user,
 }) => {
   const [renderMenu, setRenderMenu] = React.useState(false);
   const [round, setRound] = React.useState(0);
@@ -238,6 +240,7 @@ const GameInterface: React.FC<SpawnProps> = ({
         canPause={canPause}
         selectedTowerType={selectedTowerType}
         gameMode={gameMode}
+        user={user}
       />
 {showSettings && <Settings onClose={() => setShowSettings(false)} />}
       {/* Tower Selection Panel */}

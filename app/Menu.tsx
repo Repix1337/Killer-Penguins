@@ -316,6 +316,7 @@ const Menu: React.FC = () => {
       gameMode={gameMode}
       setShowSettings={setShowSettings}
       showSettings={showSettings}
+      user={user}
     />
   );
 };
