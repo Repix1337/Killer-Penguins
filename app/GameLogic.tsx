@@ -477,8 +477,8 @@ const Spawn: React.FC<SpawnProps> = ({
     },
     MORTAR: {
       src: "/mortar.png",
-      baseAttack: 1755,
-      attack: 175,
+      baseAttack: 450,
+      attack: 450,
       baseAttackInterval: 8500,
       attackInterval: 8500,
       price: 1200,
@@ -999,12 +999,10 @@ const Spawn: React.FC<SpawnProps> = ({
 
         // Apply round-based reduction more explicitly
         let multiplier;
-        if (round >= 33 && round < 42) {
+        if (round >= 33 ) {
           multiplier = 0.15; // 7% of original reward
         } else if (round > 22 && round < 33) {
           multiplier = 0.35; // 30% of original reward
-        } else if (round >= 42) {
-          multiplier = 0.1; // 5.5% of original reward
         } else if (round <= 22) {
           multiplier = 1; // 5.5% of original reward
         }
@@ -1252,7 +1250,7 @@ const Spawn: React.FC<SpawnProps> = ({
           enemy.type !== "stealthytank" &&
           enemy.type !== "stealthyspeedy"
         );
-      } else if (towerType === "slower" && canHitStealth) {
+      }  else if (towerType === "slower" && canHitStealth) {
         return isInRange && !enemy.isSlowed;
       } else if (towerType === "slower" && !canHitStealth) {
         return (
@@ -1329,6 +1327,17 @@ const Spawn: React.FC<SpawnProps> = ({
       enemiesWithProgress.sort((a, b) => b.maxHp - a.maxHp);
     } else if (targettingType === "last") {
       enemiesWithProgress.reverse();
+    } else if (targettingType === "mark") {
+      console.log(enemiesWithProgress)
+      enemiesWithProgress.sort((a, b) => {
+        // First prioritize marked enemies
+        if (!a.marked && b.marked) return -1;
+        if (a.marked && !b.marked) return 1;
+        
+        // If both enemies have the same marked status,
+        // prioritize enemies further along the path
+        return b.progress - a.progress;
+      });
     } else {
       // "first" targeting - already sorted by progress
       enemiesWithProgress.sort((a, b) => b.progress - a.progress);
@@ -1585,20 +1594,21 @@ const Spawn: React.FC<SpawnProps> = ({
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance <= effect.radius) {
+              // Apply mark multiplier if enemy is marked
+              const markMultiplier = enemy.marked ? (enemy.markedDamageMultiplier ?? 1.15) : 1;
+              
               totalDamage +=
-                effect.damage +
-                (enemy.hp * (effect.enemyCurrentHpDmgMultiplier ?? 0)) / 20;
+                (effect.damage +
+                (enemy.hp * (effect.enemyCurrentHpDmgMultiplier ?? 0)) / 20) * markMultiplier;
 
-              // If the effect can stop regen, mark enemy as inside regen-stopping area
               if (effect.canStopRegen) {
                 insideRegenStoppingEffect = true;
               }
 
-              // Track damage for each tower
               if (!towerDamage[effect.towerId]) {
                 towerDamage[effect.towerId] = 0;
               }
-              towerDamage[effect.towerId] += effect.damage;
+              towerDamage[effect.towerId] += effect.damage * markMultiplier;
             }
           });
 
@@ -1671,13 +1681,14 @@ const Spawn: React.FC<SpawnProps> = ({
             };
           }
 
-          // Calculate damage per tick based on poison damage per second
+          // Calculate damage with mark multiplier
+          const markMultiplier = enemy.marked ? (poisonTower.markedDamageMultiplier ?? 1.5) : 1;
           const speedMultiplier = isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1;
-          const damagePerSecond =
-            poisonTower.poisonDamage *
-            (enemy.type === "boss" ? poisonTower.bossDamageMultiplier ?? 1 : 1);
-          const damagePerTick =
-            (damagePerSecond / (1000 / POISON_TICK_RATE)) * speedMultiplier;
+          const damagePerSecond = 
+            poisonTower.poisonDamage * 
+            (enemy.type === "boss" ? poisonTower.bossDamageMultiplier ?? 1 : 1) *
+            markMultiplier;
+          const damagePerTick = (damagePerSecond / (1000 / POISON_TICK_RATE)) * speedMultiplier;
           const actualPoisonDamage = Math.min(damagePerTick, enemy.hp);
 
           if (!poisonDamageByTower[poisonTower.id]) {
@@ -2367,6 +2378,8 @@ const Spawn: React.FC<SpawnProps> = ({
                   ? "last"
                   : t.targettingType === "last" && t.canHitStealth
                   ? "stealth"
+                  : t.targettingType === "stealth" && t.canMark
+                  ? "mark"
                   : "first",
             }
           : t

@@ -143,7 +143,8 @@ export const towerAttack = (
           if (isInExplosion) {
             const baseDamage =
               enemy.id === primaryTarget.id ? tower.attack : tower.attack / 4;
-            const damage = baseDamage * damageMultiplier;
+            const markMultiplier = enemy.marked ? enemy.markedDamageMultiplier ?? 1 : 1;
+            const damage = baseDamage * damageMultiplier * markMultiplier;
             const actualDamage = Math.min(damage, enemy.hp);
             explosionDamageTotal += actualDamage;
 
@@ -162,9 +163,9 @@ export const towerAttack = (
                 (tower.healthReduction && !enemy.hasReducedHealth
                   ? enemy.hp * (1 - tower.healthReduction)
                   : enemy.hp) -
-                (enemy.type === "boss"
-                  ? actualDamage * (tower.bossDamageMultiplier ?? 1)
-                  : actualDamage),
+                  (enemy.type === "boss"
+                    ? actualDamage * (tower.bossDamageMultiplier ?? 1)
+                    : actualDamage),
               hasReducedHealth: tower.healthReduction ? true : false,
             };
             // Remove armor if tower can hit armored enemies
@@ -274,7 +275,7 @@ export const towerAttack = (
           effectSrc: string;
           timestamp: number;
         }[] = [];
-
+        
         let currentTarget = targets[0];
         let chainsLeft = tower.chainCount || 1;
         const chainedEnemies = new Set([targets[0].id]);
@@ -335,19 +336,55 @@ export const towerAttack = (
         // Handle chain damage
         updatedEnemies = prevEnemies.map((enemy) => {
           if (chainedEnemies.has(enemy.id)) {
-            const damage = Math.min(tower.attack * damageMultiplier, enemy.hp);
+            const markMultiplier = enemy.marked ? enemy.markedDamageMultiplier ?? 1 : 1;
+            const damage = Math.min(
+              tower.attack * damageMultiplier * markMultiplier,
+              enemy.hp
+            );
             chainDamage += damage;
+
+            let updatedEnemy = { ...enemy };
+
+            if (tower.canStun) {
+              if (
+                enemy.isStunned &&
+                enemy.stunStartTime &&
+                enemy.stunDuration
+              ) {
+                // If already stunned, add to the remaining duration
+                const remainingDuration =
+                  enemy.stunDuration -
+                  (Date.now() - enemy.stunStartTime);
+                const newDuration =
+                  Math.max(0, remainingDuration) +
+                  (tower.stunDuration || 150) * (enemy.stunReduction || 1);
+
+                updatedEnemy = {
+                  ...updatedEnemy,
+                  stunDuration: newDuration,
+                };
+              } else {
+                // If not stunned, apply new stun
+                updatedEnemy = {
+                  ...updatedEnemy,
+                  isStunned: true,
+                  stunSourceId: tower.id,
+                  stunStartTime: Date.now(),
+                  stunDuration: (tower.stunDuration || 150) * (enemy.stunReduction || 1),
+                  speed: 0,
+                };
+              }
+            }
+
             return {
-              ...enemy,
-              hp:
-                enemy.hp -
+              ...updatedEnemy,
+              hp: enemy.hp -
                 (enemy.type === "boss"
                   ? damage * (tower.bossDamageMultiplier ?? 1)
                   : damage),
               isTargeted: true,
             };
           }
-
           return enemy;
         });
 
@@ -375,8 +412,9 @@ export const towerAttack = (
           const isTargeted = targets.some((target) => target.id === enemy.id);
           if (!isTargeted) return enemy;
 
+          const markMultiplier = enemy.marked ? enemy.markedDamageMultiplier ?? 1 : 1;
           const actualDamage = Math.min(
-            tower.attack * damageMultiplier,
+            tower.attack * damageMultiplier * markMultiplier,
             enemy.hp
           );
           return {
