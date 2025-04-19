@@ -1,10 +1,23 @@
+import { getAuth } from 'firebase/auth';
+import app from '@/firebase/config';
+
 export const saveGameResult = async (round: number, username: string): Promise<void> => {
   try {
-    // Make a simpler version without token validation for now
+    const auth = getAuth(app);
+    const user = auth.currentUser;
+
+    if (!user) {
+      throw new Error('You must be logged in to save your score');
+    }
+
+    const token = await user.getIdToken();
+    console.log('User authenticated, attempting to save score...'); // Debug log
+
     const response = await fetch('/api/leaderboard/save', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
         username,
@@ -14,11 +27,15 @@ export const saveGameResult = async (round: number, username: string): Promise<v
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.log('Server response:', {
+        status: response.status,
+        errorData
+      }); // Debug log
       throw new Error(errorData.error || 'Failed to save game result');
     }
 
-    console.log('Game result saved successfully');
   } catch (error) {
     console.error('Error saving game result:', error);
+    throw error;
   }
 };

@@ -1,6 +1,7 @@
 // app/api/leaderboard/route.ts
 import { NextResponse } from 'next/server';
-import { adminDb } from '@/firebase/admin-config';
+import { getFirestore, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import app from '@/firebase/config';
 
 interface LeaderboardEntry {
   id: string;
@@ -14,12 +15,15 @@ interface LeaderboardEntry {
 
 export async function GET() {
   try {
-    const leaderboardRef = adminDb.collection('leaderboard');
-    const snapshot = await leaderboardRef
-      .orderBy('roundRecord', 'desc')
-      .limit(10)
-      .get();
-
+    const db = getFirestore(app);
+    const leaderboardRef = collection(db, 'leaderboard');
+    const q = query(
+      leaderboardRef,
+      orderBy('roundRecord', 'desc'),
+      limit(10)
+    );
+    
+    const snapshot = await getDocs(q);
     const entries = snapshot.docs.map(doc => {
       const data = doc.data();
       return {

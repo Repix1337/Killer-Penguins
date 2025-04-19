@@ -4,6 +4,9 @@ import TutorialWindow from "./TutorialWindow";
 import Leaderboard from "./Leaderboard";
 import Settings from "./Settings";
 import ModeSelection from "./ModeSelection";
+import { useState, useEffect } from 'react';
+import { getAuth, onAuthStateChanged, signOut, User } from 'firebase/auth';
+import Auth from './auth';
 
 const Menu: React.FC = () => {
   const [gameMode, setGameMode] = React.useState("");
@@ -11,6 +14,45 @@ const Menu: React.FC = () => {
   const [showTutorial, setShowTutorial] = React.useState(false);
   const [showSettings, setShowSettings] = React.useState(false);
   const [showLeaderboard, setShowLeaderboard] = React.useState(false);
+  const [showAuth, setShowAuth] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const auth = getAuth();
+    
+    // Check if there's a user session in localStorage on component mount
+    const savedUser = localStorage.getItem('authUser');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      // Save user data to localStorage when auth state changes
+      if (user) {
+        localStorage.setItem('authUser', JSON.stringify({
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          // Add any other user properties you need
+        }));
+      } else {
+        localStorage.removeItem('authUser');
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      const auth = getAuth();
+      await signOut(auth);
+      localStorage.removeItem('authUser'); // Clear stored user data on logout
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   return gameMode === "" ? (
     <div
@@ -238,6 +280,20 @@ const Menu: React.FC = () => {
               Leaderboard
             </span>
           </button>
+          <button
+            onClick={() => user ? handleLogout() : setShowAuth(true)}
+            className="menu-button bg-gradient-to-r from-cyan-600 to-blue-600 
+            hover:from-cyan-700 hover:to-blue-700 text-white"
+          >
+            <span className="flex items-center justify-center gap-2">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                d={user ? "M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" 
+                : "M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"} />
+              </svg>
+              {user ? 'Logout' : 'Login'}
+            </span>
+          </button>
           {showSettings && <Settings onClose={() => setShowSettings(false)} />}
         </div>
       </div>
@@ -253,6 +309,7 @@ const Menu: React.FC = () => {
           setGameMode={setGameMode}
         />
       )}
+      {showAuth && <Auth onClose={() => setShowAuth(false)} />}
     </div>
   ) : (
     <GameInterface
