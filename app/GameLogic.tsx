@@ -27,7 +27,7 @@ interface SpawnProps {
   setCanPause: React.Dispatch<React.SetStateAction<boolean>>;
   selectedTowerType: string;
   gameMode: string;
-  user: any; // Add this line
+  user: object; // Add this line
 }
 
 interface TowerUpgrade {
@@ -644,7 +644,9 @@ const Spawn: React.FC<SpawnProps> = ({
             setEnemyCount((prev) => prev + 1);
           }
           if (round === 4 && enemies.length === 0) {
-            setShowEnemyAlert(true);
+            if (enemyCount <= 0) {
+              setShowEnemyAlert(true);
+            }
             setEnemyAlertDescription(
               "Stealth enemies are coming next round! Make sure u have stealth detection"
             );
@@ -671,7 +673,9 @@ const Spawn: React.FC<SpawnProps> = ({
             setEnemyCount((prev) => prev + 1);
           }
           if (round === 12 && enemies.length === 0) {
-            setShowEnemyAlert(true);
+            if (enemyCount <= 0) {
+              setShowEnemyAlert(true);
+            }
             setEnemyAlertDescription(
               "Armored Enemies are coming next round! Make sure u have explosion towers"
             );
@@ -702,7 +706,9 @@ const Spawn: React.FC<SpawnProps> = ({
             setEnemyCount((prev) => prev + 1);
           }
           if (round === 21 && enemies.length === 0) {
-            setShowEnemyAlert(true);
+            if (enemyCount <= 0) {
+              setShowEnemyAlert(true);
+            }
             setEnemyAlertDescription(
               "Regen Enemies are coming next round! Make sure u have enough dmg or you can stop your regen"
             );
@@ -737,7 +743,9 @@ const Spawn: React.FC<SpawnProps> = ({
             setEnemyCount((prev) => prev + 1);
           }
           if (round === 31 && enemies.length === 0) {
-            setShowEnemyAlert(true);
+            if (enemyCount <= 0) {
+              setShowEnemyAlert(true);
+            }
             setEnemyAlertDescription(
               "Bosses are coming next round! Make sure u are strong enough"
             );
@@ -788,7 +796,9 @@ const Spawn: React.FC<SpawnProps> = ({
             setEnemyCount((prev) => prev + 1);
           }
           if (round === 44 && enemies.length === 0) {
-            setShowEnemyAlert(true);
+            if (enemyCount <= 0) {
+              setShowEnemyAlert(true);
+            }
             setEnemyAlertDescription(
               "Mega Boss are coming next round! Make sure u are strong enough"
             );
@@ -817,7 +827,9 @@ const Spawn: React.FC<SpawnProps> = ({
             ]);
             setEnemyCount((prev) => prev + 1);
             if (round === 49 && enemies.length === 0) {
-              setShowEnemyAlert(true);
+              if (enemyCount <= 0) {
+                setShowEnemyAlert(true);
+              }
               setEnemyAlertDescription(
                 "Last round is coming! Prepare for ultimate battle"
               );
@@ -847,7 +859,7 @@ const Spawn: React.FC<SpawnProps> = ({
 
         case round >= 56 && round <= 60:
           if (enemyCount < getEnemyLimit(round)) {
-            // Intense wave of mixed armored and fast enemies
+            // Intense wave of mixed armored and fast enemiesv
             const type56 =
               enemyCount % 150 === 0
                 ? "MEGABOSS"
@@ -958,7 +970,7 @@ const Spawn: React.FC<SpawnProps> = ({
 
   const lastRound = useRef(round); // Store the last valid round
 
-  useEffect(() => {
+ useEffect(() => {
     if (isPaused) return;
 
     if (
@@ -988,10 +1000,16 @@ const Spawn: React.FC<SpawnProps> = ({
         }, 4000 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
         return () => clearTimeout(roundTimeout);
       } else {
-        setIsPaused(true);
-      }
+          lastRound.current = round; // Update last valid round
+          setIsPaused(true);
+          setEnemies([]);
+          setEnemyCount(0);
+          setCanPause(true); // Keep pause enabled for manual round advancement
+        }
+    } else {
+      setCanPause(false); // Disable pausing during active rounds
     }
-  }, [enemies.length, enemyCount, round, isSpeedUp, isPaused, autoStartRounds,gameMode,resetGame,setCanPause,setIsPaused,setRound]);
+}, [enemies.length, enemyCount, round, isSpeedUp, isPaused, autoStartRounds, gameMode, resetGame, setCanPause, setIsPaused, setRound])
   const grantMoneyForKill = useCallback(
     (enemy: Enemy) => {
       if (!processedEnemies.has(enemy.id)) {
@@ -1331,7 +1349,6 @@ const Spawn: React.FC<SpawnProps> = ({
     } else if (targettingType === "last") {
       enemiesWithProgress.reverse();
     } else if (targettingType === "mark") {
-      console.log(enemiesWithProgress)
       enemiesWithProgress.sort((a, b) => {
         // First prioritize marked enemies
         if (!a.marked && b.marked) return -1;
@@ -2394,7 +2411,6 @@ const Spawn: React.FC<SpawnProps> = ({
   const attackAnimation = () => {
     // Create a Set to track unique combinations of source and target
     const uniqueEffects = new Set();
-
     const animationDuration = 100 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1);
 
     return attackEffects

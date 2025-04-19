@@ -20,7 +20,7 @@ export async function GET() {
     const q = query(
       leaderboardRef,
       orderBy('roundRecord', 'desc'),
-      limit(10)
+      limit(50)
     );
     
     const snapshot = await getDocs(q);

@@ -7,7 +7,7 @@ interface SpawnProps {
   gameMode: string;
   setShowSettings: React.Dispatch<React.SetStateAction<boolean>>;
   showSettings: boolean;
-  user: any; 
+  user: object; 
 }
 const GameInterface: React.FC<SpawnProps> = ({
   gameMode,
