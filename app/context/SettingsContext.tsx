@@ -18,6 +18,16 @@ interface SettingsContextType {
   setShowHealthBars: (value: boolean) => void;
   setAutoStartRounds: (value: boolean) => void;
   setConfirmTowerSell: (value: boolean) => void;
+  // Add new performance mode setting
+  performanceMode: boolean;
+  setPerformanceMode: (value: boolean) => void;
+  // Add new visual settings
+  showAttackAnimations: boolean;
+  setShowAttackAnimations: (value: boolean) => void;
+  showExplosions: boolean;
+  setShowExplosions: (value: boolean) => void;
+  showLingeringEffects: boolean;
+  setShowLingeringEffects: (value: boolean) => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -38,6 +48,14 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [confirmTowerSell, setConfirmTowerSellState] = useState(() => 
     getLocalStorageItem('confirmTowerSell') === 'true'
   );
+  // Add new performance mode state
+  const [performanceMode, setPerformanceModeState] = useState(() => 
+    getLocalStorageItem('performanceMode') === 'true'
+  );
+  // Add new visual settings states
+  const [showAttackAnimations, setShowAttackAnimationsState] = useState(true);
+  const [showExplosions, setShowExplosionsState] = useState(true);
+  const [showLingeringEffects, setShowLingeringEffectsState] = useState(true);
 
   // Create wrapper functions to update both state and localStorage
   
@@ -62,6 +80,28 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     localStorage.setItem('confirmTowerSell', value.toString());
   };
 
+  // Add new performance mode setter
+  const setPerformanceMode = (value: boolean) => {
+    setPerformanceModeState(value);
+    localStorage.setItem('performanceMode', value.toString());
+  };
+
+  // Add new visual settings setters
+  const setShowAttackAnimations = (value: boolean) => {
+    setShowAttackAnimationsState(value);
+    localStorage.setItem('showAttackAnimations', value.toString());
+  };
+
+  const setShowExplosions = (value: boolean) => {
+    setShowExplosionsState(value);
+    localStorage.setItem('showExplosions', value.toString());
+  };
+
+  const setShowLingeringEffects = (value: boolean) => {
+    setShowLingeringEffectsState(value);
+    localStorage.setItem('showLingeringEffects', value.toString());
+  };
+
   return (
     <SettingsContext.Provider value={{
       showRangeIndicators,
@@ -72,6 +112,16 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setShowHealthBars,
       setAutoStartRounds,
       setConfirmTowerSell,
+      // Add new performance mode setting
+      performanceMode,
+      setPerformanceMode,
+      // Add new visual settings
+      showAttackAnimations,
+      setShowAttackAnimations,
+      showExplosions,
+      setShowExplosions,
+      showLingeringEffects,
+      setShowLingeringEffects,
     }}>
       {children}
     </SettingsContext.Provider>

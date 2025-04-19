@@ -1169,7 +1169,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         attackInterval: tower.attackInterval + 1000,
         lingeringDuration: 2500,
         attack: tower.attack + 75,
-        explosionRadius: tower.explosionRadius * 1.3,
+        explosionRadius: 13,
         towerWorth: tower.towerWorth + 5000
       })
     },
@@ -1185,7 +1185,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         attack: tower.attack * 1.25,
         lingeringDamage: tower.attack * 0.03,
         enemyCurrentHpDmgMultiplier: 0.01, 
-        explosionRadius: tower.explosionRadius * 1.4,
+        explosionRadius: 18,
         src: '/cannonSpecial2.png',
         towerWorth: tower.towerWorth + 12000
       })
@@ -1201,8 +1201,8 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         lingeringDuration: 3500,
         attack: tower.attack * 1.5,
         lingeringDamage: tower.attack * 0.03,
-        explosionRadius: tower.explosionRadius * 1.5,
         canHitArmored: true,
+        explosionRadius: 22,
         enemyCurrentHpDmgMultiplier: 0.03, 
         towerWorth: tower.towerWorth + 25000
       })
@@ -1219,8 +1219,8 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         lingeringDuration: 4500,
         attack: tower.attack * 2,
         enemyCurrentHpDmgMultiplier: 0.06, 
-        explosionRadius: tower.explosionRadius * 2,
         canHitArmored: true,
+        explosionRadius: 27,
         canHitStealth: true,
         towerWorth: tower.towerWorth + 150000
       })

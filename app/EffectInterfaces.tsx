@@ -13,6 +13,7 @@ export interface AttackEffect {
     positionX: number;
     positionY: number;
     timestamp: number;
+    sourceId: string;
   }
   
   export interface LingeringEffect {

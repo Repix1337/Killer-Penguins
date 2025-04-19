@@ -102,6 +102,7 @@ export const towerAttack = (
             positionX: primaryTarget.positionX,
             positionY: primaryTarget.positionY,
             timestamp: Date.now(),
+            sourceId: tower.id,
           },
         ]);
         setTimeout(() => {

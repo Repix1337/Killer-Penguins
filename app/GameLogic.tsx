@@ -73,14 +73,13 @@ const Spawn: React.FC<SpawnProps> = ({
   const [selectedTowerID, setSelectedTowerID] = useState("");
   const [showEnemyAlert, setShowEnemyAlert] = useState(false);
   const [enemyAlertDescription, setEnemyAlertDescription] = useState("");
-  const [explosionEffects, setExplosionEffects] = useState<
-    {
-      id: string;
-      positionX: number;
-      positionY: number;
-      timestamp: number;
-    }[]
-  >([]);
+  const [explosionEffects, setExplosionEffects] = useState<{
+    id: string;
+    positionX: number;
+    positionY: number;
+    timestamp: number;
+    sourceId: string; 
+  }[]>([]);
 
   // Add this new state near other state declarations
   const [isPageVisible, setIsPageVisible] = useState(true);
@@ -96,6 +95,9 @@ const Spawn: React.FC<SpawnProps> = ({
     showHealthBars,
     confirmTowerSell,
     autoStartRounds,
+    showAttackAnimations,
+    showExplosions,
+    showLingeringEffects,
   } = useSettings();
   // Add this new useEffect for visibility tracking
   useEffect(() => {
@@ -2442,14 +2444,15 @@ const Spawn: React.FC<SpawnProps> = ({
 
   const renderExplosions = () => {
     return explosionEffects.map((effect) => {
-      // Find the tower that caused this explosion
-      const explosionTower = tower.find((t) => t.attackType === "explosion");
+      // Find the specific tower that caused this explosion using the effect's source ID
+      const explosionTower = tower.find((t) => t.id === effect.sourceId);
       const explosionSize = explosionTower
         ? explosionTower.explosionRadius * 2
         : 50;
 
-      // Define explosion colors based on tower type
-      let explosionColor;
+      // Define explosion color based on the specific tower type
+      let explosionColor = "rgba(255, 0, 0, 0.5)"; // Default red fallback
+
       if (explosionTower) {
         switch (explosionTower.type) {
           case "mortar":
@@ -2465,10 +2468,8 @@ const Spawn: React.FC<SpawnProps> = ({
             explosionColor = "rgba(255, 0, 0, 0.5)"; // Red
             break;
           case "slower":
-            explosionColor = "rgba(0, 191, 255, 0.5)"; // Deep sky blue
+            explosionColor = "rgba(0, 191, 255, 0.7)"; // Deep sky blue
             break;
-          default:
-            explosionColor = "rgba(255, 0, 0, 0.5)"; // Default red
         }
       }
 
@@ -2479,8 +2480,8 @@ const Spawn: React.FC<SpawnProps> = ({
           style={{
             left: `${effect.positionX}%`,
             top: `${effect.positionY}%`,
-            width: `${explosionSize / 1.5}%`,
-            height: `${explosionSize / 1.5}%`,
+            width: `${explosionSize}%`,
+            height: `${explosionSize}%`,
             transform: "translate(-50%, -50%)",
             background: `radial-gradient(circle, ${explosionColor} 0%, rgba(255,255,255,0) 70%)`,
           }}
@@ -2829,9 +2830,9 @@ const Spawn: React.FC<SpawnProps> = ({
           }
         </div>
         {createEnemy()}
-        {attackAnimation()}
-        {renderExplosions()}
-        {LingeringEffects()}
+        {showAttackAnimations && attackAnimation()}
+        {showExplosions && renderExplosions()}
+        {showLingeringEffects && LingeringEffects()}
       </div>
       {upgradeTower()}
       {enemyAlert()}
