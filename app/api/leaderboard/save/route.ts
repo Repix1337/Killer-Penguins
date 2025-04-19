@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
-import app from '@/firebase/config';
+import { adminDb } from '@/firebase/admin';  // Make sure you have this config file
 import { auth } from 'firebase-admin';
-import { getAuth } from 'firebase/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,18 +37,15 @@ export async function POST(request: NextRequest) {
       timestamp: new Date()
     };
 
-    // Get Firestore instance
-    const db = getFirestore(app);
-    
-    // Save to Firestore
-    await addDoc(collection(db, 'leaderboard'), leaderboardEntry);
+    // Save to Firestore using Admin SDK
+    await adminDb.collection('leaderboard').add(leaderboardEntry);
 
     return NextResponse.json({ success: true }, { status: 201 });
 
   } catch (error) {
     console.error('Error saving game result:', error);
     return NextResponse.json(
-      { error: 'Failed to save game result' },
+      { error: error instanceof Error ? error.message : 'Failed to save game result' },
       { status: 500 }
     );
   }
