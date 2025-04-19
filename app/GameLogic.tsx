@@ -11,6 +11,7 @@ import { Enemy } from "./EnemyInterface";
 import { LingeringEffect } from "./EffectInterfaces";
 import PopUp from "./PopUp";
 import Auth from './auth';
+import { User } from "firebase/auth";
 // Define the props for the Spawn component
 interface SpawnProps {
   round: number;
@@ -27,7 +28,7 @@ interface SpawnProps {
   setCanPause: React.Dispatch<React.SetStateAction<boolean>>;
   selectedTowerType: string;
   gameMode: string;
-  user: object; // Add this line
+  user: User | null;
 }
 
 interface TowerUpgrade {

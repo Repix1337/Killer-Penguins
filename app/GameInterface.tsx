@@ -3,11 +3,12 @@ import React from "react";
 import Spawn from "./GameLogic";
 import Menu from "./Menu";
 import Settings from "./Settings";
+import { User } from "firebase/auth";
 interface SpawnProps {
   gameMode: string;
   setShowSettings: React.Dispatch<React.SetStateAction<boolean>>;
   showSettings: boolean;
-  user: object; 
+  user: User | null;
 }
 const GameInterface: React.FC<SpawnProps> = ({
   gameMode,
