@@ -1000,11 +1000,11 @@ const Spawn: React.FC<SpawnProps> = ({
         // Apply round-based reduction more explicitly
         let multiplier;
         if (round >= 33 && round < 42) {
-          multiplier = 0.015; // 7% of original reward
+          multiplier = 0.15; // 7% of original reward
         } else if (round > 22 && round < 33) {
           multiplier = 0.35; // 30% of original reward
         } else if (round >= 42) {
-          multiplier = 0.012; // 5.5% of original reward
+          multiplier = 0.1; // 5.5% of original reward
         } else if (round <= 22) {
           multiplier = 1; // 5.5% of original reward
         }
