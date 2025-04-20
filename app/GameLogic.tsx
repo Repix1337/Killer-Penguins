@@ -2252,42 +2252,92 @@ const Spawn: React.FC<SpawnProps> = ({
             </h2>
             <div className="max-h-48 md:max-h-64 overflow-y-auto pr-1">
               {availableUpgrades.map((upgrade) => (
-                <button
-                  key={upgrade.name}
-                  className={`w-full text-left p-2 md:p-3 rounded-lg transition-all duration-200 shadow-md mb-1 md:mb-2
-                    ${
-                      upgrade.path === 1
-                        ? "bg-gradient-to-r from-red-900 to-red-800 hover:from-red-800 hover:to-red-700 border-l-4 border-red-500"
-                        : "bg-gradient-to-r from-blue-900 to-blue-800 hover:from-blue-800 hover:to-blue-700 border-l-4 border-blue-500"
-                    }
-                    ${
-                      money < upgrade.cost
-                        ? "opacity-50 cursor-not-allowed"
-                        : "hover:scale-102"
-                    }`}
-                  onClick={() => performUpgrade(selectedTower, upgrade)}
-                  disabled={money < upgrade.cost}
-                >
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-white text-xs">
-                      {upgrade.name}
-                    </span>
-                    <span className="text-xs text-gray-300">
-                      ${upgrade.cost}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-300 mt-1">
-                    {upgrade.description}
-                  </p>
-                  <div className="flex justify-between text-xs mt-1">
-                    <span className="text-gray-500">
-                      {upgrade.path === 1 ? "Path 1" : "Path 2"}
-                    </span>
-                    <span className="text-green-300">
-                      Upgrades left: {Math.abs(upgrade.requires - 6)}
-                    </span>
-                  </div>
-                </button>
+                <div key={upgrade.name} className="flex flex-col gap-1 mb-1 md:mb-2">
+                  <button
+                    className={`w-full text-left p-2 md:p-3 rounded-lg transition-all duration-200 shadow-md
+                      ${
+                        upgrade.path === 1
+                          ? "bg-gradient-to-r from-red-900 to-red-800 hover:from-red-800 hover:to-red-700 border-l-4 border-red-500"
+                          : "bg-gradient-to-r from-blue-900 to-blue-800 hover:from-blue-800 hover:to-blue-700 border-l-4 border-blue-500"
+                      }
+                      ${money < upgrade.cost ? "opacity-50 cursor-not-allowed" : "hover:scale-102"}`}
+                    onClick={() => performUpgrade(selectedTower, upgrade)}
+                    disabled={money < upgrade.cost}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-white text-xs">
+                        {upgrade.name}
+                      </span>
+                      <span className="text-xs text-gray-300">
+                        ${upgrade.cost}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-300 mt-1">
+                      {upgrade.description}
+                    </p>
+                    <div className="flex justify-between text-xs mt-1">
+                      <span className="text-gray-500">
+                        {upgrade.path === 1 ? "Path 1" : "Path 2"}
+                      </span>
+                      <span className="text-green-300">
+                        Upgrades left: {Math.abs(upgrade.requires - 6)}
+                      </span>
+                    </div>
+                  </button>
+                  <button
+  className={`w-full py-1 px-2 rounded text-xs font-medium transition-all duration-200
+    ${upgrade.path === 1
+      ? "bg-red-700 hover:bg-red-600 text-white"
+      : "bg-blue-700 hover:bg-blue-600 text-white"
+    }
+    ${money < upgrade.cost ? "opacity-50 cursor-not-allowed" : ""}`}
+    onClick={async () => {
+      const currentLevel = upgrade.path === 1 ? selectedTower.path1Level : selectedTower.path2Level;
+      const otherPathLevel = upgrade.path === 1 ? selectedTower.path2Level : selectedTower.path1Level;
+      const maxLevel = 6;
+      
+      // Check if the other path is at level 3 or higher
+      const maxAllowedLevel = otherPathLevel >= 3 ? 2 : maxLevel;
+      const remainingLevels = Math.min(maxAllowedLevel - currentLevel, maxLevel - currentLevel);
+      
+      // Calculate how many upgrades we can afford with current money
+      const upgradeCost = upgrade.cost;
+      let remainingMoney = money;
+      let affordableUpgrades = 0;
+      
+      // Calculate affordable upgrades based on remaining money and level restrictions
+      for (let i = 0; i < remainingLevels; i++) {
+        if (remainingMoney >= upgradeCost) {
+          affordableUpgrades++;
+          remainingMoney -= upgradeCost;
+        } else {
+          break;
+        }
+      }
+    
+      if (affordableUpgrades <= 0) return;
+    
+      // Get all upgrades for this path
+      const pathUpgrades = towerUpgrades[selectedTower.type].filter(u => 
+        u.path === upgrade.path && 
+        u.requires >= currentLevel && 
+        u.requires < maxAllowedLevel
+      );
+    
+      // Apply upgrades in sequence
+      for (let i = 0; i < affordableUpgrades; i++) {
+        const nextUpgrade = pathUpgrades.find(u => u.requires === currentLevel + i);
+        if (nextUpgrade) {
+          await new Promise(resolve => setTimeout(resolve, 50));
+          performUpgrade(selectedTower, nextUpgrade);
+        }
+      }
+    }}
+    disabled={money < upgrade.cost}
+    >
+      Buy Remaining upgrades 
+</button>
+                </div>
               ))}
             </div>
             <button

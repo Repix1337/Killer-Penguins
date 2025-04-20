@@ -58,7 +58,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         acceleration: true,
         accelerationValue: 0.1,
         attackInterval: tower.attackInterval - 200,
-        attack: tower.attack * 1.2,
+        attack: tower.attack + 30,
         src: '/basicSpecial.png',
         towerWorth: tower.towerWorth + 15000,
         path: 1
@@ -74,7 +74,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         acceleration: true,
         accelerationValue: 0.25,
         attackInterval: tower.attackInterval - 250,
-        attack: tower.attack * 1.25,
+        attack: tower.attack + 45,
         towerWorth: tower.towerWorth + 25000,
         path: 1
       })
@@ -89,7 +89,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         acceleration: true,
         accelerationValue: 0.4,
         attackInterval: tower.attackInterval - 225,
-        attack: tower.attack * 2,
+        attack: tower.attack + 225,
         canHitStealth: true,
         canHitArmored: true,
         towerWorth: tower.towerWorth + 150000
@@ -310,7 +310,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           effect: (tower) => ({
             attackType: 'triple',
             attackInterval: tower.attackInterval - 450,
-            attack: tower.attack * 1.3,
+            attack: tower.attack + 60,
             src: '/sniperSpecial2.png',
             towerWorth: tower.towerWorth + 15000,
             path: 2
@@ -324,7 +324,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           description: "-350ms interval, +50% damage",
           effect: (tower) => ({
             attackInterval: tower.attackInterval - 450,
-            attack: tower.attack * 1.5,
+            attack: tower.attack + 130,
             towerWorth: tower.towerWorth + 25000,
             path: 2
           })
@@ -338,7 +338,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           effect: (tower) => ({
             attackType: 'quadruple',
             attackInterval: tower.attackInterval - 120,
-            attack: tower.attack * 1.4,
+            attack: tower.attack + 160,
             canHitStealth: true,
             canHitArmored: true,
             towerWorth: tower.towerWorth + 150000
@@ -394,7 +394,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           effect: (tower) => ({
             attackType: 'quadruple',
             attackInterval: tower.attackInterval - 50,
-            attack: tower.attack + 10,
+            attack: tower.attack + 20,
             src: '/rapidShooterSpecial1.png',
             towerWorth: tower.towerWorth + 8000,
             path: 1
@@ -410,7 +410,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
             canExecute: true,
             executeTreshhold: 10,
             attackInterval: tower.attackInterval - 65,
-            attack: tower.attack * 1.6,
+            attack: tower.attack + 60,
             towerWorth: tower.towerWorth + 25000,
             path: 1
           })
@@ -424,7 +424,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           effect: (tower) => ({
             attackInterval: tower.attackInterval - 40,
             executeTreshhold: 20,
-            attack: tower.attack * 2.5,
+            attack: tower.attack + 245,
             attackType: 'five',
             canHitArmored: true,
             canHitStealth: true,
@@ -468,7 +468,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           description: "Chain to 2 targets, 20 range, +20 damage",
           effect: (tower) => ({
             attackType: 'chain',
-            chainCount: 2,
+            chainCount: 3,
             chainRange: 20,
             effectSrc: '/chainLightning.png',
             src: '/rapidShooterSpecial2.png',
@@ -482,11 +482,11 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           cost: 12000,
           requires: 3,
           path: 2,
-          description: "Chain to 3 targets, 25 range, +40% damage, -25ms interval",
+          description: "Chain to 4 targets, 25 range, +40% damage, -25ms interval",
           effect: (tower) => ({
-            chainCount: 3,
+            chainCount: 4,
             chainRange: 25,
-            attack: tower.attack * 1.4,
+            attack: tower.attack + 45,
             attackInterval: tower.attackInterval - 25,
             src: '/rapidShooterSpecial2.png',
             towerWorth: tower.towerWorth + 12000,
@@ -498,11 +498,11 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           cost: 25000,
           requires: 4,
           path: 2,
-          description: "Chain to 4 targets, 30 range, +100% damage, -50ms interval",
+          description: "Chain to 5 targets, 30 range, +100% damage, -50ms interval",
           effect: (tower) => ({
-            chainCount: 4,
+            chainCount: 5,
             chainRange: 30,
-            attack: tower.attack * 2,
+            attack: tower.attack + 200,
             attackInterval: tower.attackInterval - 50,
             towerWorth: tower.towerWorth + 25000,
             path: 2
@@ -513,11 +513,11 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           cost: 150000,
           requires: 5,
           path: 2,
-          description: "Chain to 6 targets,short stun, 40 range, +200% damage, hits armored",
+          description: "Chain to 7 targets,short stun, 40 range, +200% damage, hits armored",
           effect: (tower) => ({
-            chainCount: 6,
+            chainCount: 7,
             chainRange: 40,
-            attack: tower.attack * 3,
+            attack: tower.attack + 450,
             canStun: true,
             stunDuration: 20,
             attackInterval: tower.attackInterval - 25,
@@ -820,7 +820,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 2,
           description: "2x poison damage, +1s duration",
           effect: (tower) => ({
-            poisonDamage: tower.poisonDamage * 2,
+            poisonDamage: tower.poisonDamage + 80,
             poisonDuration: (tower.poisonDuration ?? 4000) + 1000,
             towerWorth: tower.towerWorth + 4500,
             path: 2
@@ -833,7 +833,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 2,
           description: "3x poison damage, +1s duration",
           effect: (tower) => ({
-            poisonDamage: tower.poisonDamage * 3,
+            poisonDamage: tower.poisonDamage + 240,
             poisonDuration: (tower.poisonDuration ?? 4000) + 1000,
             towerWorth: tower.towerWorth + 12000,
             src: '/gasSpitterSpecial2.png',
@@ -847,7 +847,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           path: 2,
           description: "4x poison damage, 2x boss damage",
           effect: (tower) => ({
-            poisonDamage: tower.poisonDamage * 4,
+            poisonDamage: tower.poisonDamage + 1500,
             bossDamageMultiplier: 2,
             towerWorth: tower.towerWorth + 20000,
             path: 2
@@ -858,10 +858,10 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           cost: 150000,
           requires: 5,
           path: 2,
-          description: "6x poison, 8x boss damage, +2s duration, 2x attack speed",
+          description: "6x poison, 6x boss damage, +2s duration, 2x attack speed",
           effect: (tower) => ({
-            poisonDamage: tower.poisonDamage * 6,
-            bossDamageMultiplier: 8,
+            poisonDamage: tower.poisonDamage + 10000,
+            bossDamageMultiplier: 6,
             poisonDuration: (tower.poisonDuration ?? 4000) + 2000,
             attackInterval: tower.attackInterval / 2,
             towerWorth: tower.towerWorth + 150000
@@ -991,7 +991,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       description: "-5% enemy max HP, +50 damage",
       effect: (tower) => ({
         healthReduction: 0.05, // Reduces max HP by 15%
-        attack: tower.attack + 50,
+        attack: tower.attack + 300,
         towerWorth: tower.towerWorth + 5000,
         path: 2
       })
@@ -1004,7 +1004,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       description: "-10% enemy HP, +120 damage, 150ms stun",
       effect: (tower) => ({
         healthReduction: 0.1,
-        attack: tower.attack + 120,
+        attack: tower.attack + 500,
         canStun: true,
         stunDuration: 150,
         src: '/mortarSpecial2.png',
@@ -1023,7 +1023,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         explosionRadius: tower.explosionRadius * 1.15,
         attackInterval: tower.attackInterval - 1000,
         stunDuration: 250,
-        attack: tower.attack * 1.6,
+        attack: tower.attack + 1000,
         towerWorth: tower.towerWorth + 25000,
         path: 2
       })
@@ -1039,7 +1039,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
         attackInterval: tower.attackInterval - 1500,
         explosionRadius: tower.explosionRadius * 1.25,
         stunDuration: 500,
-        attack: tower.attack * 3,
+        attack: tower.attack + 1700,
         towerWorth: tower.towerWorth + 150000
       })
     }
@@ -1076,7 +1076,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       description: "+50% damage, 30% crit (2.5x)",
       effect: (tower) => ({
-        attack: tower.attack * 1.5,
+        attack: tower.attack + 140,
         hasCritical: true,
         criticalChance: 0.3,
         criticalMultiplier: 2.5,
@@ -1090,7 +1090,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       description: "2x damage, 40% crit (3x), -500ms interval",
       effect: (tower) => ({
-        attack: tower.attack * 2,
+        attack: tower.attack + 400,
         criticalChance: 0.4,
         criticalMultiplier: 3,
         attackInterval: tower.attackInterval - 500,
@@ -1105,7 +1105,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       description: "2.5x damage, 50% crit (4x), 100ms stun, hits stealth",
       effect: (tower) => ({
-        attack: tower.attack * 2.5,
+        attack: tower.attack + 1200,
         canStun: true,
         stunDuration: 100,
         criticalChance: 0.5,
@@ -1121,7 +1121,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 1,
       description: "3x damage, 60% crit (5x), 250ms stun, -500ms interval",
       effect: (tower) => ({
-        attack: tower.attack * 3,
+        attack: tower.attack + 4000,
         criticalChance: 0.6,
         criticalMultiplier: 5,
         stunDuration: 250,
@@ -1164,7 +1164,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       description: "3% DoT, 13 radius, 2.5s duration, +75 damage",
       effect: (tower) => ({
         hasLingering: true,
-        lingeringDamage: tower.attack * 0.03,
+        lingeringDamage: 8,
         lingeringRadius: 13,
         attackInterval: tower.attackInterval + 1000,
         lingeringDuration: 2500,
@@ -1182,8 +1182,8 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       effect: (tower) => ({
         lingeringRadius: 18,
         lingeringDuration: 3000,
-        attack: tower.attack * 1.25,
-        lingeringDamage: tower.attack * 0.03,
+        attack: tower.attack + 100,
+        lingeringDamage: 10,
         enemyCurrentHpDmgMultiplier: 0.01, 
         explosionRadius: 18,
         src: '/cannonSpecial2.png',
@@ -1199,8 +1199,8 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       effect: (tower) => ({
         lingeringRadius: 22,
         lingeringDuration: 3500,
-        attack: tower.attack * 1.5,
-        lingeringDamage: tower.attack * 0.03,
+        attack: tower.attack + 200,
+        lingeringDamage: 13,
         canHitArmored: true,
         explosionRadius: 22,
         enemyCurrentHpDmgMultiplier: 0.03, 
@@ -1214,10 +1214,10 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 2,
       description: "27 radius, 4.5s duration, 2.5x damage, 6% HP damage, hits all",
       effect: (tower) => ({
-        lingeringDamage: tower.attack * 0.03,
+        lingeringDamage: 20,
         lingeringRadius: 27,
         lingeringDuration: 4500,
-        attack: tower.attack * 2,
+        attack: tower.attack + 600,
         enemyCurrentHpDmgMultiplier: 0.06, 
         canHitArmored: true,
         explosionRadius: 27,
