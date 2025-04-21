@@ -163,71 +163,73 @@ const GameInterface: React.FC<SpawnProps> = ({
     )}
 
     {/* Right Section - Game Controls & Settings */}
-    <div className="flex items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto">
+    <div className="flex items-center justify-center gap-1 sm:gap-2 w-full sm:w-auto">
     <button
-        className={`px-2 sm:px-4 py-1 sm:py-2 rounded-lg shadow-md transition-all duration-200
+        className={`px-1 sm:px-4 py-1 sm:py-2 rounded-lg shadow-md transition-all duration-200
             ${round < 1 ? "bg-green-500 hover:bg-green-600 animate-pulse" : "bg-slate-600"}
-            flex items-center gap-1 sm:gap-2 text-sm sm:text-base`}
+            flex items-center gap-1 sm:gap-2 text-xs sm:text-base`}
         onClick={onClick}
         disabled={round > 0}
     >
-        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            {round < 1 ? "Start Game" : "Started"}
+        <svg className="w-3 h-3 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span className="whitespace-nowrap">
+            {round < 1 ? "Start" : "Started"}
+        </span>
+    </button>
+
+    <div className="flex items-center gap-1 sm:gap-2">
+        <button
+            className={`p-1 sm:p-2 rounded-lg shadow-md transition-all duration-200 text-xs sm:text-base
+                ${isSpeedUp === 2 ? "bg-blue-700" : isSpeedUp === 1 ? "bg-blue-600" : "bg-blue-500"}`}
+            onClick={handleSpeedUp}
+        >
+            {isSpeedUp === 2 ? "3x" : isSpeedUp === 1 ? "2x" : "1x"}
         </button>
 
-        <div className="flex items-center gap-2">
-            <button
-                className={`p-2 rounded-lg shadow-md transition-all duration-200
-                    ${isSpeedUp === 2 ? "bg-blue-700" : isSpeedUp === 1 ? "bg-blue-600" : "bg-blue-500"}`}
-                onClick={handleSpeedUp}
-            >
-                {isSpeedUp === 2 ? "3x ⚡" : isSpeedUp === 1 ? "2x ▶" : "1x ▶"}
-            </button>
-
-            <button
-                className={`p-2 rounded-lg shadow-md transition-all duration-200
-                    ${!canPause ? "opacity-50 cursor-not-allowed" : ""}
-                    ${isPaused ? "bg-yellow-600" : "bg-yellow-500 hover:bg-yellow-600"}`}
-                onClick={handlePause}
-                disabled={!canPause}
-            >
-                {isPaused ? "▶" : "⏸"}
-            </button>
-        </div>
-
-        <div className="flex items-center gap-2 border-l border-gray-600 pl-2">
-            <button
-                onClick={() => setShowSettings(!showSettings)}
-                className="p-2 rounded-lg shadow-md transition-all duration-200 
-                    bg-[#0EA5E9]/80 hover:bg-[#0284C7]/80"
-                title="Settings"
-            >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-            </button>
-
-            <button
-                className="p-2 rounded-lg shadow-md transition-all duration-200 
-                    bg-red-500 hover:bg-red-600"
-                onClick={() => setRenderMenu(true)}
-                title="Exit Game"
-            >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                        d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
+        <button
+            className={`p-1 sm:p-2 rounded-lg shadow-md transition-all duration-200 text-xs sm:text-base
+                ${!canPause ? "opacity-50 cursor-not-allowed" : ""}
+                ${isPaused ? "bg-yellow-600" : "bg-yellow-500 hover:bg-yellow-600"}`}
+            onClick={handlePause}
+            disabled={!canPause}
+        >
+            {isPaused ? "▶" : "⏸"}
+        </button>
     </div>
+
+    <div className="flex items-center gap-1 sm:gap-2 border-l border-gray-600 pl-1 sm:pl-2">
+        <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="p-1 sm:p-2 rounded-lg shadow-md transition-all duration-200 
+                bg-[#0EA5E9]/80 hover:bg-[#0284C7]/80"
+            title="Settings"
+        >
+            <svg className="w-4 h-4 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+        </button>
+
+        <button
+            className="p-1 sm:p-2 rounded-lg shadow-md transition-all duration-200 
+                bg-red-500 hover:bg-red-600"
+            onClick={() => setRenderMenu(true)}
+            title="Exit Game"
+        >
+            <svg className="w-4 h-4 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+</div>
 </div>
 
       {/* Game Board */}

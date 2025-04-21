@@ -1853,12 +1853,12 @@ const Spawn: React.FC<SpawnProps> = ({
 
       return (
         <div
-          data-upgrade-menu
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 
-            bg-slate-800 flex flex-col md:flex-row items-start justify-between p-2 md:p-4 rounded-lg gap-2 md:gap-4 
-            shadow-xl border-2 border-blue-500 w-[95vw] max-w-[700px] md:max-w-[700px] md:w-[700px] text-sm"
-          style={{ left: selectedTower.positionX < 50 ? "65%" : "35%" }}
-          onClick={(e) => e.stopPropagation()}
+  data-upgrade-menu
+  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 
+    bg-slate-800 flex flex-col md:flex-row items-start justify-between p-2 md:p-4 rounded-lg gap-2 md:gap-4 
+    shadow-xl border-2 border-blue-500 w-[95vw] md:w-[700px] max-h-[90vh] md:max-h-none overflow-y-auto md:overflow-visible"
+  style={{ left: window.innerWidth >= 768 ? (selectedTower.positionX < 50 ? "65%" : "35%") : "50%" }}
+  onClick={(e) => e.stopPropagation()}
         >
           {/* Left Panel - Tower Info & Stats */}
           <div className="flex flex-col space-y-2 w-full md:w-1/2 p-2 md:p-3 bg-gray-950/80 rounded-lg border border-blue-900/30 shadow-lg">
@@ -2247,13 +2247,13 @@ const Spawn: React.FC<SpawnProps> = ({
           </div>
 
           {/* Right Panel - Upgrades */}
-          <div className="w-full md:w-1/2 space-y-1 md:space-y-2">
-            <h2 className="text-sm md:text-lg font-bold text-blue-400 mb-1 md:mb-2">
+          <div className="w-full md:w-1/2 space-y-1 md:space-y-2 max-h-[40vh] md:max-h-none overflow-y-auto">
+            <h2 className="text-sm md:text-lg font-bold text-blue-400 mb-1 md:mb-2 sticky top-0 bg-slate-800 py-2 z-10">
               Upgrades
             </h2>
-            <div className="max-h-48 md:max-h-64 overflow-y-auto pr-1">
+            <div className="space-y-2 pr-1">
               {availableUpgrades.map((upgrade) => (
-                <div key={upgrade.name} className="flex flex-col gap-1 mb-1 md:mb-2">
+                <div key={upgrade.name} className="flex flex-col gap-1">
                   <button
                     className={`w-full text-left p-2 md:p-3 rounded-lg transition-all duration-200 shadow-md
                       ${
@@ -2343,7 +2343,7 @@ const Spawn: React.FC<SpawnProps> = ({
             </div>
             <button
               className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-1 md:py-2 px-4 rounded-lg
-                transition-all duration-200 shadow-md mt-1 md:mt-2 text-xs md:text-sm"
+                transition-all duration-200 shadow-md mt-2 text-xs md:text-sm sticky bottom-0 z-10"
               onClick={closeUpgradeMenu}
             >
               Close
