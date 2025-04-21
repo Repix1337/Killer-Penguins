@@ -2671,6 +2671,7 @@ const Spawn: React.FC<SpawnProps> = ({
     const [username, setUsername] = useState("");
     const [isSaved, setIsSaved] = useState(false);
     const [error, setError] = useState("");
+    const [isSaving, setIsSaving] = useState(false);
 
     const handleSave = () => {
       if (!username.trim()) {
@@ -2678,6 +2679,7 @@ const Spawn: React.FC<SpawnProps> = ({
         return;
       }
 
+      setIsSaving(true);
       saveGameResult(round, username)
         .then(() => {
           setIsSaved(true);
@@ -2687,6 +2689,9 @@ const Spawn: React.FC<SpawnProps> = ({
         .catch((error) => {
           setError("Failed to save score. Please try again.");
           console.error("Failed to save game result:", error);
+        })
+        .finally(() => {
+          setIsSaving(false);
         });
     };
 
@@ -2696,7 +2701,7 @@ const Spawn: React.FC<SpawnProps> = ({
           <span className="text-yellow-400 text-6xl">⛔</span>
           <h2
             className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 
-          bg-clip-text text-transparent mb-4 mt-3 animate-pulse"
+            bg-clip-text text-transparent mb-4 mt-3 animate-pulse"
           >
             GAME OVER
           </h2>
@@ -2717,16 +2722,21 @@ const Spawn: React.FC<SpawnProps> = ({
                     text-white placeholder-gray-400 focus:outline-none focus:ring-2 
                     focus:ring-blue-500"
                     maxLength={20}
+                    disabled={isSaving}
                   />
                   {error && <p className="text-red-500 text-sm">{error}</p>}
                   <button
                     onClick={handleSave}
-                    className="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 
+                    disabled={isSaving}
+                    className={`bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 
                     rounded-lg text-lg font-bold transform transition duration-200 w-full
-                    hover:scale-105 hover:shadow-lg hover:from-blue-500 hover:to-blue-700
-                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
+                    ${isSaving 
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:scale-105 hover:shadow-lg hover:from-blue-500 hover:to-blue-700'
+                    }`}
                   >
-                    Save Score
+                    {isSaving ? 'Saving...' : 'Save Score'}
                   </button>
                 </div>
               ) : (
