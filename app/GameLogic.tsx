@@ -504,8 +504,8 @@ const Spawn: React.FC<SpawnProps> = ({
     },
     CANNON: {
       src: "/cannon.png",
-      baseAttack: 75,
-      attack: 75,
+      baseAttack: 100,
+      attack: 100,
       baseAttackInterval: 2750,
       attackInterval: 2750,
       price: 500,
@@ -979,7 +979,7 @@ const Spawn: React.FC<SpawnProps> = ({
       round !== 0 &&
       gameMode === "normal"
     ) {
-      alert("Kys");
+      alert("Cheating detected");
       resetGame();
       return;
     }
@@ -2622,15 +2622,17 @@ const Spawn: React.FC<SpawnProps> = ({
   }, [enemies, grantMoneyForKill,processedEnemies]);
   useEffect(() => {
     if (hp > 101 && gameMode === "normal") {
-      alert("kys");
+      alert("Cheating detected");
       resetGame();
     }
     if (round < 30 && money > 1000000 && gameMode === "normal") {
-      alert("kys");
+      alert("Cheating detected");
+
       resetGame();
     }
     if (round >= 150 && money < 10000 && gameMode === "normal") {
-      alert("kys");
+      alert("Cheating detected");
+
       resetGame();
     }
   }, [hp, round, money,gameMode,resetGame]);

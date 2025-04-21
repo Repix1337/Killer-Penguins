@@ -18,7 +18,7 @@ const ModeSelection:React.FC<ModeProps> = ({onClose, setGameMode}) => {
             </svg>
           </button>
         </div>
-            <div className='flex gap-2'>
+            <div className='flex justify-evenly items-center gap-2 text-3xl'>
                 <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded' onClick={() => setGameMode('normal')}>
                     Normal
                 </button>
