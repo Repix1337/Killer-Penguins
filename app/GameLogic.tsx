@@ -1081,10 +1081,11 @@ const Spawn: React.FC<SpawnProps> = ({
     if (towerElement) {
       towerElement.src = "/buildingSite.png";
       towerElement.id = `building-site-${uuidv4()}`;
+      towerElement.className = "absolute w-4 h-4 sm:w-6 sm:h-6 md:w-10 md:h-10 z-10 hover:opacity-75 transition-opacity";
     }
 
     setShowUpgradeMenu(false);
-  }, [confirmTowerSell, selectedTowerID, setMoney, setTower, setShowUpgradeMenu]);
+}, [confirmTowerSell, selectedTowerID, setMoney, setTower, setShowUpgradeMenu]);
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -1469,10 +1470,10 @@ const Spawn: React.FC<SpawnProps> = ({
           <Image
             src={"/" + enemy.src}
             alt="enemy"
-            width={35} // width of the image
-            height={35} // height of the image
-            className="w-9 h-9" // Optional, for styling purposes
-          />
+            width={35} 
+            height={35} 
+            className="w-6 h-6 sm:w-8 sm:h-8 md:w-9 md:h-9"
+            />
         </div>
       ));
     }
@@ -2491,7 +2492,7 @@ const Spawn: React.FC<SpawnProps> = ({
         <img
           src={effect.effectSrc}
           key={effect.id}
-          className="pointer-events-none animate-slide h-4 w-4 absolute"
+          className="pointer-events-none animate-slide h-3 w-3 sm:h-4 sm:w-4 absolute"
           style={
             {
               "--tower-positionX": `${effect.towerPositionX + 1}%`,
@@ -2860,15 +2861,15 @@ const Spawn: React.FC<SpawnProps> = ({
   return (
     <>
       <div
-        className="relative min-h-[73vh]  w-full "
-        suppressHydrationWarning
-        onClick={handleOutsideClick}
-      >
-        <img
-          src="/test.webp"
-          className=" w-full h-full object-fill top-0 left-0 z-0"
-          alt="map"
-        />
+  className="relative min-h-[60vh] sm:min-h-[73vh] w-full"
+  suppressHydrationWarning
+  onClick={handleOutsideClick}
+>
+<img
+  src="/test.webp"
+  className="w-full h-full object-cover sm:object-fill absolute top-0 left-0 z-0"
+  alt="map"
+/>
         {/* Add range indicators for all towers */}
         {tower.map((t) => (
           <RangeIndicator key={`range-${t.id}`} tower={t} />
@@ -2910,8 +2911,7 @@ const Spawn: React.FC<SpawnProps> = ({
                     src={
                       existingTower ? existingTower.src : "/buildingSite.png"
                     }
-                    className="absolute sm:w-7 md:w-14 sm:h-7 md:h-14 z-10 hover:opacity-75 transition-opacity"
-                    style={{
+                    className="absolute w-4 h-4 sm:w-6 sm:h-6 md:w-10 md:h-10 z-10 hover:opacity-75 transition-opacity"                    style={{
                       top: pos.top,
                       left: pos.left,
                       transform: existingTower?.furthestEnemyInRange?.[0]

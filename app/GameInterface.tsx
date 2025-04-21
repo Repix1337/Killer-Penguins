@@ -80,7 +80,6 @@ const GameInterface: React.FC<SpawnProps> = ({
   return !renderMenu ? (
     <div className="flex flex-col justify-center min-h-[15vh] items-center text-white w-screen select-none p-1">
       {/* Top Game Controls Bar */}
-      {/* Top Game Controls Bar */}
 <div className="flex flex-col md:flex-row justify-between items-center gap-4 w-full p-4 
     bg-gradient-to-r from-slate-900 to-slate-800 min-h-[10vh] shadow-lg 
     border-b-2 border-blue-500/50">
@@ -95,8 +94,8 @@ const GameInterface: React.FC<SpawnProps> = ({
                 </svg>
             </span>
             <div className="flex flex-col">
-                <span className="text-xs text-gray-400">Round</span>
-                <span className="font-bold text-blue-400">
+            <span className="text-xs text-gray-400">Round</span>
+            <span className="font-bold text-blue-400">
                     {round}<span className="text-gray-500">/50</span>
                 </span>
             </div>
@@ -123,39 +122,39 @@ const GameInterface: React.FC<SpawnProps> = ({
 
     {/* Middle Section - Sandbox Inputs (only shown in sandbox mode and before round 1) */}
     {gameMode === "sandbox" && round < 1 && (
-        <div className="flex items-center gap-3">
+    <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:gap-3 w-full sm:w-auto">
+        <div className="flex flex-col gap-1">
+            <label className="text-[11px] sm:text-xs text-gray-400">Start Round</label>
+            <input
+                type="number"
+                name="round"
+                value={sandboxInput.round}
+                onChange={handleSandboxInput}
+                className="w-full sm:w-24 px-2 py-1 bg-slate-700 rounded-lg text-white text-sm"
+                min="1"
+                placeholder="Round"
+            />
+        </div>
             <div className="flex flex-col gap-1">
-                <label className="text-xs text-gray-400">Starting Round</label>
-                <input
-                    type="number"
-                    name="round"
-                    value={sandboxInput.round}
-                    onChange={handleSandboxInput}
-                    className="w-24 px-2 py-1 bg-slate-700 rounded-lg text-white text-sm"
-                    min="1"
-                    placeholder="Round"
-                />
-            </div>
-            <div className="flex flex-col gap-1">
-                <label className="text-xs text-gray-400">Starting Money</label>
+                <label className="text-[11px] sm:text-xs text-gray-400">Starting Money</label>
                 <input
                     type="number"
                     name="money"
                     value={sandboxInput.money}
                     onChange={handleSandboxInput}
-                    className="w-24 px-2 py-1 bg-slate-700 rounded-lg text-white text-sm"
+                    className="w-full sm:w-24 px-2 py-1 bg-slate-700 rounded-lg text-white text-sm"
                     min="0"
                     placeholder="Money"
                 />
             </div>
             <div className="flex flex-col gap-1">
-                <label className="text-xs text-gray-400">Starting HP</label>
+                <label className="text-[11px] sm:text-xs text-gray-400">Starting HP</label>
                 <input
                     type="number"
                     name="hp"
                     value={sandboxInput.hp}
                     onChange={handleSandboxInput}
-                    className="w-24 px-2 py-1 bg-slate-700 rounded-lg text-white text-sm"
+                    className="w-full sm:w-24 px-2 py-1 bg-slate-700 rounded-lg text-white text-sm"
                     min="1"
                     placeholder="Health"
                 />
@@ -164,15 +163,15 @@ const GameInterface: React.FC<SpawnProps> = ({
     )}
 
     {/* Right Section - Game Controls & Settings */}
-    <div className="flex items-center gap-3">
-        <button
-            className={`px-4 py-2 rounded-lg shadow-md transition-all duration-200
-                ${round < 1 ? "bg-green-500 hover:bg-green-600 animate-pulse" : "bg-slate-600"}
-                flex items-center gap-2`}
-            onClick={onClick}
-            disabled={round > 0}
-        >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div className="flex items-center justify-center gap-2 sm:gap-3 w-full sm:w-auto">
+    <button
+        className={`px-2 sm:px-4 py-1 sm:py-2 rounded-lg shadow-md transition-all duration-200
+            ${round < 1 ? "bg-green-500 hover:bg-green-600 animate-pulse" : "bg-slate-600"}
+            flex items-center gap-1 sm:gap-2 text-sm sm:text-base`}
+        onClick={onClick}
+        disabled={round > 0}
+    >
+        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
                     d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
@@ -251,14 +250,10 @@ const GameInterface: React.FC<SpawnProps> = ({
       />
 {showSettings && <Settings onClose={() => setShowSettings(false)} />}
       {/* Tower Selection Panel */}
-      <div
-        className="bg-gradient-to-b from-slate-800 to-slate-900 flex flex-col items-center p-4 
-    shadow-lg border-t-2 border-blue-500/50 w-full min-h-[20vh]"
-      >
-        <div
-          className="grid grid-cols-4 md:grid-cols-7 gap-3 md:gap-6 w-full max-w-6xl 
-      px-2 justify-items-center"
-        >
+      <div className="bg-gradient-to-b from-slate-800 to-slate-900 flex flex-col items-center p-2 sm:p-4 
+    shadow-lg border-t-2 border-blue-500/50 w-full min-h-[17vh] sm:min-h-[20vh]">
+    <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 sm:gap-3 md:gap-6 w-full max-w-6xl 
+        px-1 sm:px-2 justify-items-center">
           <TowerButton
             type="basic"
             src="/basic.png"
@@ -357,30 +352,29 @@ const TowerButton = ({
         ? "bg-gradient-to-br from-blue-600 to-blue-800 ring-2 ring-blue-400"
         : "bg-gradient-to-br from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700"
     }
-    shadow-lg w-full max-w-[120px] md:max-w-[150px] p-3`}
+    shadow-lg w-full max-w-[80px] sm:max-w-[120px] md:max-w-[150px] p-2 sm:p-3`}
     onClick={onClick}
   >
-    <div className="flex justify-center mb-2">
+    <div className="flex justify-center mb-1 sm:mb-2">
       <div className="relative">
         <img
           src={src}
-          className="w-10 h-10 md:w-14 md:h-14 transition-transform duration-300 
+          className="w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 transition-transform duration-300 
             group-hover:rotate-12"
           alt={type}
         />
         {isSelected && (
-          <div
-            className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full 
+          <div className="absolute -top-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-blue-400 rounded-full 
             animate-pulse"
           />
         )}
       </div>
     </div>
     <div className="text-center">
-      <p className="text-green-400 font-semibold text-sm md:text-lg mb-1">
+      <p className="text-green-400 font-semibold text-xs sm:text-sm md:text-lg mb-0.5 sm:mb-1">
         {price}$
       </p>
-      <p className="text-xs md:text-base text-gray-200 font-medium">
+      <p className="text-[11px] sm:text-xs md:text-base text-gray-200 font-medium">
         {label || type}
       </p>
     </div>
