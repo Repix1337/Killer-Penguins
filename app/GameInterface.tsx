@@ -80,150 +80,108 @@ const GameInterface: React.FC<SpawnProps> = ({
   return !renderMenu ? (
     <div className="flex flex-col justify-center min-h-[15vh] items-center text-white w-screen select-none p-1">
       {/* Top Game Controls Bar */}
-      <div
-        className="flex justify-center items-center gap-3 w-full p-2 text-base md:text-xl 
-                  bg-gradient-to-r from-slate-800 to-slate-700 min-h-[10vh] shadow-lg border-b-2 border-blue-500/50
-                   sm:gap-2 sm:text-sm sm:p-1"
-      >
-        {/* Add sandbox controls */}
-        {gameMode === "sandbox" && (
-          <div className="flex gap-2 items-center">
-            <div className="flex items-center gap-1">
-              <input
-                type="number"
-                name="round"
-                placeholder="Round"
-                value={sandboxInput.round}
-                onChange={handleSandboxInput}
-                className="w-24 px-2 py-1 rounded bg-slate-700 text-white text-sm"
-                min="1"
-              />
-              <input
-                type="number"
-                name="money"
-                placeholder="Money"
-                value={sandboxInput.money}
-                onChange={handleSandboxInput}
-                className="w-24 px-2 py-1 rounded bg-slate-700 text-white text-sm"
-                min="0"
-              />
-              <input
-                type="number"
-                name="hp"
-                placeholder="HP"
-                value={sandboxInput.hp}
-                onChange={handleSandboxInput}
-                className="w-24 px-2 py-1 rounded bg-slate-700 text-white text-sm"
-                min="1"
-              />
-            </div>
-          </div>
-        )}
-
-        <button
-          className={`px-4 py-2 rounded-lg shadow-md transition-all duration-200 
-      ${
-        round < 1
-          ? "bg-green-500 hover:bg-green-600 animate-pulse"
-          : "bg-slate-600"
-      }
-      sm:px-3 sm:py-1`}
-          onClick={onClick}
-          disabled={round > 0}
-        >
-          {round < 1 ? "Start Game" : "Started"}
-        </button>
-
-        <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-1 rounded-lg sm:px-2 sm:py-1">
-          <span className="text-gray-300">Round:</span>
-          <span className="font-bold text-blue-400">{round}</span>
-          <span className="text-gray-400">/ 50</span>
-        </div>
-
-        <div className="flex items-center gap-1 bg-slate-800/50 px-3 py-1 rounded-lg sm:px-2 sm:py-1">
-          <span className="text-red-500 text-2xl sm:text-lg">&hearts;</span>
-          <span
-            className={`font-bold ${
-              HealthPoints < 30 ? "text-red-500 animate-pulse" : "text-red-400"
-            }`}
-          >
-            {HealthPoints}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-1 bg-slate-800/50 px-3 py-1 rounded-lg sm:px-2 sm:py-1">
-          <span className="text-green-500">💰</span>
-          <span className="font-bold text-green-400">{Math.floor(money)}$</span>
-        </div>
-
-        <button
-          className={`px-4 py-2 rounded-lg shadow-md transition-all duration-200
-      ${
-        isSpeedUp === 2
-          ? "bg-blue-700"
-          : isSpeedUp === 1
-          ? "bg-blue-600"
-          : "bg-blue-500"
-      }
-      sm:px-3 sm:py-1`}
-          onClick={handleSpeedUp}
-        >
-          <div className="flex items-center gap-2 sm:gap-1">
-            <span>Speed</span>
-            <span className="font-bold">
-              {isSpeedUp === 2 ? "3x ⚡" : isSpeedUp === 1 ? "2x ▶" : "1x ▶"}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 w-full p-4 
+    bg-gradient-to-r from-slate-900 to-slate-800 min-h-[10vh] shadow-lg 
+    border-b-2 border-blue-500/50">
+    
+    {/* Left Section - Game Stats */}
+    <div className="flex flex-wrap items-center gap-3 md:gap-4">
+        <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-2 rounded-xl">
+            <span className="text-blue-400">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                        d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
             </span>
-          </div>
-        </button>
+            <div className="flex flex-col">
+                <span className="text-xs text-gray-400">Round</span>
+                <span className="font-bold text-blue-400">{round}<span className="text-gray-500">/50</span></span>
+            </div>
+        </div>
 
-        <button
-          className={`px-4 py-2 rounded-lg shadow-md transition-all duration-200
-      ${!canPause ? "opacity-50 cursor-not-allowed" : ""}
-      ${isPaused ? "bg-yellow-600" : "bg-yellow-500 hover:bg-yellow-600"}
-      sm:px-3 sm:py-1`}
-          onClick={handlePause}
-          disabled={!canPause}
-        >
-          {isPaused ? "▶ Resume" : "⏸ Pause"}
-        </button>
+        <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-2 rounded-xl">
+            <span className="text-red-400 text-xl">&hearts;</span>
+            <div className="flex flex-col">
+                <span className="text-xs text-gray-400">Health</span>
+                <span className={`font-bold ${HealthPoints < 30 ? "text-red-500 animate-pulse" : "text-red-400"}`}>
+                    {HealthPoints}
+                </span>
+            </div>
+        </div>
 
-        
-        <button
-          onClick={() => setShowSettings(!showSettings)}
-          className="px-4 py-2 rounded-lg shadow-md transition-all duration-200 bg-[#0EA5E9]/80 hover:bg-[#0284C7]/80 
-                    sm:px-3 sm:py-1"
+        <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-2 rounded-xl">
+            <span className="text-green-400 text-xl">💰</span>
+            <div className="flex flex-col">
+                <span className="text-xs text-gray-400">Money</span>
+                <span className="font-bold text-green-400">${Math.floor(money)}</span>
+            </div>
+        </div>
+    </div>
+
+    {/* Right Section - Settings & Exit */}
+    <div className="flex items-center gap-3">
+    <button
+            className={`px-4 py-2 rounded-lg shadow-md transition-all duration-200
+                ${round < 1 ? "bg-green-500 hover:bg-green-600 animate-pulse" : "bg-slate-600"}
+                flex items-center gap-2`}
+            onClick={onClick}
+            disabled={round > 0}
         >
-          <span className="flex items-center gap-2">
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              />
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            Settings
-          </span>
+            {round < 1 ? "Start Game" : "Started"}
         </button>
+
+        <div className="flex items-center gap-2">
+            <button
+                className={`p-2 rounded-lg shadow-md transition-all duration-200
+                    ${isSpeedUp === 2 ? "bg-blue-700" : isSpeedUp === 1 ? "bg-blue-600" : "bg-blue-500"}`}
+                onClick={handleSpeedUp}
+            >
+                {isSpeedUp === 2 ? "3x ⚡" : isSpeedUp === 1 ? "2x ▶" : "1x ▶"}
+            </button>
+
+            <button
+                className={`p-2 rounded-lg shadow-md transition-all duration-200
+                    ${!canPause ? "opacity-50 cursor-not-allowed" : ""}
+                    ${isPaused ? "bg-yellow-600" : "bg-yellow-500 hover:bg-yellow-600"}`}
+                onClick={handlePause}
+                disabled={!canPause}
+            >
+                {isPaused ? "▶" : "⏸"}
+            </button>
+        </div>
         <button
-          className="px-4 py-2 rounded-lg shadow-md transition-all duration-200 bg-red-500 hover:bg-red-600
-                 sm:px-3 sm:py-1"
-          onClick={() => setRenderMenu(true)}
+            onClick={() => setShowSettings(!showSettings)}
+            className="p-2 rounded-lg shadow-md transition-all duration-200 
+                bg-[#0EA5E9]/80 hover:bg-[#0284C7]/80"
+            title="Settings"
         >
-          Exit Game
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
         </button>
-      </div>
+
+        <button
+            className="p-2 rounded-lg shadow-md transition-all duration-200 
+                bg-red-500 hover:bg-red-600"
+            onClick={() => setRenderMenu(true)}
+            title="Exit Game"
+        >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                    d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+</div>
 
       {/* Game Board */}
       <Spawn
@@ -246,12 +204,12 @@ const GameInterface: React.FC<SpawnProps> = ({
 {showSettings && <Settings onClose={() => setShowSettings(false)} />}
       {/* Tower Selection Panel */}
       <div
-        className="bg-gradient-to-b from-slate-800 to-slate-900 flex flex-col items-center p-2 
-shadow-lg border-t-2 border-blue-500/50 w-full min-h-[17vh]"
+        className="bg-gradient-to-b from-slate-800 to-slate-900 flex flex-col items-center p-4 
+    shadow-lg border-t-2 border-blue-500/50 w-full min-h-[20vh]"
       >
         <div
-          className="grid grid-cols-7  gap-3 w-full max-w-4xl 
-  px-2 justify-items-center"
+          className="grid grid-cols-4 md:grid-cols-7 gap-3 md:gap-6 w-full max-w-6xl 
+      px-2 justify-items-center"
         >
           <TowerButton
             type="basic"
@@ -345,36 +303,36 @@ const TowerButton = ({
   label,
 }: TowerButtonProps) => (
   <div
-    className={`group hover:scale-105 transition-all cursor-pointer rounded-lg  select-none
+    className={`group hover:scale-105 transition-all cursor-pointer rounded-lg select-none
     ${
       isSelected
         ? "bg-gradient-to-br from-blue-600 to-blue-800 ring-2 ring-blue-400"
         : "bg-gradient-to-br from-slate-700 to-slate-800 hover:from-slate-600 hover:to-slate-700"
     }
-    shadow-lg w-full max-w-[100px]`}
+    shadow-lg w-full max-w-[120px] md:max-w-[150px] p-3`}
     onClick={onClick}
   >
-    <div className="flex justify-center mb-1">
+    <div className="flex justify-center mb-2">
       <div className="relative">
         <img
           src={src}
-          className="w-8 h-8 md:w-10 md:h-10 transition-transform duration-300 
-          group-hover:rotate-12"
+          className="w-10 h-10 md:w-14 md:h-14 transition-transform duration-300 
+            group-hover:rotate-12"
           alt={type}
         />
         {isSelected && (
           <div
             className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full 
-          animate-pulse"
+            animate-pulse"
           />
         )}
       </div>
     </div>
     <div className="text-center">
-      <p className="text-green-400 font-semibold text-sm md:text-base mb-0.5">
+      <p className="text-green-400 font-semibold text-sm md:text-lg mb-1">
         {price}$
       </p>
-      <p className="text-xs md:text-sm text-gray-200 font-medium">
+      <p className="text-xs md:text-base text-gray-200 font-medium">
         {label || type}
       </p>
     </div>
