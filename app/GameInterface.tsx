@@ -80,7 +80,8 @@ const GameInterface: React.FC<SpawnProps> = ({
   return !renderMenu ? (
     <div className="flex flex-col justify-center min-h-[15vh] items-center text-white w-screen select-none p-1">
       {/* Top Game Controls Bar */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 w-full p-4 
+      {/* Top Game Controls Bar */}
+<div className="flex flex-col md:flex-row justify-between items-center gap-4 w-full p-4 
     bg-gradient-to-r from-slate-900 to-slate-800 min-h-[10vh] shadow-lg 
     border-b-2 border-blue-500/50">
     
@@ -95,7 +96,9 @@ const GameInterface: React.FC<SpawnProps> = ({
             </span>
             <div className="flex flex-col">
                 <span className="text-xs text-gray-400">Round</span>
-                <span className="font-bold text-blue-400">{round}<span className="text-gray-500">/50</span></span>
+                <span className="font-bold text-blue-400">
+                    {round}<span className="text-gray-500">/50</span>
+                </span>
             </div>
         </div>
 
@@ -118,9 +121,51 @@ const GameInterface: React.FC<SpawnProps> = ({
         </div>
     </div>
 
-    {/* Right Section - Settings & Exit */}
+    {/* Middle Section - Sandbox Inputs (only shown in sandbox mode and before round 1) */}
+    {gameMode === "sandbox" && round < 1 && (
+        <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-1">
+                <label className="text-xs text-gray-400">Starting Round</label>
+                <input
+                    type="number"
+                    name="round"
+                    value={sandboxInput.round}
+                    onChange={handleSandboxInput}
+                    className="w-24 px-2 py-1 bg-slate-700 rounded-lg text-white text-sm"
+                    min="1"
+                    placeholder="Round"
+                />
+            </div>
+            <div className="flex flex-col gap-1">
+                <label className="text-xs text-gray-400">Starting Money</label>
+                <input
+                    type="number"
+                    name="money"
+                    value={sandboxInput.money}
+                    onChange={handleSandboxInput}
+                    className="w-24 px-2 py-1 bg-slate-700 rounded-lg text-white text-sm"
+                    min="0"
+                    placeholder="Money"
+                />
+            </div>
+            <div className="flex flex-col gap-1">
+                <label className="text-xs text-gray-400">Starting HP</label>
+                <input
+                    type="number"
+                    name="hp"
+                    value={sandboxInput.hp}
+                    onChange={handleSandboxInput}
+                    className="w-24 px-2 py-1 bg-slate-700 rounded-lg text-white text-sm"
+                    min="1"
+                    placeholder="Health"
+                />
+            </div>
+        </div>
+    )}
+
+    {/* Right Section - Game Controls & Settings */}
     <div className="flex items-center gap-3">
-    <button
+        <button
             className={`px-4 py-2 rounded-lg shadow-md transition-all duration-200
                 ${round < 1 ? "bg-green-500 hover:bg-green-600 animate-pulse" : "bg-slate-600"}
                 flex items-center gap-2`}
@@ -155,31 +200,34 @@ const GameInterface: React.FC<SpawnProps> = ({
                 {isPaused ? "▶" : "⏸"}
             </button>
         </div>
-        <button
-            onClick={() => setShowSettings(!showSettings)}
-            className="p-2 rounded-lg shadow-md transition-all duration-200 
-                bg-[#0EA5E9]/80 hover:bg-[#0284C7]/80"
-            title="Settings"
-        >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-        </button>
 
-        <button
-            className="p-2 rounded-lg shadow-md transition-all duration-200 
-                bg-red-500 hover:bg-red-600"
-            onClick={() => setRenderMenu(true)}
-            title="Exit Game"
-        >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                    d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
+        <div className="flex items-center gap-2 border-l border-gray-600 pl-2">
+            <button
+                onClick={() => setShowSettings(!showSettings)}
+                className="p-2 rounded-lg shadow-md transition-all duration-200 
+                    bg-[#0EA5E9]/80 hover:bg-[#0284C7]/80"
+                title="Settings"
+            >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </button>
+
+            <button
+                className="p-2 rounded-lg shadow-md transition-all duration-200 
+                    bg-red-500 hover:bg-red-600"
+                onClick={() => setRenderMenu(true)}
+                title="Exit Game"
+            >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                        d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
     </div>
 </div>
 
