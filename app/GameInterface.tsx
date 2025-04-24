@@ -4,6 +4,7 @@ import Spawn from "./GameLogic";
 import Menu from "./Menu";
 import Settings from "./Settings";
 import { User } from "firebase/auth";
+import Image from "next/image";
 interface SpawnProps {
   gameMode: string;
   setShowSettings: React.Dispatch<React.SetStateAction<boolean>>;
@@ -80,52 +81,73 @@ const GameInterface: React.FC<SpawnProps> = ({
   return !renderMenu ? (
     <div className="flex flex-col justify-center min-h-[15vh] items-center text-white w-screen select-none p-1">
       {/* Top Game Controls Bar */}
-<div className="flex flex-col md:flex-row justify-between items-center gap-4 w-full p-4 
+      <div
+        className="flex flex-col md:flex-row justify-between items-center gap-4 w-full p-4 
     bg-gradient-to-r from-slate-900 to-slate-800 min-h-[10vh] shadow-lg 
-    border-b-2 border-blue-500/50">
-    
-    {/* Left Section - Game Stats */}
-    <div className="flex flex-wrap items-center gap-3 md:gap-4">
-        <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-2 rounded-xl">
+    border-b-2 border-blue-500/50"
+      >
+        {/* Left Section - Game Stats */}
+        <div className="flex flex-wrap items-center gap-3 md:gap-4">
+          <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-2 rounded-xl">
             <span className="text-blue-400">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                        d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
+              </svg>
             </span>
             <div className="flex flex-col">
-            <span className="text-xs text-gray-400">Round</span>
-            <span className="font-bold text-blue-400">
-                    {round}<span className="text-gray-500">/50</span>
-                </span>
+              <span className="text-xs text-gray-400">Round</span>
+              <span className="font-bold text-blue-400">
+                {round}
+                <span className="text-gray-500">/50</span>
+              </span>
             </div>
-        </div>
+          </div>
 
-        <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-2 rounded-xl">
+          <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-2 rounded-xl">
             <span className="text-red-400 text-xl">&hearts;</span>
             <div className="flex flex-col">
-                <span className="text-xs text-gray-400">Health</span>
-                <span className={`font-bold ${HealthPoints < 30 ? "text-red-500 animate-pulse" : "text-red-400"}`}>
-                    {HealthPoints}
-                </span>
+              <span className="text-xs text-gray-400">Health</span>
+              <span
+                className={`font-bold ${
+                  HealthPoints < 30
+                    ? "text-red-500 animate-pulse"
+                    : "text-red-400"
+                }`}
+              >
+                {HealthPoints}
+              </span>
             </div>
-        </div>
+          </div>
 
-        <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-2 rounded-xl">
+          <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-2 rounded-xl">
             <span className="text-green-400 text-xl">💰</span>
             <div className="flex flex-col">
-                <span className="text-xs text-gray-400">Money</span>
-                <span className="font-bold text-green-400">${Math.floor(money)}</span>
+              <span className="text-xs text-gray-400">Money</span>
+              <span className="font-bold text-green-400">
+                ${Math.floor(money)}
+              </span>
             </div>
+          </div>
         </div>
-    </div>
 
-    {/* Middle Section - Sandbox Inputs (only shown in sandbox mode and before round 1) */}
-    {gameMode === "sandbox" && round < 1 && (
-    <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:gap-3 w-full sm:w-auto">
-        <div className="flex flex-col gap-1">
-            <label className="text-[11px] sm:text-xs text-gray-400">Start Round</label>
-            <input
+        {/* Middle Section - Sandbox Inputs (only shown in sandbox mode and before round 1) */}
+        {gameMode === "sandbox" && round < 1 && (
+          <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:gap-3 w-full sm:w-auto">
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] sm:text-xs text-gray-400">
+                Start Round
+              </label>
+              <input
                 type="number"
                 name="round"
                 value={sandboxInput.round}
@@ -133,104 +155,157 @@ const GameInterface: React.FC<SpawnProps> = ({
                 className="w-full sm:w-24 px-2 py-1 bg-slate-700 rounded-lg text-white text-sm"
                 min="1"
                 placeholder="Round"
-            />
-        </div>
-            <div className="flex flex-col gap-1">
-                <label className="text-[11px] sm:text-xs text-gray-400">Starting Money</label>
-                <input
-                    type="number"
-                    name="money"
-                    value={sandboxInput.money}
-                    onChange={handleSandboxInput}
-                    className="w-full sm:w-24 px-2 py-1 bg-slate-700 rounded-lg text-white text-sm"
-                    min="0"
-                    placeholder="Money"
-                />
+              />
             </div>
             <div className="flex flex-col gap-1">
-                <label className="text-[11px] sm:text-xs text-gray-400">Starting HP</label>
-                <input
-                    type="number"
-                    name="hp"
-                    value={sandboxInput.hp}
-                    onChange={handleSandboxInput}
-                    className="w-full sm:w-24 px-2 py-1 bg-slate-700 rounded-lg text-white text-sm"
-                    min="1"
-                    placeholder="Health"
-                />
+              <label className="text-[11px] sm:text-xs text-gray-400">
+                Starting Money
+              </label>
+              <input
+                type="number"
+                name="money"
+                value={sandboxInput.money}
+                onChange={handleSandboxInput}
+                className="w-full sm:w-24 px-2 py-1 bg-slate-700 rounded-lg text-white text-sm"
+                min="0"
+                placeholder="Money"
+              />
             </div>
-        </div>
-    )}
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] sm:text-xs text-gray-400">
+                Starting HP
+              </label>
+              <input
+                type="number"
+                name="hp"
+                value={sandboxInput.hp}
+                onChange={handleSandboxInput}
+                className="w-full sm:w-24 px-2 py-1 bg-slate-700 rounded-lg text-white text-sm"
+                min="1"
+                placeholder="Health"
+              />
+            </div>
+          </div>
+        )}
 
-    {/* Right Section - Game Controls & Settings */}
-    <div className="flex items-center justify-center gap-1 sm:gap-2 w-full sm:w-auto">
-    <button
-        className={`px-1 sm:px-4 py-1 sm:py-2 rounded-lg shadow-md transition-all duration-200
-            ${round < 1 ? "bg-green-500 hover:bg-green-600 animate-pulse" : "bg-slate-600"}
+        {/* Right Section - Game Controls & Settings */}
+        <div className="flex items-center justify-center gap-1 sm:gap-2 w-full sm:w-auto">
+          <button
+            className={`px-1 sm:px-4 py-1 sm:py-2 rounded-lg shadow-md transition-all duration-200
+            ${
+              round < 1
+                ? "bg-green-500 hover:bg-green-600 animate-pulse"
+                : "bg-slate-600"
+            }
             flex items-center gap-1 sm:gap-2 text-xs sm:text-base`}
-        onClick={onClick}
-        disabled={round > 0}
-    >
-        <svg className="w-3 h-3 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span className="whitespace-nowrap">
-            {round < 1 ? "Start" : "Started"}
-        </span>
-    </button>
+            onClick={onClick}
+            disabled={round > 0}
+          >
+            <svg
+              className="w-3 h-3 sm:w-5 sm:h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span className="whitespace-nowrap">
+              {round < 1 ? "Start" : "Started"}
+            </span>
+          </button>
 
-    <div className="flex items-center gap-1 sm:gap-2">
-        <button
-            className={`p-1 sm:p-2 rounded-lg shadow-md transition-all duration-200 text-xs sm:text-base
-                ${isSpeedUp === 2 ? "bg-blue-700" : isSpeedUp === 1 ? "bg-blue-600" : "bg-blue-500"}`}
-            onClick={handleSpeedUp}
-        >
-            {isSpeedUp === 2 ? "3x" : isSpeedUp === 1 ? "2x" : "1x"}
-        </button>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <button
+              className={`p-1 sm:p-2 rounded-lg shadow-md transition-all duration-200 text-xs sm:text-base
+                ${
+                  isSpeedUp === 2
+                    ? "bg-blue-700"
+                    : isSpeedUp === 1
+                    ? "bg-blue-600"
+                    : "bg-blue-500"
+                }`}
+              onClick={handleSpeedUp}
+            >
+              {isSpeedUp === 2 ? "3x" : isSpeedUp === 1 ? "2x" : "1x"}
+            </button>
 
-        <button
-            className={`p-1 sm:p-2 rounded-lg shadow-md transition-all duration-200 text-xs sm:text-base
+            <button
+              className={`p-1 sm:p-2 rounded-lg shadow-md transition-all duration-200 text-xs sm:text-base
                 ${!canPause ? "opacity-50 cursor-not-allowed" : ""}
-                ${isPaused ? "bg-yellow-600" : "bg-yellow-500 hover:bg-yellow-600"}`}
-            onClick={handlePause}
-            disabled={!canPause}
-        >
-            {isPaused ? "▶" : "⏸"}
-        </button>
-    </div>
+                ${
+                  isPaused
+                    ? "bg-yellow-600"
+                    : "bg-yellow-500 hover:bg-yellow-600"
+                }`}
+              onClick={handlePause}
+              disabled={!canPause}
+            >
+              {isPaused ? "▶" : "⏸"}
+            </button>
+          </div>
 
-    <div className="flex items-center gap-1 sm:gap-2 border-l border-gray-600 pl-1 sm:pl-2">
-        <button
-            onClick={() => setShowSettings(!showSettings)}
-            className="p-1 sm:p-2 rounded-lg shadow-md transition-all duration-200 
+          <div className="flex items-center gap-1 sm:gap-2 border-l border-gray-600 pl-1 sm:pl-2">
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className="p-1 sm:p-2 rounded-lg shadow-md transition-all duration-200 
                 bg-[#0EA5E9]/80 hover:bg-[#0284C7]/80"
-            title="Settings"
-        >
-            <svg className="w-4 h-4 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-        </button>
+              title="Settings"
+            >
+              <svg
+                className="w-4 h-4 sm:w-6 sm:h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            </button>
 
-        <button
-            className="p-1 sm:p-2 rounded-lg shadow-md transition-all duration-200 
+            <button
+              className="p-1 sm:p-2 rounded-lg shadow-md transition-all duration-200 
                 bg-red-500 hover:bg-red-600"
-            onClick={() => setRenderMenu(true)}
-            title="Exit Game"
-        >
-            <svg className="w-4 h-4 sm:w-6 sm:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                    d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
-    </div>
-</div>
-</div>
+              onClick={() => setRenderMenu(true)}
+              title="Exit Game"
+            >
+              <svg
+                className="w-4 h-4 sm:w-6 sm:h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Game Board */}
       <Spawn
@@ -250,12 +325,16 @@ const GameInterface: React.FC<SpawnProps> = ({
         gameMode={gameMode}
         user={user}
       />
-{showSettings && <Settings onClose={() => setShowSettings(false)} />}
+      {showSettings && <Settings onClose={() => setShowSettings(false)} />}
       {/* Tower Selection Panel */}
-      <div className="bg-gradient-to-b from-slate-800 to-slate-900 flex flex-col items-center p-2 sm:p-4 
-    shadow-lg border-t-2 border-blue-500/50 w-full min-h-[17vh] sm:min-h-[20vh]">
-    <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 sm:gap-3 md:gap-6 w-full max-w-6xl 
-        px-1 sm:px-2 justify-items-center">
+      <div
+        className="bg-gradient-to-b from-slate-800 to-slate-900 flex flex-col items-center p-2 sm:p-4 
+    shadow-lg border-t-2 border-blue-500/50 w-full min-h-[17vh] sm:min-h-[20vh]"
+      >
+        <div
+          className="grid grid-cols-4 sm:grid-cols-7 gap-2 sm:gap-3 md:gap-6 w-full max-w-6xl 
+        px-1 sm:px-2 justify-items-center"
+        >
           <TowerButton
             type="basic"
             src="/basic.png"
@@ -359,14 +438,18 @@ const TowerButton = ({
   >
     <div className="flex justify-center mb-1 sm:mb-2">
       <div className="relative">
-        <img
+        <Image
           src={src}
           className="w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 transition-transform duration-300 
             group-hover:rotate-12"
           alt={type}
+          width={100} // Increased from 35
+          height={100} // Increased from 35
+          quality={100}
         />
         {isSelected && (
-          <div className="absolute -top-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-blue-400 rounded-full 
+          <div
+            className="absolute -top-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-blue-400 rounded-full 
             animate-pulse"
           />
         )}

@@ -4,9 +4,10 @@ import TutorialWindow from "./TutorialWindow";
 import Leaderboard from "./Leaderboard";
 import Settings from "./Settings";
 import ModeSelection from "./ModeSelection";
-import { useState, useEffect } from 'react';
-import { getAuth, onAuthStateChanged, signOut, User } from 'firebase/auth';
-import Auth from './auth';
+import { useState, useEffect } from "react";
+import { getAuth, onAuthStateChanged, signOut, User } from "firebase/auth";
+import Auth from "./auth";
+import Image from "next/image";
 
 const Menu: React.FC = () => {
   const [gameMode, setGameMode] = React.useState("");
@@ -19,9 +20,9 @@ const Menu: React.FC = () => {
 
   useEffect(() => {
     const auth = getAuth();
-    
+
     // Check if there's a user session in localStorage on component mount
-    const savedUser = localStorage.getItem('authUser');
+    const savedUser = localStorage.getItem("authUser");
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
@@ -30,14 +31,17 @@ const Menu: React.FC = () => {
       setUser(user);
       // Save user data to localStorage when auth state changes
       if (user) {
-        localStorage.setItem('authUser', JSON.stringify({
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          // Add any other user properties you need
-        }));
+        localStorage.setItem(
+          "authUser",
+          JSON.stringify({
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            // Add any other user properties you need
+          })
+        );
       } else {
-        localStorage.removeItem('authUser');
+        localStorage.removeItem("authUser");
       }
     });
 
@@ -48,9 +52,9 @@ const Menu: React.FC = () => {
     try {
       const auth = getAuth();
       await signOut(auth);
-      localStorage.removeItem('authUser'); // Clear stored user data on logout
+      localStorage.removeItem("authUser"); // Clear stored user data on logout
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error("Error signing out:", error);
     }
   };
 
@@ -79,20 +83,27 @@ const Menu: React.FC = () => {
         {[
           { src: "/basic.png", alt: "Basic Penguin", delay: "0s" },
           { src: "/sniper.png", alt: "Sniper Penguin", delay: "0.2s" },
-          { src: "/rapidShooter.png", alt: "Rapid Shooter Penguin", delay: "0.4s" },
+          {
+            src: "/rapidShooter.png",
+            alt: "Rapid Shooter Penguin",
+            delay: "0.4s",
+          },
           { src: "/slower.png", alt: "Slower Penguin", delay: "0.6s" },
           { src: "/gasSpitter.png", alt: "Gas Spitter Penguin", delay: "0.8s" },
           { src: "/mortar.png", alt: "Mortar Penguin", delay: "1s" },
-          { src: "/cannon.png", alt: "Cannon Penguin", delay: "1.2s" }
+          { src: "/cannon.png", alt: "Cannon Penguin", delay: "1.2s" },
         ].map((penguin, index) => (
           <div
             key={index}
             className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-32 lg:h-32 animate-bounce-slow"
             style={{ animationDelay: penguin.delay }}
           >
-            <img
+            <Image
               src={penguin.src}
               alt={penguin.alt}
+              width={100} // Increased from 35
+              height={100} // Increased from 35
+              quality={100}
               className="w-full h-full object-contain"
             />
           </div>
@@ -100,19 +111,25 @@ const Menu: React.FC = () => {
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 backdrop-blur-sm min-h-screen w-full p-4 sm:p-6 md:p-10 
-        flex flex-col items-center justify-start gap-4 sm:gap-6 md:gap-8 animate-fadeIn">
+      <div
+        className="relative z-10 backdrop-blur-sm min-h-screen w-full p-4 sm:p-6 md:p-10 
+        flex flex-col items-center justify-start gap-4 sm:gap-6 md:gap-8 animate-fadeIn"
+      >
         {/* Title */}
-        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-center text-transparent 
+        <h1
+          className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-center text-transparent 
           bg-clip-text bg-gradient-to-r from-[#67E8F9] to-[#3B82F6] drop-shadow-lg 
           font-extrabold hover:from-[#22D3EE] hover:to-[#2563EB] transition-all duration-300
-          animate-slideDown tracking-wider mt-4 sm:mt-8 md:mt-12">
+          animate-slideDown tracking-wider mt-4 sm:mt-8 md:mt-12"
+        >
           KILLER PENGUINS
         </h1>
 
         {/* Buttons container */}
-        <div className="w-full max-w-md mx-auto flex flex-col gap-3 sm:gap-4 md:gap-5 px-4 sm:px-6 
-          mt-4 sm:mt-8 animate-slideUp">
+        <div
+          className="w-full max-w-md mx-auto flex flex-col gap-3 sm:gap-4 md:gap-5 px-4 sm:px-6 
+          mt-4 sm:mt-8 animate-slideUp"
+        >
           {/* Menu buttons */}
           <MenuButton
             onClick={() => setShowModeSelection(true)}
@@ -140,7 +157,7 @@ const Menu: React.FC = () => {
             }
             label="Play Game"
           />
-          
+
           <MenuButton
             onClick={() => setShowTutorial(true)}
             className="bg-[#2563EB]/80 hover:bg-[#1D4ED8]/80"
@@ -211,26 +228,45 @@ const Menu: React.FC = () => {
           />
 
           <MenuButton
-            onClick={() => user ? handleLogout() : setShowAuth(true)}
+            onClick={() => (user ? handleLogout() : setShowAuth(true))}
             className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700"
             icon={
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                d={user ? "M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" 
-                : "M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"} />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d={
+                    user
+                      ? "M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                      : "M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                  }
+                />
               </svg>
             }
-            label={user ? 'Logout' : 'Login'}
+            label={user ? "Logout" : "Login"}
           />
         </div>
       </div>
 
       {/* Modals */}
       {showSettings && <Settings onClose={() => setShowSettings(false)} />}
-      {showTutorial && <TutorialWindow onClose={() => setShowTutorial(false)} />}
-      {showLeaderboard && <Leaderboard onClose={() => setShowLeaderboard(false)} />}
+      {showTutorial && (
+        <TutorialWindow onClose={() => setShowTutorial(false)} />
+      )}
+      {showLeaderboard && (
+        <Leaderboard onClose={() => setShowLeaderboard(false)} />
+      )}
       {showModeSelection && (
-        <ModeSelection onClose={() => setShowModeSelection(false)} setGameMode={setGameMode} />
+        <ModeSelection
+          onClose={() => setShowModeSelection(false)}
+          setGameMode={setGameMode}
+        />
       )}
       {showAuth && <Auth onClose={() => setShowAuth(false)} />}
     </div>

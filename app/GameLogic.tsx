@@ -10,7 +10,7 @@ import { Tower } from "./TowerInterface";
 import { Enemy } from "./EnemyInterface";
 import { LingeringEffect } from "./EffectInterfaces";
 import PopUp from "./PopUp";
-import Auth from './auth';
+import Auth from "./auth";
 import { User } from "firebase/auth";
 // Define the props for the Spawn component
 interface SpawnProps {
@@ -76,13 +76,15 @@ const Spawn: React.FC<SpawnProps> = ({
   const [selectedTowerID, setSelectedTowerID] = useState("");
   const [showEnemyAlert, setShowEnemyAlert] = useState(false);
   const [enemyAlertDescription, setEnemyAlertDescription] = useState("");
-  const [explosionEffects, setExplosionEffects] = useState<{
-    id: string;
-    positionX: number;
-    positionY: number;
-    timestamp: number;
-    sourceId: string; 
-  }[]>([]);
+  const [explosionEffects, setExplosionEffects] = useState<
+    {
+      id: string;
+      positionX: number;
+      positionY: number;
+      timestamp: number;
+      sourceId: string;
+    }[]
+  >([]);
 
   // Add this new state near other state declarations
   const [isPageVisible, setIsPageVisible] = useState(true);
@@ -90,7 +92,9 @@ const Spawn: React.FC<SpawnProps> = ({
   const [showWinScreen, setShowWinScreen] = useState(false);
   const [hasWon, setHasWon] = useState(false);
 
-  const [lingeringEffects, setLingeringEffects] = useState<LingeringEffect[]>([]);
+  const [lingeringEffects, setLingeringEffects] = useState<LingeringEffect[]>(
+    []
+  );
   const [showAuth, setShowAuth] = useState(false);
   const {
     showRangeIndicators,
@@ -117,251 +121,254 @@ const Spawn: React.FC<SpawnProps> = ({
   const [processedEnemies] = useState(() => new Set<string>());
 
   // First, extract enemy types as constants
-  const ENEMY_TYPES = useMemo(() => ({
-    BASIC: {
-      src: "basicEnemy.png",
-      hp: 100,
-      damage: 5,
-      type: "basic",
-      speed: 0.25, // from 0.150 * 1.5
-      baseSpeed: 0.25, // from 0.150 * 1.5
-      regen: 0,
-      canRegen: false,
-      isArmored: false,
-    },
-    STEALTH: {
-      src: "stealth.png",
-      hp: 50,
-      damage: 10,
-      type: "stealth",
-      speed: 0.25, // from 0.150 * 1.5
-      baseSpeed: 0.25, // from 0.150 * 1.5
-      regen: 0,
-      canRegen: false,
-      isArmored: false,
-    },
-    TANK: {
-      src: "tank.png",
-      hp: 350,
-      damage: 5,
-      type: "basic",
-      speed: 0.2, // from 0.125 * 1.5
-      baseSpeed: 0.2, // from 0.125 * 1.5
-      regen: 0,
-      canRegen: false,
-      isArmored: false,
-    },
-    SPEEDY: {
-      src: "speedy.png",
-      hp: 40,
-      damage: 35,
-      type: "speedy",
-      speed: 1.6, // from 1.0 * 1.5
-      baseSpeed: 1.6, // from 1.0 * 1.5
-      regen: 0,
-      canRegen: false,
-      isArmored: false,
-    },
-    STEALTHYTANK: {
-      src: "stealthyTank.png",
-      hp: 250,
-      damage: 20,
-      type: "stealth",
-      speed: 0.2, // from 0.125 * 1.5
-      baseSpeed: 0.2, // from 0.125 * 1.5
-      regen: 0,
-      canRegen: false,
-      isArmored: false,
-    },
-    STEALTHYSPEEDY: {
-      src: "stealthySpeedy.png",
-      hp: 50,
-      damage: 50,
-      type: "stealth",
-      speed: 1.6, // from 1.0 * 1.5
-      baseSpeed: 1.6, // from 1.0 * 1.5
-      regen: 0,
-      canRegen: false,
-      isArmored: false,
-    },
-    REGENTANK: {
-      src: "regenTank.png",
-      hp: 400,
-      damage: 50,
-      type: "regentank",
-      speed: 0.2, // from 0.125 * 1.5
-      baseSpeed: 0.2, // from 0.125 * 1.5
-      regen: 75,
-      canRegen: true,
-      isArmored: false,
-    },
-    SPEEDYREGENTANK: {
-      src: "regenTank.png",
-      hp: 600,
-      damage: 50,
-      type: "speedyregentank",
-      speed: 0.375, // from 0.2 * 1.5
-      baseSpeed: 0.375, // from 0.2 * 1.5
-      regen: 125,
-      canRegen: true,
-      isArmored: false,
-    },
-    BOSS: {
-      src: "boss.png",
-      hp: 50000,
-      damage: 1000,
-      type: "boss",
-      speed: 0.16,
-      baseSpeed: 0.16,
-      regen: 1000,
-      canRegen: true,
-      isArmored: false,
-      stunReduction: 0.8,
-      slowReduction: 0.8,
-    },
-    ULTRATANKS: {
-      src: "ultraTank.png",
-      hp: 1750,
-      damage: 1000,
-      type: "ultratank",
-      speed: 0.17,
-      baseSpeed: 0.17,
-      regen: 0,
-      canRegen: false,
-      isArmored: false,
-    },
-    ARMOREDBASIC: {
-      src: "armoredbasicEnemy.png",
-      hp: 125,
-      damage: 30,
-      type: "armoredbasic",
-      speed: 0.225,
-      baseSpeed: 0.225,
-      regen: 0,
-      canRegen: false,
-      isArmored: true,
-    },
-    ARMOREDTANK: {
-      src: "armoredtank.png",
-      hp: 400,
-      damage: 400,
-      type: "armoredtank",
-      speed: 0.2,
-      baseSpeed: 0.2,
-      regen: 0,
-      canRegen: false,
-      isArmored: true,
-    },
-    ARMOREDULTRATANK: {
-      src: "armoredultraTank.png",
-      hp: 2000,
-      damage: 1000,
-      type: "armoredultratank",
-      speed: 0.225,
-      baseSpeed: 0.225,
-      regen: 0,
-      canRegen: false,
-      isArmored: true,
-    },
-    ARMOREDSPEEDYMEGATANK: {
-      src: "armoredspeedyMegaTank.png",
-      hp: 3500,
-      damage: 1000,
-      type: "armoredultratank",
-      speed: 0.6,
-      baseSpeed: 0.6,
-      regen: 0,
-      canRegen: false,
-      isArmored: true,
-    },
-    SPEEDYMEGATANK: {
-      src: "speedyMegaTank.png",
-      hp: 3000,
-      damage: 1000,
-      type: "armoredultratank",
-      speed: 0.6,
-      baseSpeed: 0.6,
-      regen: 0,
-      canRegen: false,
-      isArmored: true,
-    },
-    MEGABOSS: {
-      src: "megaBoss.png",
-      hp: 125000,
-      damage: 1000,
-      type: "boss",
-      speed: 0.225,
-      baseSpeed: 0.225,
-      regen: 5000,
-      canRegen: true,
-      isArmored: false,
-      stunReduction: 0.4,
-      slowReduction: 0.4,
-    },
-    ULTRABOSS: {
-      src: "boss.png",
-      hp: 500000,
-      damage: 1000,
-      type: "boss",
-      speed: 0.325,
-      baseSpeed: 0.325,
-      regen: 50000,
-      canRegen: true,
-      isArmored: false,
-      stunReduction: 0.2,
-      slowReduction: 0.2,
-    },
-    SPAWNER: {
-      src: "boss.png",
-      hp: 2000,
-      damage: 100,
-      type: "spawner",
-      speed: 0.2,
-      baseSpeed: 0.2,
-      regen: 0,
-      canRegen: false,
-      isArmored: false,
-      canSpawn: true,
-      spawnType: "SPEEDYMEGATANK",
-    },
-    GIGASPAWNER: {
-      src: "boss.png",
-      hp: 5000,
-      damage: 100,
-      type: "spawner",
-      speed: 0.2,
-      baseSpeed: 0.2,
-      regen: 0,
-      canRegen: false,
-      isArmored: false,
-      canSpawn: true,
-      spawnType: "SPEEDYGIGATANK",
-    },
-    MEGABOSSSPAWNER: {
-      src: "boss.png",
-      hp: 25000,
-      damage: 100,
-      type: "spawner",
-      speed: 0.2,
-      baseSpeed: 0.2,
-      regen: 0,
-      canRegen: false,
-      isArmored: false,
-      canSpawn: true,
-      spawnType: "MEGABOSS",
-    },
-    SPEEDYGIGATANK: {
-      src: "speedyGigaTank.png",
-      hp: 10000,
-      damage: 1000,
-      type: "speedygigatank",
-      speed: 0.5,
-      baseSpeed: 0.5,
-      regen: 0,
-      canRegen: false,
-      isArmored: true,
-    },
-  }), []);
+  const ENEMY_TYPES = useMemo(
+    () => ({
+      BASIC: {
+        src: "basicEnemy.png",
+        hp: 100,
+        damage: 5,
+        type: "basic",
+        speed: 0.25, // from 0.150 * 1.5
+        baseSpeed: 0.25, // from 0.150 * 1.5
+        regen: 0,
+        canRegen: false,
+        isArmored: false,
+      },
+      STEALTH: {
+        src: "stealth.png",
+        hp: 50,
+        damage: 10,
+        type: "stealth",
+        speed: 0.25, // from 0.150 * 1.5
+        baseSpeed: 0.25, // from 0.150 * 1.5
+        regen: 0,
+        canRegen: false,
+        isArmored: false,
+      },
+      TANK: {
+        src: "tank.png",
+        hp: 350,
+        damage: 5,
+        type: "basic",
+        speed: 0.2, // from 0.125 * 1.5
+        baseSpeed: 0.2, // from 0.125 * 1.5
+        regen: 0,
+        canRegen: false,
+        isArmored: false,
+      },
+      SPEEDY: {
+        src: "speedy.png",
+        hp: 40,
+        damage: 35,
+        type: "speedy",
+        speed: 1.6, // from 1.0 * 1.5
+        baseSpeed: 1.6, // from 1.0 * 1.5
+        regen: 0,
+        canRegen: false,
+        isArmored: false,
+      },
+      STEALTHYTANK: {
+        src: "stealthyTank.png",
+        hp: 250,
+        damage: 20,
+        type: "stealth",
+        speed: 0.2, // from 0.125 * 1.5
+        baseSpeed: 0.2, // from 0.125 * 1.5
+        regen: 0,
+        canRegen: false,
+        isArmored: false,
+      },
+      STEALTHYSPEEDY: {
+        src: "stealthySpeedy.png",
+        hp: 50,
+        damage: 50,
+        type: "stealth",
+        speed: 1.6, // from 1.0 * 1.5
+        baseSpeed: 1.6, // from 1.0 * 1.5
+        regen: 0,
+        canRegen: false,
+        isArmored: false,
+      },
+      REGENTANK: {
+        src: "regenTank.png",
+        hp: 400,
+        damage: 50,
+        type: "regentank",
+        speed: 0.2, // from 0.125 * 1.5
+        baseSpeed: 0.2, // from 0.125 * 1.5
+        regen: 75,
+        canRegen: true,
+        isArmored: false,
+      },
+      SPEEDYREGENTANK: {
+        src: "regenTank.png",
+        hp: 600,
+        damage: 50,
+        type: "speedyregentank",
+        speed: 0.375, // from 0.2 * 1.5
+        baseSpeed: 0.375, // from 0.2 * 1.5
+        regen: 125,
+        canRegen: true,
+        isArmored: false,
+      },
+      BOSS: {
+        src: "boss.png",
+        hp: 50000,
+        damage: 1000,
+        type: "boss",
+        speed: 0.16,
+        baseSpeed: 0.16,
+        regen: 1000,
+        canRegen: true,
+        isArmored: false,
+        stunReduction: 0.8,
+        slowReduction: 0.8,
+      },
+      ULTRATANKS: {
+        src: "ultraTank.png",
+        hp: 1750,
+        damage: 1000,
+        type: "ultratank",
+        speed: 0.17,
+        baseSpeed: 0.17,
+        regen: 0,
+        canRegen: false,
+        isArmored: false,
+      },
+      ARMOREDBASIC: {
+        src: "armoredbasicEnemy.png",
+        hp: 125,
+        damage: 30,
+        type: "armoredbasic",
+        speed: 0.225,
+        baseSpeed: 0.225,
+        regen: 0,
+        canRegen: false,
+        isArmored: true,
+      },
+      ARMOREDTANK: {
+        src: "armoredtank.png",
+        hp: 400,
+        damage: 400,
+        type: "armoredtank",
+        speed: 0.2,
+        baseSpeed: 0.2,
+        regen: 0,
+        canRegen: false,
+        isArmored: true,
+      },
+      ARMOREDULTRATANK: {
+        src: "armoredultraTank.png",
+        hp: 2000,
+        damage: 1000,
+        type: "armoredultratank",
+        speed: 0.225,
+        baseSpeed: 0.225,
+        regen: 0,
+        canRegen: false,
+        isArmored: true,
+      },
+      ARMOREDSPEEDYMEGATANK: {
+        src: "armoredspeedyMegaTank.png",
+        hp: 3500,
+        damage: 1000,
+        type: "armoredultratank",
+        speed: 0.6,
+        baseSpeed: 0.6,
+        regen: 0,
+        canRegen: false,
+        isArmored: true,
+      },
+      SPEEDYMEGATANK: {
+        src: "speedyMegaTank.png",
+        hp: 3000,
+        damage: 1000,
+        type: "armoredultratank",
+        speed: 0.6,
+        baseSpeed: 0.6,
+        regen: 0,
+        canRegen: false,
+        isArmored: true,
+      },
+      MEGABOSS: {
+        src: "megaBoss.png",
+        hp: 125000,
+        damage: 1000,
+        type: "boss",
+        speed: 0.225,
+        baseSpeed: 0.225,
+        regen: 5000,
+        canRegen: true,
+        isArmored: false,
+        stunReduction: 0.4,
+        slowReduction: 0.4,
+      },
+      ULTRABOSS: {
+        src: "boss.png",
+        hp: 500000,
+        damage: 1000,
+        type: "boss",
+        speed: 0.325,
+        baseSpeed: 0.325,
+        regen: 50000,
+        canRegen: true,
+        isArmored: false,
+        stunReduction: 0.2,
+        slowReduction: 0.2,
+      },
+      SPAWNER: {
+        src: "boss.png",
+        hp: 2000,
+        damage: 100,
+        type: "spawner",
+        speed: 0.2,
+        baseSpeed: 0.2,
+        regen: 0,
+        canRegen: false,
+        isArmored: false,
+        canSpawn: true,
+        spawnType: "SPEEDYMEGATANK",
+      },
+      GIGASPAWNER: {
+        src: "boss.png",
+        hp: 5000,
+        damage: 100,
+        type: "spawner",
+        speed: 0.2,
+        baseSpeed: 0.2,
+        regen: 0,
+        canRegen: false,
+        isArmored: false,
+        canSpawn: true,
+        spawnType: "SPEEDYGIGATANK",
+      },
+      MEGABOSSSPAWNER: {
+        src: "boss.png",
+        hp: 25000,
+        damage: 100,
+        type: "spawner",
+        speed: 0.2,
+        baseSpeed: 0.2,
+        regen: 0,
+        canRegen: false,
+        isArmored: false,
+        canSpawn: true,
+        spawnType: "MEGABOSS",
+      },
+      SPEEDYGIGATANK: {
+        src: "speedyGigaTank.png",
+        hp: 10000,
+        damage: 1000,
+        type: "speedygigatank",
+        speed: 0.5,
+        baseSpeed: 0.5,
+        regen: 0,
+        canRegen: false,
+        isArmored: true,
+      },
+    }),
+    []
+  );
 
   // Add this near ENEMY_TYPES constant
   const TOWER_TYPES = {
@@ -552,7 +559,18 @@ const Spawn: React.FC<SpawnProps> = ({
     setShowGameOver(false);
     setShowWinScreen(false);
     setIsPaused(false);
-  }, [setRound, setEnemyCount, setHealthPoints, setMoney, setEnemies, setTower, setShowUpgradeMenu, setShowGameOver, setShowWinScreen, setIsPaused]);
+  }, [
+    setRound,
+    setEnemyCount,
+    setHealthPoints,
+    setMoney,
+    setEnemies,
+    setTower,
+    setShowUpgradeMenu,
+    setShowGameOver,
+    setShowWinScreen,
+    setIsPaused,
+  ]);
 
   // Then create a helper function for creating new towers
   const createNewTower = (
@@ -576,36 +594,39 @@ const Spawn: React.FC<SpawnProps> = ({
   });
 
   // Then, create helper function for spawning enemies
-  const createNewEnemy = useCallback((
-    type: keyof typeof ENEMY_TYPES,
-    positionX?: number,
-    positionY?: number
-  ) => {
-    const enemyStats = ENEMY_TYPES[type];
-    return {
-      id: uuidv4(),
-      positionX: positionX ?? -6, // Use provided X or default to -6
-      positionY: positionY ?? 56, // Use provided Y or default to 56
-      isTargeted: false,
-      isSlowed: false,
-      isPoisoned: false,
-      isStunned: false,
-      slowReduction: 1,
-      stunReduction: 1,
-      maxHp: enemyStats.hp,
-      executed: false,
-      marked: false,
-      acceleratedHitCount: 1,
-      hasReducedHealth: false,
-      ...enemyStats,
-    };
-  }, [ENEMY_TYPES]);
+  const createNewEnemy = useCallback(
+    (
+      type: keyof typeof ENEMY_TYPES,
+      positionX?: number,
+      positionY?: number
+    ) => {
+      const enemyStats = ENEMY_TYPES[type];
+      return {
+        id: uuidv4(),
+        positionX: positionX ?? -6, // Use provided X or default to -6
+        positionY: positionY ?? 56, // Use provided Y or default to 56
+        isTargeted: false,
+        isSlowed: false,
+        isPoisoned: false,
+        isStunned: false,
+        slowReduction: 1,
+        stunReduction: 1,
+        maxHp: enemyStats.hp,
+        executed: false,
+        marked: false,
+        acceleratedHitCount: 1,
+        hasReducedHealth: false,
+        ...enemyStats,
+      };
+    },
+    [ENEMY_TYPES]
+  );
   useEffect(() => {
     if (hp <= 0) {
       setIsPaused(true);
       setShowGameOver(true);
     }
-  }, [hp,setIsPaused]);
+  }, [hp, setIsPaused]);
 
   const getEnemyLimit = (round: number) => {
     switch (true) {
@@ -966,12 +987,12 @@ const Spawn: React.FC<SpawnProps> = ({
     isPaused,
     hasWon,
     createNewEnemy,
-    setIsPaused
+    setIsPaused,
   ]);
 
   const lastRound = useRef(round); // Store the last valid round
 
- useEffect(() => {
+  useEffect(() => {
     if (isPaused) return;
 
     if (
@@ -1001,16 +1022,28 @@ const Spawn: React.FC<SpawnProps> = ({
         }, 4000 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
         return () => clearTimeout(roundTimeout);
       } else {
-          lastRound.current = round; // Update last valid round
-          setIsPaused(true);
-          setEnemies([]);
-          setEnemyCount(0);
-          setCanPause(true); // Keep pause enabled for manual round advancement
-        }
+        lastRound.current = round; // Update last valid round
+        setIsPaused(true);
+        setEnemies([]);
+        setEnemyCount(0);
+        setCanPause(true); // Keep pause enabled for manual round advancement
+      }
     } else {
       setCanPause(false); // Disable pausing during active rounds
     }
-}, [enemies.length, enemyCount, round, isSpeedUp, isPaused, autoStartRounds, gameMode, resetGame, setCanPause, setIsPaused, setRound])
+  }, [
+    enemies.length,
+    enemyCount,
+    round,
+    isSpeedUp,
+    isPaused,
+    autoStartRounds,
+    gameMode,
+    resetGame,
+    setCanPause,
+    setIsPaused,
+    setRound,
+  ]);
   const grantMoneyForKill = useCallback(
     (enemy: Enemy) => {
       if (!processedEnemies.has(enemy.id)) {
@@ -1021,7 +1054,7 @@ const Spawn: React.FC<SpawnProps> = ({
 
         // Apply round-based reduction more explicitly
         let multiplier;
-        if (round >= 33 ) {
+        if (round >= 33) {
           multiplier = 0.15; // 7% of original reward
         } else if (round > 22 && round < 33) {
           multiplier = 0.35; // 30% of original reward
@@ -1039,7 +1072,7 @@ const Spawn: React.FC<SpawnProps> = ({
         setMoney((prev) => prev + reward);
       }
     },
-    [processedEnemies, round,setMoney]
+    [processedEnemies, round, setMoney]
   );
   // Modify the round change effect to handle round starts
   useEffect(() => {
@@ -1047,12 +1080,14 @@ const Spawn: React.FC<SpawnProps> = ({
       if (!autoStartRounds) {
         // When autorounds is off, allow manual resume
         setCanPause(true);
+        processedEnemies.clear();
       } else {
         // When autorounds is on, disable pause at round start
         setCanPause(false);
+        processedEnemies.clear();
       }
     }
-  }, [round, autoStartRounds,setCanPause]);
+  }, [processedEnemies, round, autoStartRounds, setCanPause]);
 
   // Add a new effect to handle manual round advancement
   useEffect(() => {
@@ -1063,29 +1098,44 @@ const Spawn: React.FC<SpawnProps> = ({
         setEnemyCount(0);
       }
     }
-  }, [isPaused,autoStartRounds, enemies.length, enemyCount, round,setRound,setEnemies,setEnemyCount,]);
-  const sellTower = useCallback((towerPrice: number) => {
-    if (confirmTowerSell) {
-      const confirmed = window.confirm(
-        "Are you sure you want to sell this tower?"
+  }, [
+    isPaused,
+    autoStartRounds,
+    enemies.length,
+    enemyCount,
+    round,
+    setRound,
+    setEnemies,
+    setEnemyCount,
+  ]);
+  const sellTower = useCallback(
+    (towerPrice: number) => {
+      if (confirmTowerSell) {
+        const confirmed = window.confirm(
+          "Are you sure you want to sell this tower?"
+        );
+        if (!confirmed) return;
+      }
+
+      setMoney((prevMoney) => prevMoney + towerPrice / 1.5);
+      setTower((prevTower) =>
+        prevTower.filter((t) => t.id !== selectedTowerID)
       );
-      if (!confirmed) return;
-    }
 
-    setMoney((prevMoney) => prevMoney + towerPrice / 1.5);
-    setTower((prevTower) => prevTower.filter((t) => t.id !== selectedTowerID));
+      const towerElement = document.getElementById(
+        selectedTowerID
+      ) as HTMLImageElement;
+      if (towerElement) {
+        towerElement.src = "/buildingSite.png";
+        towerElement.id = `building-site-${uuidv4()}`;
+        towerElement.className =
+          "absolute w-4 h-4 sm:w-6 sm:h-6 md:w-10 md:h-10 z-10 hover:opacity-75 transition-opacity";
+      }
 
-    const towerElement = document.getElementById(
-      selectedTowerID
-    ) as HTMLImageElement;
-    if (towerElement) {
-      towerElement.src = "/buildingSite.png";
-      towerElement.id = `building-site-${uuidv4()}`;
-      towerElement.className = "absolute w-4 h-4 sm:w-6 sm:h-6 md:w-10 md:h-10 z-10 hover:opacity-75 transition-opacity";
-    }
-
-    setShowUpgradeMenu(false);
-}, [confirmTowerSell, selectedTowerID, setMoney, setTower, setShowUpgradeMenu]);
+      setShowUpgradeMenu(false);
+    },
+    [confirmTowerSell, selectedTowerID, setMoney, setTower, setShowUpgradeMenu]
+  );
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -1137,7 +1187,18 @@ const Spawn: React.FC<SpawnProps> = ({
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [isPageVisible, canPause, isPaused, isSpeedUp,sellTower, selectedTowerID, tower, confirmTowerSell,setIsPaused, setIsSpeedUp]);
+  }, [
+    isPageVisible,
+    canPause,
+    isPaused,
+    isSpeedUp,
+    sellTower,
+    selectedTowerID,
+    tower,
+    confirmTowerSell,
+    setIsPaused,
+    setIsSpeedUp,
+  ]);
   const moveEnemy = useCallback(() => {
     if (!isPageVisible || isPaused) return;
 
@@ -1210,8 +1271,26 @@ const Spawn: React.FC<SpawnProps> = ({
     return () => clearInterval(interval);
   }, [round, isPageVisible, isSpeedUp, isPaused]); // Add isPaused to dependencies
 
-  const handleTowerAttack = useCallback((tower: Tower, targets: Enemy[]) => {
-    towerAttack(tower, targets, {
+  const handleTowerAttack = useCallback(
+    (tower: Tower, targets: Enemy[]) => {
+      towerAttack(tower, targets, {
+        setTower,
+        setEnemies,
+        setAttackEffects,
+        setExplosionEffects,
+        setLingeringEffects,
+        isPaused,
+        isSpeedUp,
+        uuidv4,
+        createNewEnemy: createNewEnemy as (
+          type: string,
+          x: number,
+          y: number
+        ) => Enemy,
+        grantMoneyForKill,
+      });
+    },
+    [
       setTower,
       setEnemies,
       setAttackEffects,
@@ -1219,180 +1298,168 @@ const Spawn: React.FC<SpawnProps> = ({
       setLingeringEffects,
       isPaused,
       isSpeedUp,
-      uuidv4,
-      createNewEnemy: createNewEnemy as (
-        type: string,
-        x: number,
-        y: number
-      ) => Enemy,
+      createNewEnemy,
       grantMoneyForKill,
-    });
-  }, [
-    setTower,
-    setEnemies,
-    setAttackEffects,
-    setExplosionEffects,
-    setLingeringEffects,
-    isPaused,
-    isSpeedUp,
-    createNewEnemy,
-    grantMoneyForKill
-  ]);
+    ]
+  );
 
   // Get the furthest enemy within a certain radius from the tower
-  const getFurthestEnemyInRadius = useCallback((
-    towerPositionX: number,
-    towerPositionY: number,
-    towerType: string,
-    radius: number,
-    canHitStealth: boolean,
-    attackType: string,
-    targettingType: string
-  ) => {
-    const enemiesInRadius = enemies.filter((enemy) => {
-      // Only target enemies with positive hp
-      if (enemy.hp <= 0) return false;
+  const getFurthestEnemyInRadius = useCallback(
+    (
+      towerPositionX: number,
+      towerPositionY: number,
+      towerType: string,
+      radius: number,
+      canHitStealth: boolean,
+      attackType: string,
+      targettingType: string
+    ) => {
+      const enemiesInRadius = enemies.filter((enemy) => {
+        // Only target enemies with positive hp
+        if (enemy.hp <= 0) return false;
 
-      // Calculate distance between tower and enemy
-      const dx = enemy.positionX - towerPositionX;
-      const dy = enemy.positionY - towerPositionY;
-      const distance = Math.sqrt(dx * dx + dy * dy);
+        // Calculate distance between tower and enemy
+        const dx = enemy.positionX - towerPositionX;
+        const dy = enemy.positionY - towerPositionY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
 
-      const isInRange = distance <= radius;
+        const isInRange = distance <= radius;
 
-      // Different targeting logic based on tower type and capabilities
-      if (canHitStealth) {
-        return isInRange;
-      } else if (towerType === "gasspitter" && canHitStealth) {
-        return isInRange && !enemy.isPoisoned;
-      } else if (towerType === "gasspitter" && !canHitStealth) {
-        return (
-          isInRange &&
-          !enemy.isPoisoned &&
-          enemy.type !== "stealth" &&
-          enemy.type !== "stealthytank" &&
-          enemy.type !== "stealthyspeedy"
-        );
-      }  else if (towerType === "slower" && canHitStealth) {
-        return isInRange && !enemy.isSlowed;
-      } else if (towerType === "slower" && !canHitStealth) {
-        return (
-          isInRange &&
-          !enemy.isSlowed &&
-          enemy.type !== "stealth" &&
-          enemy.type !== "stealthytank" &&
-          enemy.type !== "stealthyspeedy"
-        );
-      } else {
-        return (
-          isInRange &&
-          enemy.type !== "stealth" &&
-          enemy.type !== "stealthytank" &&
-          enemy.type !== "stealthyspeedy"
-        );
-      }
-    });
+        // Different targeting logic based on tower type and capabilities
+        if (canHitStealth) {
+          return isInRange;
+        } else if (towerType === "gasspitter" && canHitStealth) {
+          return isInRange && !enemy.isPoisoned;
+        } else if (towerType === "gasspitter" && !canHitStealth) {
+          return (
+            isInRange &&
+            !enemy.isPoisoned &&
+            enemy.type !== "stealth" &&
+            enemy.type !== "stealthytank" &&
+            enemy.type !== "stealthyspeedy"
+          );
+        } else if (towerType === "slower" && canHitStealth) {
+          return isInRange && !enemy.isSlowed;
+        } else if (towerType === "slower" && !canHitStealth) {
+          return (
+            isInRange &&
+            !enemy.isSlowed &&
+            enemy.type !== "stealth" &&
+            enemy.type !== "stealthytank" &&
+            enemy.type !== "stealthyspeedy"
+          );
+        } else {
+          return (
+            isInRange &&
+            enemy.type !== "stealth" &&
+            enemy.type !== "stealthytank" &&
+            enemy.type !== "stealthyspeedy"
+          );
+        }
+      });
 
-    if (enemiesInRadius.length === 0) {
-      return null;
-    }
-
-    // Calculate progress value for each enemy based on their position in the path
-    const enemiesWithProgress = enemiesInRadius.map((enemy) => {
-      let progress = 0;
-
-      // Calculate progress based on enemy position along the path
-      if (enemy.positionX < 28) {
-        // First segment - diagonal path
-        progress = enemy.positionX;
-      } else if (
-        enemy.positionX >= 28 &&
-        enemy.positionX < 52 &&
-        enemy.positionY > 15
-      ) {
-        // Second segment - vertical path
-        progress = 28 + (50 - enemy.positionY);
-      } else if (enemy.positionY <= 15 && enemy.positionX < 52) {
-        // Third segment - horizontal path
-        progress = 63 + enemy.positionX;
-      } else if (
-        enemy.positionX >= 52 &&
-        enemy.positionX < 75 &&
-        enemy.positionY < 87
-      ) {
-        // Fourth segment - vertical path down
-        progress = 115 + enemy.positionY;
-      } else if (enemy.positionY >= 87 && enemy.positionX < 75) {
-        // Fifth segment - horizontal path
-        progress = 202 + enemy.positionX;
-      } else if (enemy.positionX >= 75 && enemy.positionY > 50) {
-        // Sixth segment - diagonal path up
-        progress = 277 + (87 - enemy.positionY);
-      } else {
-        // Final segment - horizontal path to end
-        progress = 314 + enemy.positionX;
+      if (enemiesInRadius.length === 0) {
+        return null;
       }
 
-      return { ...enemy, progress };
-    });
+      // Calculate progress value for each enemy based on their position in the path
+      const enemiesWithProgress = enemiesInRadius.map((enemy) => {
+        let progress = 0;
 
-    // Sort enemies based on targeting type
-    if (targettingType === "stealth") {
-      // First sort by stealth status (stealth enemies first), then by progress
-      enemiesWithProgress.sort((a, b) => {
-        // If one is stealth and the other isn't, prioritize the stealth enemy
-        if (a.type === "stealth" && b.type !== "stealth") return -1;
-        if (a.type !== "stealth" && b.type === "stealth") return 1;
-        // If both have same stealth status, sort by progress (further along first)
-        return b.progress - a.progress;
-      });
-    } else if (targettingType === "highestMaxHp") {
-      enemiesWithProgress.sort((a, b) => b.maxHp - a.maxHp);
-    } else if (targettingType === "last") {
-      enemiesWithProgress.reverse();
-    } else if (targettingType === "mark") {
-      enemiesWithProgress.sort((a, b) => {
-        // First prioritize marked enemies
-        if (!a.marked && b.marked) return -1;
-        if (a.marked && !b.marked) return 1;
-        
-        // If both enemies have the same marked status,
-        // prioritize enemies further along the path
-        return b.progress - a.progress;
-      });
-    } else {
-      // "first" targeting - already sorted by progress
-      enemiesWithProgress.sort((a, b) => b.progress - a.progress);
-    }
+        // Calculate progress based on enemy position along the path
+        if (enemy.positionX < 28) {
+          // First segment - diagonal path
+          progress = enemy.positionX;
+        } else if (
+          enemy.positionX >= 28 &&
+          enemy.positionX < 52 &&
+          enemy.positionY > 15
+        ) {
+          // Second segment - vertical path
+          progress = 28 + (50 - enemy.positionY);
+        } else if (enemy.positionY <= 15 && enemy.positionX < 52) {
+          // Third segment - horizontal path
+          progress = 63 + enemy.positionX;
+        } else if (
+          enemy.positionX >= 52 &&
+          enemy.positionX < 75 &&
+          enemy.positionY < 87
+        ) {
+          // Fourth segment - vertical path down
+          progress = 115 + enemy.positionY;
+        } else if (enemy.positionY >= 87 && enemy.positionX < 75) {
+          // Fifth segment - horizontal path
+          progress = 202 + enemy.positionX;
+        } else if (enemy.positionX >= 75 && enemy.positionY > 50) {
+          // Sixth segment - diagonal path up
+          progress = 277 + (87 - enemy.positionY);
+        } else {
+          // Final segment - horizontal path to end
+          progress = 314 + enemy.positionX;
+        }
 
-    // Return enemies based on attack type
-    if (attackType === "double") {
-      return enemiesWithProgress.slice(
-        0,
-        Math.min(2, enemiesWithProgress.length)
-      );
-    } else if (attackType === "triple") {
-      return enemiesWithProgress.slice(
-        0,
-        Math.min(3, enemiesWithProgress.length)
-      );
-    } else if (attackType === "quadruple") {
-      return enemiesWithProgress.slice(
-        0,
-        Math.min(4, enemiesWithProgress.length)
-      );
-    } else if (attackType === "five") {
-      return enemiesWithProgress.slice(
-        0,
-        Math.min(5, enemiesWithProgress.length)
-      );
-    } else if (attackType === "aura") {
-      return enemiesWithProgress;
-    } else {
-      // Single target
-      return enemiesWithProgress.slice(0, 1);
-    }
-  }, [enemies]);
+        return { ...enemy, progress };
+      });
+
+      // Sort enemies based on targeting type
+      if (targettingType === "stealth") {
+        // First sort by stealth status (stealth enemies first), then by progress
+        enemiesWithProgress.sort((a, b) => {
+          // If one is stealth and the other isn't, prioritize the stealth enemy
+          if (a.type === "stealth" && b.type !== "stealth") return -1;
+          if (a.type !== "stealth" && b.type === "stealth") return 1;
+          // If both have same stealth status, sort by progress (further along first)
+          return b.progress - a.progress;
+        });
+      } else if (targettingType === "highestMaxHp") {
+        enemiesWithProgress.sort((a, b) => b.maxHp - a.maxHp);
+      } else if (targettingType === "last") {
+        enemiesWithProgress.reverse();
+      } else if (targettingType === "mark") {
+        enemiesWithProgress.sort((a, b) => {
+          // First prioritize marked enemies
+          if (!a.marked && b.marked) return -1;
+          if (a.marked && !b.marked) return 1;
+
+          // If both enemies have the same marked status,
+          // prioritize enemies further along the path
+          return b.progress - a.progress;
+        });
+      } else {
+        // "first" targeting - already sorted by progress
+        enemiesWithProgress.sort((a, b) => b.progress - a.progress);
+      }
+
+      // Return enemies based on attack type
+      if (attackType === "double") {
+        return enemiesWithProgress.slice(
+          0,
+          Math.min(2, enemiesWithProgress.length)
+        );
+      } else if (attackType === "triple") {
+        return enemiesWithProgress.slice(
+          0,
+          Math.min(3, enemiesWithProgress.length)
+        );
+      } else if (attackType === "quadruple") {
+        return enemiesWithProgress.slice(
+          0,
+          Math.min(4, enemiesWithProgress.length)
+        );
+      } else if (attackType === "five") {
+        return enemiesWithProgress.slice(
+          0,
+          Math.min(5, enemiesWithProgress.length)
+        );
+      } else if (attackType === "aura") {
+        return enemiesWithProgress;
+      } else {
+        // Single target
+        return enemiesWithProgress.slice(0, 1);
+      }
+    },
+    [enemies]
+  );
 
   // Tower targeting system - updates target when enemies move
   useEffect(() => {
@@ -1470,26 +1537,32 @@ const Spawn: React.FC<SpawnProps> = ({
           <Image
             src={"/" + enemy.src}
             alt="enemy"
-            width={35} 
-            height={35} 
+            width={100} // Increased from 35
+            height={100} // Increased from 35
+            quality={100}
             className="w-6 h-6 sm:w-8 sm:h-8 md:w-9 md:h-9"
-            />
+          />
         </div>
       ));
     }
   };
 
   // Reduce player's health points if enemies reach the end
-  const damagePlayer = useCallback((enemies: Enemy[]) => {
-    enemies.forEach((enemy) => {
-      if (enemy.positionX > 99) {
-        setHealthPoints((prevHealthPoints) => prevHealthPoints - enemy.damage);
-        setEnemies((prevEnemies) =>
-          prevEnemies.filter((e) => e.id !== enemy.id)
-        );
-      }
-    });
-  }, [setHealthPoints, setEnemies]);
+  const damagePlayer = useCallback(
+    (enemies: Enemy[]) => {
+      enemies.forEach((enemy) => {
+        if (enemy.positionX > 99) {
+          setHealthPoints(
+            (prevHealthPoints) => prevHealthPoints - enemy.damage
+          );
+          setEnemies((prevEnemies) =>
+            prevEnemies.filter((e) => e.id !== enemy.id)
+          );
+        }
+      });
+    },
+    [setHealthPoints, setEnemies]
+  );
 
   useEffect(() => {
     damagePlayer(enemies);
@@ -1617,11 +1690,14 @@ const Spawn: React.FC<SpawnProps> = ({
 
             if (distance <= effect.radius) {
               // Apply mark multiplier if enemy is marked
-              const markMultiplier = enemy.marked ? (enemy.markedDamageMultiplier ?? 1.15) : 1;
-              
+              const markMultiplier = enemy.marked
+                ? enemy.markedDamageMultiplier ?? 1.15
+                : 1;
+
               totalDamage +=
                 (effect.damage +
-                (enemy.hp * (effect.enemyCurrentHpDmgMultiplier ?? 0)) / 20) * markMultiplier;
+                  (enemy.hp * (effect.enemyCurrentHpDmgMultiplier ?? 0)) / 20) *
+                markMultiplier;
 
               if (effect.canStopRegen) {
                 insideRegenStoppingEffect = true;
@@ -1665,7 +1741,7 @@ const Spawn: React.FC<SpawnProps> = ({
     }, LINGERING_TICK_RATE);
 
     return () => clearInterval(lingeringInterval);
-  }, [isPageVisible, isPaused, lingeringEffects,grantMoneyForKill]);
+  }, [isPageVisible, isPaused, lingeringEffects, grantMoneyForKill]);
 
   useEffect(() => {
     if (!isPageVisible || isPaused) return;
@@ -1704,13 +1780,18 @@ const Spawn: React.FC<SpawnProps> = ({
           }
 
           // Calculate damage with mark multiplier
-          const markMultiplier = enemy.marked ? (poisonTower.markedDamageMultiplier ?? 1.5) : 1;
+          const markMultiplier = enemy.marked
+            ? poisonTower.markedDamageMultiplier ?? 1.5
+            : 1;
           const speedMultiplier = isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1;
-          const damagePerSecond = 
-            poisonTower.poisonDamage * 
-            (enemy.type === "boss" ? poisonTower.bossDamageMultiplier ?? 1 : 1) *
+          const damagePerSecond =
+            poisonTower.poisonDamage *
+            (enemy.type === "boss"
+              ? poisonTower.bossDamageMultiplier ?? 1
+              : 1) *
             markMultiplier;
-          const damagePerTick = (damagePerSecond / (1000 / POISON_TICK_RATE)) * speedMultiplier;
+          const damagePerTick =
+            (damagePerSecond / (1000 / POISON_TICK_RATE)) * speedMultiplier;
           const actualPoisonDamage = Math.min(damagePerTick, enemy.hp);
 
           if (!poisonDamageByTower[poisonTower.id]) {
@@ -1760,7 +1841,16 @@ const Spawn: React.FC<SpawnProps> = ({
     }, POISON_TICK_RATE);
 
     return () => clearInterval(poisonInterval);
-  }, [enemies, tower, isPageVisible, isSpeedUp, isPaused, setMoney, createNewEnemy,grantMoneyForKill]);
+  }, [
+    enemies,
+    tower,
+    isPageVisible,
+    isSpeedUp,
+    isPaused,
+    setMoney,
+    createNewEnemy,
+    grantMoneyForKill,
+  ]);
   // Buy towers and place them on the map
   const buyTowers = (
     event: React.MouseEvent<HTMLImageElement>,
@@ -1853,21 +1943,31 @@ const Spawn: React.FC<SpawnProps> = ({
 
       return (
         <div
-  data-upgrade-menu
-  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 
+          data-upgrade-menu
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 
     bg-slate-800 flex flex-col md:flex-row items-start justify-between p-2 md:p-4 rounded-lg gap-2 md:gap-4 
     shadow-xl border-2 border-blue-500 w-[95vw] md:w-[700px] max-h-[90vh] md:max-h-none overflow-y-auto md:overflow-visible"
-  style={{ left: window.innerWidth >= 768 ? (selectedTower.positionX < 50 ? "65%" : "35%") : "50%" }}
-  onClick={(e) => e.stopPropagation()}
+          style={{
+            left:
+              window.innerWidth >= 768
+                ? selectedTower.positionX < 50
+                  ? "65%"
+                  : "35%"
+                : "50%",
+          }}
+          onClick={(e) => e.stopPropagation()}
         >
           {/* Left Panel - Tower Info & Stats */}
           <div className="flex flex-col space-y-2 w-full md:w-1/2 p-2 md:p-3 bg-gray-950/80 rounded-lg border border-blue-900/30 shadow-lg">
             <div className="text-white">
               <h1 className="text-sm md:text-xl font-bold mb-1 text-blue-400 flex items-center">
-                <img
+                <Image
                   src={selectedTower.src}
                   alt="Tower"
                   className="w-5 h-5 mr-1 md:w-8 md:h-8 md:mr-2"
+                  width={100} // Increased from 35
+                  height={100} // Increased from 35
+                  quality={100}
                 />
                 {selectedTower.type.charAt(0).toUpperCase() +
                   selectedTower.type.slice(1)}{" "}
@@ -1877,10 +1977,13 @@ const Spawn: React.FC<SpawnProps> = ({
 
               {/* Tower Basic Info */}
               <div className="flex items-center gap-2 mb-2 bg-gray-900/50 p-1 md:p-2 rounded-lg border border-blue-800/20">
-                <img
+                <Image
                   src={selectedTower.src}
                   alt="Tower"
                   className="w-8 h-8 md:w-10 md:h-10 p-1 bg-blue-900/30 rounded-lg shadow-md"
+                  width={100} // Increased from 35
+                  height={100} // Increased from 35
+                  quality={100}
                 />
                 <div className="flex-1 text-xs">
                   <div className="grid grid-cols-2 gap-1">
@@ -2261,7 +2364,11 @@ const Spawn: React.FC<SpawnProps> = ({
                           ? "bg-gradient-to-r from-red-900 to-red-800 hover:from-red-800 hover:to-red-700 border-l-4 border-red-500"
                           : "bg-gradient-to-r from-blue-900 to-blue-800 hover:from-blue-800 hover:to-blue-700 border-l-4 border-blue-500"
                       }
-                      ${money < upgrade.cost ? "opacity-50 cursor-not-allowed" : "hover:scale-102"}`}
+                      ${
+                        money < upgrade.cost
+                          ? "opacity-50 cursor-not-allowed"
+                          : "hover:scale-102"
+                      }`}
                     onClick={() => performUpgrade(selectedTower, upgrade)}
                     disabled={money < upgrade.cost}
                   >
@@ -2286,58 +2393,76 @@ const Spawn: React.FC<SpawnProps> = ({
                     </div>
                   </button>
                   <button
-  className={`w-full py-1 px-2 rounded text-xs font-medium transition-all duration-200
-    ${upgrade.path === 1
-      ? "bg-red-700 hover:bg-red-600 text-white"
-      : "bg-blue-700 hover:bg-blue-600 text-white"
+                    className={`w-full py-1 px-2 rounded text-xs font-medium transition-all duration-200
+    ${
+      upgrade.path === 1
+        ? "bg-red-700 hover:bg-red-600 text-white"
+        : "bg-blue-700 hover:bg-blue-600 text-white"
     }
     ${money < upgrade.cost ? "opacity-50 cursor-not-allowed" : ""}`}
-    onClick={async () => {
-      const currentLevel = upgrade.path === 1 ? selectedTower.path1Level : selectedTower.path2Level;
-      const otherPathLevel = upgrade.path === 1 ? selectedTower.path2Level : selectedTower.path1Level;
-      const maxLevel = 6;
-      
-      // Check if the other path is at level 3 or higher
-      const maxAllowedLevel = otherPathLevel >= 3 ? 2 : maxLevel;
-      const remainingLevels = Math.min(maxAllowedLevel - currentLevel, maxLevel - currentLevel);
-      
-      // Calculate how many upgrades we can afford with current money
-      const upgradeCost = upgrade.cost;
-      let remainingMoney = money;
-      let affordableUpgrades = 0;
-      
-      // Calculate affordable upgrades based on remaining money and level restrictions
-      for (let i = 0; i < remainingLevels; i++) {
-        if (remainingMoney >= upgradeCost) {
-          affordableUpgrades++;
-          remainingMoney -= upgradeCost;
-        } else {
-          break;
-        }
-      }
-    
-      if (affordableUpgrades <= 0) return;
-    
-      // Get all upgrades for this path
-      const pathUpgrades = towerUpgrades[selectedTower.type].filter(u => 
-        u.path === upgrade.path && 
-        u.requires >= currentLevel && 
-        u.requires < maxAllowedLevel
-      );
-    
-      // Apply upgrades in sequence
-      for (let i = 0; i < affordableUpgrades; i++) {
-        const nextUpgrade = pathUpgrades.find(u => u.requires === currentLevel + i);
-        if (nextUpgrade) {
-          await new Promise(resolve => setTimeout(resolve, 50));
-          performUpgrade(selectedTower, nextUpgrade);
-        }
-      }
-    }}
-    disabled={money < upgrade.cost}
-    >
-      Buy Remaining upgrades 
-</button>
+                    onClick={async () => {
+                      const currentLevel =
+                        upgrade.path === 1
+                          ? selectedTower.path1Level
+                          : selectedTower.path2Level;
+                      const otherPathLevel =
+                        upgrade.path === 1
+                          ? selectedTower.path2Level
+                          : selectedTower.path1Level;
+                      const maxLevel = 6;
+
+                      // Check if the other path is at level 3 or higher
+                      const maxAllowedLevel =
+                        otherPathLevel >= 3 ? 2 : maxLevel;
+                      const remainingLevels = Math.min(
+                        maxAllowedLevel - currentLevel,
+                        maxLevel - currentLevel
+                      );
+
+                      // Calculate how many upgrades we can afford with current money
+                      const upgradeCost = upgrade.cost;
+                      let remainingMoney = money;
+                      let affordableUpgrades = 0;
+
+                      // Calculate affordable upgrades based on remaining money and level restrictions
+                      for (let i = 0; i < remainingLevels; i++) {
+                        if (remainingMoney >= upgradeCost) {
+                          affordableUpgrades++;
+                          remainingMoney -= upgradeCost;
+                        } else {
+                          break;
+                        }
+                      }
+
+                      if (affordableUpgrades <= 0) return;
+
+                      // Get all upgrades for this path
+                      const pathUpgrades = towerUpgrades[
+                        selectedTower.type
+                      ].filter(
+                        (u) =>
+                          u.path === upgrade.path &&
+                          u.requires >= currentLevel &&
+                          u.requires < maxAllowedLevel
+                      );
+
+                      // Apply upgrades in sequence
+                      for (let i = 0; i < affordableUpgrades; i++) {
+                        const nextUpgrade = pathUpgrades.find(
+                          (u) => u.requires === currentLevel + i
+                        );
+                        if (nextUpgrade) {
+                          await new Promise((resolve) =>
+                            setTimeout(resolve, 50)
+                          );
+                          performUpgrade(selectedTower, nextUpgrade);
+                        }
+                      }
+                    }}
+                    disabled={money < upgrade.cost}
+                  >
+                    Buy Remaining upgrades
+                  </button>
                 </div>
               ))}
             </div>
@@ -2489,9 +2614,13 @@ const Spawn: React.FC<SpawnProps> = ({
         return true;
       })
       .map((effect) => (
-        <img
+        <Image
           src={effect.effectSrc}
           key={effect.id}
+          width={100} // Increased from 35
+          height={100} // Increased from 35
+          quality={100}
+          alt={"Attack Effect"}
           className="pointer-events-none animate-slide h-3 w-3 sm:h-4 sm:w-4 absolute"
           style={
             {
@@ -2591,18 +2720,6 @@ const Spawn: React.FC<SpawnProps> = ({
     }
   };
 
-  useEffect(() => {
-    if (
-      enemies.length === 0 &&
-      (enemyCount >= 10 * round || enemyCount >= 15 * round)
-    ) {
-      // Clear processed enemies when round is complete
-      processedEnemies.clear();
-    }
-  }, [enemies.length, enemyCount, round,processedEnemies]);
-
-  
-
   // Add this near your other useEffects
   useEffect(() => {
     // Check for dead enemies that haven't granted money yet
@@ -2620,7 +2737,7 @@ const Spawn: React.FC<SpawnProps> = ({
       });
       return hasChanges ? updatedEnemies : prevEnemies;
     });
-  }, [enemies, grantMoneyForKill,processedEnemies]);
+  }, [enemies, grantMoneyForKill, processedEnemies]);
   useEffect(() => {
     if (hp > 101 && gameMode === "normal") {
       alert("Cheating detected");
@@ -2636,7 +2753,7 @@ const Spawn: React.FC<SpawnProps> = ({
 
       resetGame();
     }
-  }, [hp, round, money,gameMode,resetGame]);
+  }, [hp, round, money, gameMode, resetGame]);
 
   // Add a helper function to calculate rotation
   const getTowerRotation = (tower: Tower, target: Enemy) => {
@@ -2732,12 +2849,13 @@ const Spawn: React.FC<SpawnProps> = ({
                     className={`bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-3 
                     rounded-lg text-lg font-bold transform transition duration-200 w-full
                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
-                    ${isSaving 
-                      ? 'opacity-50 cursor-not-allowed'
-                      : 'hover:scale-105 hover:shadow-lg hover:from-blue-500 hover:to-blue-700'
+                    ${
+                      isSaving
+                        ? "opacity-50 cursor-not-allowed"
+                        : "hover:scale-105 hover:shadow-lg hover:from-blue-500 hover:to-blue-700"
                     }`}
                   >
-                    {isSaving ? 'Saving...' : 'Save Score'}
+                    {isSaving ? "Saving..." : "Save Score"}
                   </button>
                 </div>
               ) : (
@@ -2861,15 +2979,19 @@ const Spawn: React.FC<SpawnProps> = ({
   return (
     <>
       <div
-  className="relative min-h-[60vh] sm:min-h-[73vh] w-full"
-  suppressHydrationWarning
-  onClick={handleOutsideClick}
->
-<img
-  src="/test.webp"
-  className="w-full h-full object-cover sm:object-fill absolute top-0 left-0 z-0"
-  alt="map"
-/>
+        className="relative min-h-[60vh] sm:min-h-[73vh] w-full"
+        suppressHydrationWarning
+        onClick={handleOutsideClick}
+      >
+        <Image
+          src="/test.webp"
+          width={1920} // Set to actual image dimensions
+          height={1080} // Set to actual image dimensions
+          quality={100} // Added quality prop
+          className="w-full h-full object-cover sm:object-fill absolute top-0 left-0 z-0"
+          alt="map"
+          priority // Added priority loading for the map
+        />
         {/* Add range indicators for all towers */}
         {tower.map((t) => (
           <RangeIndicator key={`range-${t.id}`} tower={t} />
@@ -2905,13 +3027,18 @@ const Spawn: React.FC<SpawnProps> = ({
                 const shouldShow = existingTower || selectedTowerType;
 
                 return shouldShow ? (
-                  <img
+                  <Image
                     key={index}
                     id={existingTower?.id || `building-site-${index}`}
+                    alt="Tower"
+                    width={100} // Increased from 35
+                    height={100} // Increased from 35
+                    quality={100} // Added quality prop
                     src={
                       existingTower ? existingTower.src : "/buildingSite.png"
                     }
-                    className="absolute w-4 h-4 sm:w-6 sm:h-6 md:w-10 md:h-10 z-10 hover:opacity-75 transition-opacity"                    style={{
+                    className="absolute w-4 h-4 sm:w-6 sm:h-6 md:w-10 md:h-10 z-10 hover:opacity-75 transition-opacity"
+                    style={{
                       top: pos.top,
                       left: pos.left,
                       transform: existingTower?.furthestEnemyInRange?.[0]
