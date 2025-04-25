@@ -181,7 +181,7 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
         <p className="text-gray-300">
           • After level 3, must commit to one path
         </p>
-        <p className="text-gray-300">• Maximum upgrade level is 5 per path</p>
+        <p className="text-gray-300">• Maximum upgrade level is 6 per path</p>
         <p className="text-gray-300">
           • Later upgrades require previous upgrades in that path
         </p>
@@ -203,7 +203,7 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
           • Sell towers for 75% of total investment
         </p>
         <p className="text-gray-300">
-          • Switch targeting between First, Last, and Highest HP
+          • Switch targeting between First, Last, Highest HP and special targetting types
         </p>
       </div>
 
@@ -215,6 +215,12 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
         <p className="text-gray-300">• Last - Targets enemy closest to start</p>
         <p className="text-gray-300">
           • Highest HP - Targets enemy with most health
+        </p>
+        <p className="text-green-300">
+          • Stealth - First focus enemies with stealth 
+        </p>
+        <p className="text-red-300">
+          • Mark - First focus enemies that are not marked
         </p>
         <p className="text-gray-300">
           • Change targeting in tower upgrade menu
@@ -296,7 +302,7 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
               className="w-8 h-8"
             />
             <p className="text-gray-300">
-              • Armored - immune to non explosive attacks
+              • Armored - immune to most non explosive attacks
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -309,8 +315,7 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
               className="w-8 h-8"
             />
             <p className="text-yellow-300">
-              • Boss - Very high HP and regenerates (appears in rounds 32 and
-              40)
+              • Boss - Very high HP and regenerates 
             </p>
           </div>
         </div>
@@ -320,11 +325,11 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
       <div className="bg-sky-800/80 p-4 rounded-lg border border-cyan-400/30">
         <h3 className="text-xl text-white mb-2">Game Controls</h3>
         <p className="text-gray-300">• Press Start to begin the game</p>
-        <p className="text-gray-300">• Speed up button doubles game speed</p>
+        <p className="text-gray-300">• Speed up button to change game speed</p>
         <p className="text-gray-300">
           • Pause button freezes the game (only between rounds)
         </p>
-        <p className="text-gray-300">• 50 rounds to complete</p>
+        <p className="text-gray-300">• Infinite rounds to complete</p>
       </div>
     </div>
   );
