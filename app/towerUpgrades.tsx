@@ -730,7 +730,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           effect: (tower) => ({
             hasLingering: true,
             attackType: 'lingering',
-            lingeringDamage: tower.poisonDamage * 0.03,
+            lingeringDamage: 5,
             lingeringRadius: 15,
             attackInterval: tower.attackInterval + 1200,
             lingeringDuration: 2500,
@@ -747,6 +747,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           effect: (tower) => ({
             poisonDamage: tower.poisonDamage * 3,
             lingeringRadius: 20,
+            lingeringDamage: 10,
             canHitStealth: true,
             towerWorth: tower.towerWorth + 8000,
             path: 1
@@ -760,7 +761,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
           description: "2.5x poison, 6% puddle damage, 3s duration, +50% damage",
           effect: (tower) => ({
             poisonDamage: tower.poisonDamage * 2.5,
-            lingeringDamage: tower.poisonDamage * 0.06,
+            lingeringDamage: 25,
             lingeringDuration: 3000,
             attack: tower.attack * 1.5,
             src: '/gasSpitterSpecial1.png',
@@ -779,7 +780,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
             attack: tower.attack * 2,
             lingeringRadius: 25,
             lingeringDuration: 4000,
-            lingeringDamage: tower.poisonDamage * 0.11,
+            lingeringDamage: 70,
             canHitArmored: true,
             canHitStealth: true,
             towerWorth: tower.towerWorth + 150000
