@@ -1023,7 +1023,7 @@ const Spawn: React.FC<SpawnProps> = ({
           console.error('Failed to update stats:', error);
         }
       }
-  
+      
       if (autoStartRounds) {
         const roundTimeout = setTimeout(() => {
           lastRound.current = round;
@@ -1031,6 +1031,7 @@ const Spawn: React.FC<SpawnProps> = ({
           setEnemies([]);
           setEnemyCount(0);
           setCanPause(false);
+          setTotalKills(0);
         }, 4000 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
         return () => clearTimeout(roundTimeout);
       } else {
