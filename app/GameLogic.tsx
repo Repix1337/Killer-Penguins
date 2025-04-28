@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useSettings } from "./context/SettingsContext";
@@ -201,7 +201,7 @@ const GameLogic: React.FC<SpawnProps> = ({
         ...enemyStats,
       };
     },
-    [ENEMY_TYPES]
+    []
   );
   useEffect(() => {
     if (hp <= 0) {

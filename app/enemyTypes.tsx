@@ -1,6 +1,4 @@
-import { useMemo } from "react";
-export const ENEMY_TYPES = useMemo(
-    () => ({
+export const ENEMY_TYPES = {
       BASIC: {
         src: "basicEnemy.png",
         hp: 100,
@@ -244,6 +242,4 @@ export const ENEMY_TYPES = useMemo(
         canRegen: false,
         isArmored: true,
       },
-    }),
-    []
-  );
+    }
