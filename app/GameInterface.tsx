@@ -1,17 +1,17 @@
 "use client";
 import React from "react";
-import Spawn from "./GameLogic";
+import GameLogic from "./GameLogic";
 import Menu from "./Menu";
 import Settings from "./Settings";
 import { User } from "firebase/auth";
 import Image from "next/image";
-interface SpawnProps {
+interface Props {
   gameMode: string;
   setShowSettings: React.Dispatch<React.SetStateAction<boolean>>;
   showSettings: boolean;
   user: User | null;
 }
-const GameInterface: React.FC<SpawnProps> = ({
+const GameInterface: React.FC<Props> = ({
   gameMode,
   setShowSettings,
   showSettings,
@@ -308,7 +308,7 @@ const GameInterface: React.FC<SpawnProps> = ({
       </div>
 
       {/* Game Board */}
-      <Spawn
+      <GameLogic
         round={round}
         setHealthPoints={setHealthPoints}
         money={money}

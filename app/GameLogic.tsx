@@ -13,7 +13,8 @@ import PopUp from "./PopUp";
 import Auth from "./auth";
 import { User } from "firebase/auth";
 import { updateUserStats } from './updateUserStats';
-
+import { ENEMY_TYPES } from "./enemyTypes";
+import { TOWER_TYPES } from "./towerTypes";
 // Define the props for the Spawn component
 interface SpawnProps {
   round: number;
@@ -42,7 +43,7 @@ interface TowerUpgrade {
   requires: number; // Previous upgrade level required
 }
 
-const Spawn: React.FC<SpawnProps> = ({
+const GameLogic: React.FC<SpawnProps> = ({
   gameMode,
   round,
   setHealthPoints,
@@ -87,8 +88,6 @@ const Spawn: React.FC<SpawnProps> = ({
       sourceId: string;
     }[]
   >([]);
-
-  // Add this new state near other state declarations
   const [isPageVisible, setIsPageVisible] = useState(true);
   const [showGameOver, setShowGameOver] = useState(false);
   const [showWinScreen, setShowWinScreen] = useState(false);
@@ -107,436 +106,17 @@ const Spawn: React.FC<SpawnProps> = ({
     showExplosions,
     showLingeringEffects,
   } = useSettings();
-  // Add this new useEffect for visibility tracking
   useEffect(() => {
     const handleVisibilityChange = () => {
       setIsPageVisible(!document.hidden);
     };
-
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
-
-  // Add this state to track which enemies have granted money
   const [processedEnemies] = useState(() => new Set<string>());
-
-  // First, extract enemy types as constants
-  const ENEMY_TYPES = useMemo(
-    () => ({
-      BASIC: {
-        src: "basicEnemy.png",
-        hp: 100,
-        damage: 5,
-        type: "basic",
-        speed: 0.25, // from 0.150 * 1.5
-        baseSpeed: 0.25, // from 0.150 * 1.5
-        regen: 0,
-        canRegen: false,
-        isArmored: false,
-      },
-      STEALTH: {
-        src: "stealth.png",
-        hp: 50,
-        damage: 10,
-        type: "stealth",
-        speed: 0.25, // from 0.150 * 1.5
-        baseSpeed: 0.25, // from 0.150 * 1.5
-        regen: 0,
-        canRegen: false,
-        isArmored: false,
-      },
-      TANK: {
-        src: "tank.png",
-        hp: 350,
-        damage: 5,
-        type: "basic",
-        speed: 0.2, // from 0.125 * 1.5
-        baseSpeed: 0.2, // from 0.125 * 1.5
-        regen: 0,
-        canRegen: false,
-        isArmored: false,
-      },
-      SPEEDY: {
-        src: "speedy.png",
-        hp: 40,
-        damage: 35,
-        type: "speedy",
-        speed: 1.6, // from 1.0 * 1.5
-        baseSpeed: 1.6, // from 1.0 * 1.5
-        regen: 0,
-        canRegen: false,
-        isArmored: false,
-      },
-      STEALTHYTANK: {
-        src: "stealthyTank.png",
-        hp: 250,
-        damage: 20,
-        type: "stealth",
-        speed: 0.2, // from 0.125 * 1.5
-        baseSpeed: 0.2, // from 0.125 * 1.5
-        regen: 0,
-        canRegen: false,
-        isArmored: false,
-      },
-      STEALTHYSPEEDY: {
-        src: "stealthySpeedy.png",
-        hp: 50,
-        damage: 50,
-        type: "stealth",
-        speed: 1.6, // from 1.0 * 1.5
-        baseSpeed: 1.6, // from 1.0 * 1.5
-        regen: 0,
-        canRegen: false,
-        isArmored: false,
-      },
-      REGENTANK: {
-        src: "regenTank.png",
-        hp: 400,
-        damage: 50,
-        type: "regentank",
-        speed: 0.2, // from 0.125 * 1.5
-        baseSpeed: 0.2, // from 0.125 * 1.5
-        regen: 75,
-        canRegen: true,
-        isArmored: false,
-      },
-      SPEEDYREGENTANK: {
-        src: "regenTank.png",
-        hp: 600,
-        damage: 50,
-        type: "speedyregentank",
-        speed: 0.375, // from 0.2 * 1.5
-        baseSpeed: 0.375, // from 0.2 * 1.5
-        regen: 125,
-        canRegen: true,
-        isArmored: false,
-      },
-      BOSS: {
-        src: "boss.png",
-        hp: 50000,
-        damage: 1000,
-        type: "boss",
-        speed: 0.16,
-        baseSpeed: 0.16,
-        regen: 1000,
-        canRegen: true,
-        isArmored: false,
-        stunReduction: 0.8,
-        slowReduction: 0.8,
-      },
-      ULTRATANKS: {
-        src: "ultraTank.png",
-        hp: 1750,
-        damage: 1000,
-        type: "ultratank",
-        speed: 0.17,
-        baseSpeed: 0.17,
-        regen: 0,
-        canRegen: false,
-        isArmored: false,
-      },
-      ARMOREDBASIC: {
-        src: "armoredbasicEnemy.png",
-        hp: 125,
-        damage: 30,
-        type: "armoredbasic",
-        speed: 0.225,
-        baseSpeed: 0.225,
-        regen: 0,
-        canRegen: false,
-        isArmored: true,
-      },
-      ARMOREDTANK: {
-        src: "armoredtank.png",
-        hp: 400,
-        damage: 400,
-        type: "armoredtank",
-        speed: 0.2,
-        baseSpeed: 0.2,
-        regen: 0,
-        canRegen: false,
-        isArmored: true,
-      },
-      ARMOREDULTRATANK: {
-        src: "armoredultraTank.png",
-        hp: 2000,
-        damage: 1000,
-        type: "armoredultratank",
-        speed: 0.225,
-        baseSpeed: 0.225,
-        regen: 0,
-        canRegen: false,
-        isArmored: true,
-      },
-      ARMOREDSPEEDYMEGATANK: {
-        src: "armoredspeedyMegaTank.png",
-        hp: 3500,
-        damage: 1000,
-        type: "armoredultratank",
-        speed: 0.6,
-        baseSpeed: 0.6,
-        regen: 0,
-        canRegen: false,
-        isArmored: true,
-      },
-      SPEEDYMEGATANK: {
-        src: "speedyMegaTank.png",
-        hp: 3000,
-        damage: 1000,
-        type: "armoredultratank",
-        speed: 0.6,
-        baseSpeed: 0.6,
-        regen: 0,
-        canRegen: false,
-        isArmored: true,
-      },
-      MEGABOSS: {
-        src: "megaBoss.png",
-        hp: 125000,
-        damage: 1000,
-        type: "boss",
-        speed: 0.225,
-        baseSpeed: 0.225,
-        regen: 5000,
-        canRegen: true,
-        isArmored: false,
-        stunReduction: 0.4,
-        slowReduction: 0.4,
-      },
-      ULTRABOSS: {
-        src: "boss.png",
-        hp: 500000,
-        damage: 1000,
-        type: "boss",
-        speed: 0.325,
-        baseSpeed: 0.325,
-        regen: 50000,
-        canRegen: true,
-        isArmored: false,
-        stunReduction: 0.2,
-        slowReduction: 0.2,
-      },
-      SPAWNER: {
-        src: "boss.png",
-        hp: 2000,
-        damage: 100,
-        type: "spawner",
-        speed: 0.2,
-        baseSpeed: 0.2,
-        regen: 0,
-        canRegen: false,
-        isArmored: false,
-        canSpawn: true,
-        spawnType: "SPEEDYMEGATANK",
-      },
-      GIGASPAWNER: {
-        src: "boss.png",
-        hp: 5000,
-        damage: 100,
-        type: "spawner",
-        speed: 0.2,
-        baseSpeed: 0.2,
-        regen: 0,
-        canRegen: false,
-        isArmored: false,
-        canSpawn: true,
-        spawnType: "SPEEDYGIGATANK",
-      },
-      MEGABOSSSPAWNER: {
-        src: "boss.png",
-        hp: 25000,
-        damage: 100,
-        type: "spawner",
-        speed: 0.2,
-        baseSpeed: 0.2,
-        regen: 0,
-        canRegen: false,
-        isArmored: false,
-        canSpawn: true,
-        spawnType: "MEGABOSS",
-      },
-      SPEEDYGIGATANK: {
-        src: "speedyGigaTank.png",
-        hp: 10000,
-        damage: 1000,
-        type: "speedygigatank",
-        speed: 0.5,
-        baseSpeed: 0.5,
-        regen: 0,
-        canRegen: false,
-        isArmored: true,
-      },
-    }),
-    []
-  );
-
-  // Add this near ENEMY_TYPES constant
-  const TOWER_TYPES = {
-    BASIC: {
-      src: "/basic.png",
-      baseAttack: 50,
-      attack: 50,
-      baseAttackInterval: 1000,
-      attackInterval: 1000, // renamed from attackSpeed
-      price: 100,
-      towerWorth: 100,
-      type: "basic",
-      maxDamage: 300,
-      maxAttackInterval: 450, // renamed from maxAttackSpeed
-      radius: 27,
-      attackType: "single",
-      canHitStealth: false,
-      poisonDamage: 0,
-      maxPoisonDamage: 0,
-      hasSpecialUpgrade: false,
-      specialUpgradeAvailable: false,
-      canStopRegen: false,
-      explosionRadius: 0,
-      effectSrc: "/basicAttack.png",
-    },
-    SNIPER: {
-      src: "/sniper.png",
-      baseAttack: 120,
-      attack: 120,
-      baseAttackInterval: 2000,
-      attackInterval: 2000,
-      price: 200,
-      towerWorth: 200,
-      type: "sniper",
-      maxDamage: 1500,
-      maxAttackInterval: 1000,
-      radius: 120,
-      attackType: "single",
-      canHitStealth: true,
-      poisonDamage: 0,
-      maxPoisonDamage: 0,
-      hasSpecialUpgrade: false,
-      specialUpgradeAvailable: false,
-      canStopRegen: false,
-      explosionRadius: 0,
-      effectSrc: "/sniperAttack.png",
-    },
-    RAPIDSHOOTER: {
-      src: "/rapidShooter.png",
-      baseAttack: 20,
-      attack: 20,
-      baseAttackInterval: 350,
-      attackInterval: 350,
-      price: 500,
-      towerWorth: 500,
-      type: "rapidShooter",
-      maxDamage: 68,
-      maxAttackInterval: 200,
-      radius: 27,
-      attackType: "double",
-      canHitStealth: false,
-      poisonDamage: 0,
-      maxPoisonDamage: 0,
-      hasSpecialUpgrade: false,
-      specialUpgradeAvailable: false,
-      canStopRegen: false,
-      explosionRadius: 0,
-      effectSrc: "/rapidAttack.png",
-    },
-    SLOWER: {
-      src: "/slower.png",
-      baseAttack: 10,
-      attack: 10,
-      baseAttackInterval: 1000,
-      attackInterval: 1000,
-      price: 300,
-      towerWorth: 300,
-      type: "slower",
-      maxDamage: 15,
-      maxAttackInterval: 700,
-      radius: 27,
-      attackType: "double",
-      canHitStealth: false,
-      slowAmount: 0.75,
-      maxSlow: 0.5,
-      slowDuration: 2000,
-      poisonDamage: 0,
-      maxPoisonDamage: 0,
-      hasSpecialUpgrade: false,
-      specialUpgradeAvailable: false,
-      canStopRegen: false,
-      explosionRadius: 0,
-      effectSrc: "/slowerAttack.png",
-    },
-    GASSPITTER: {
-      src: "/gasSpitter.png",
-      baseAttack: 20,
-      attack: 20,
-      baseAttackInterval: 1000,
-      attackInterval: 1000,
-      price: 300,
-      towerWorth: 300,
-      type: "gasspitter",
-      maxDamage: 20,
-      maxAttackInterval: 600,
-      radius: 27,
-      attackType: "double",
-      canHitStealth: false,
-      poisonDamage: 25,
-      maxPoisonDamage: 360,
-      poisonDuration: 4000,
-      hasSpecialUpgrade: false,
-      specialUpgradeAvailable: false,
-      canStopRegen: false,
-      explosionRadius: 0,
-      effectSrc: "/poisonAttack.png",
-    },
-    MORTAR: {
-      src: "/mortar.png",
-      baseAttack: 450,
-      attack: 450,
-      baseAttackInterval: 8500,
-      attackInterval: 8500,
-      price: 1200,
-      towerWorth: 1200,
-      type: "mortar",
-      maxDamage: 650,
-      maxAttackInterval: 4500,
-      radius: 60,
-      attackType: "explosion",
-      canHitStealth: false,
-      poisonDamage: 0,
-      maxPoisonDamage: 0,
-      hasSpecialUpgrade: false,
-      specialUpgradeAvailable: false,
-      canStopRegen: false,
-      explosionRadius: 20,
-      canHitArmored: true,
-      effectSrc: "/sniperAttack.png",
-    },
-    CANNON: {
-      src: "/cannon.png",
-      baseAttack: 100,
-      attack: 100,
-      baseAttackInterval: 2750,
-      attackInterval: 2750,
-      price: 500,
-      towerWorth: 500,
-      type: "cannon",
-      maxDamage: 380,
-      maxAttackInterval: 1000,
-      radius: 27,
-      attackType: "explosion",
-      canHitStealth: false,
-      poisonDamage: 0,
-      maxPoisonDamage: 0,
-      hasSpecialUpgrade: false,
-      specialUpgradeAvailable: false,
-      canStopRegen: false,
-      explosionRadius: 15,
-      effectSrc: "/sniperAttack.png",
-      canHitArmored: true,
-    },
-  };
-
-  // Add this helper function
+  
   const resetGame = useCallback(() => {
     // Only target towers on the game board, not in the selection panel
     const buildingSites = document.querySelectorAll(
@@ -576,7 +156,6 @@ const Spawn: React.FC<SpawnProps> = ({
     setIsPaused,
   ]);
 
-  // Then create a helper function for creating new towers
   const createNewTower = (
     type: keyof typeof TOWER_TYPES,
     positionX: number,
@@ -597,7 +176,6 @@ const Spawn: React.FC<SpawnProps> = ({
     ...TOWER_TYPES[type],
   });
 
-  // Then, create helper function for spawning enemies
   const createNewEnemy = useCallback(
     (
       type: keyof typeof ENEMY_TYPES,
@@ -787,7 +365,7 @@ const Spawn: React.FC<SpawnProps> = ({
 
         case round === 32:
           if (enemyCount < 320) {
-            setEnemies((prev) => [...prev, createNewEnemy("BOSS")]); // Boss HP unchanged
+            setEnemies((prev) => [...prev, createNewEnemy("BOSS")]); 
             setEnemyCount((prev) => prev + 80);
           }
           break;
@@ -807,7 +385,7 @@ const Spawn: React.FC<SpawnProps> = ({
 
         case round === 40:
           if (enemyCount < getEnemyLimit(round)) {
-            setEnemies((prev) => [...prev, createNewEnemy("BOSS")]); // Boss HP unchanged
+            setEnemies((prev) => [...prev, createNewEnemy("BOSS")]);
             setEnemyCount((prev) => prev + 35);
           }
           break;
@@ -943,11 +521,11 @@ const Spawn: React.FC<SpawnProps> = ({
             // Logarithmic scaling for speed
             const speedIncrease =
               1.5 * (Math.log(round - 65) * 0.25 + (round - 65) * 0.005);
-            const newSpeed = enemy.speed * (1 + speedIncrease); // Apply scaling
+            const newSpeed = enemy.speed * (1 + speedIncrease); 
             enemy.speed = newSpeed;
             enemy.baseSpeed = newSpeed;
             enemy.hp *= 5 + (round - 65) * 0.1; // Scales with rounds
-            enemy.maxHp *= 5 + (round - 65) * 0.1;
+            enemy.maxHp *= 5 + (round - 65) * 0.1; // Scales with rounds
             enemy.slowReduction = 0.3;
             enemy.stunReduction = 0.2;
             enemy.regen *= 1.5;
@@ -970,7 +548,7 @@ const Spawn: React.FC<SpawnProps> = ({
             enemy.speed = newSpeed;
             enemy.baseSpeed = newSpeed;
             enemy.hp *= 16 + (round - 65) * 0.15; // Scales with rounds
-            enemy.maxHp *= 16 + (round - 65) * 0.15;
+            enemy.maxHp *= 16 + (round - 65) * 0.15;// Scales with rounds
             enemy.slowReduction = 0.2;
             enemy.stunReduction = 0.15;
             enemy.regen *= 1.5;
@@ -1056,8 +634,8 @@ const Spawn: React.FC<SpawnProps> = ({
     setCanPause,
     setIsPaused,
     setRound,
-    user,  // Add user to dependencies
-    totalKills,  // Add totalKills to dependencies
+    user,  
+    totalKills,  
   ]);
   const grantMoneyForKill = useCallback(
     (enemy: Enemy) => {
@@ -1067,14 +645,14 @@ const Spawn: React.FC<SpawnProps> = ({
         // Base reward calculation
         let reward = enemy.maxHp / 6.5;
 
-        // Apply round-based reduction more explicitly
+        // Apply round-based reduction
         let multiplier;
         if (round >= 33) {
-          multiplier = 0.15; // 7% of original reward
+          multiplier = 0.15; // 15% of original reward
         } else if (round > 22 && round < 33) {
-          multiplier = 0.35; // 30% of original reward
+          multiplier = 0.35; // 35% of original reward
         } else if (round <= 22) {
-          multiplier = 1; // 5.5% of original reward
+          multiplier = 1; 
         }
 
         // Apply multiplier to reward
@@ -1089,7 +667,6 @@ const Spawn: React.FC<SpawnProps> = ({
     },
     [processedEnemies, round, setMoney]
   );
-  // Modify the round change effect to handle round starts
   useEffect(() => {
     if (round > 0) {
       if (!autoStartRounds) {
@@ -1104,7 +681,7 @@ const Spawn: React.FC<SpawnProps> = ({
     }
   }, [processedEnemies, round, autoStartRounds, setCanPause]);
 
-  // Add a new effect to handle manual round advancement
+  // manual round advancement
   useEffect(() => {
     if (!isPaused && round > 0 && !autoStartRounds) {
       if (enemies.length === 0 && enemyCount >= getEnemyLimit(round)) {
@@ -1259,7 +836,7 @@ const Spawn: React.FC<SpawnProps> = ({
         .filter((enemy) => enemy.hp > 0 && !enemy.executed)
     );
   }, [isPageVisible, isPaused]);
-  // Enemy movement - updates position every 25ms
+  // Enemy movement - updates position every 30ms
   useEffect(() => {
     if (!isPageVisible || round <= 0 || isPaused) return;
 
@@ -1270,7 +847,7 @@ const Spawn: React.FC<SpawnProps> = ({
     return () => clearInterval(interval);
   }, [isPageVisible, round, isPaused, isSpeedUp, moveEnemy]);
 
-  // Heal enemy every second if it has health regeneration
+  // Heal enemy every 4.5 seconds if it has health regeneration
   useEffect(() => {
     if (!isPageVisible || round <= 0 || isPaused) return;
 
@@ -1282,9 +859,9 @@ const Spawn: React.FC<SpawnProps> = ({
             : enemy
         )
       );
-    }, 4500 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)); // Adjusted for 3x speed
+    }, 4500 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1)); // Adjusted for speed up
     return () => clearInterval(interval);
-  }, [round, isPageVisible, isSpeedUp, isPaused]); // Add isPaused to dependencies
+  }, [round, isPageVisible, isSpeedUp, isPaused]); 
 
   const handleTowerAttack = useCallback(
     (tower: Tower, targets: Enemy[]) => {
@@ -1498,18 +1075,18 @@ const Spawn: React.FC<SpawnProps> = ({
           ) ?? null,
       }))
     );
-  }, [enemies, isPageVisible, isPaused, getFurthestEnemyInRadius]); // Add isPaused to dependencies
+  }, [enemies, isPageVisible, isPaused, getFurthestEnemyInRadius]); 
 
   // Tower attack execution - triggers attacks when targets are available
   useEffect(() => {
-    if (!isPageVisible || isPaused) return; // Add isPaused check
+    if (!isPageVisible || isPaused) return; 
 
     tower.forEach((t) => {
       if (t.furthestEnemyInRange && !t.isAttacking) {
         handleTowerAttack(t, t.furthestEnemyInRange);
       }
     });
-  }, [tower, handleTowerAttack, isPageVisible, isPaused]); // Add isPaused to dependencies
+  }, [tower, handleTowerAttack, isPageVisible, isPaused]); 
 
   const HealthBar = ({ enemy }: { enemy: Enemy }) => {
     if (!showHealthBars) return null;
@@ -1552,8 +1129,8 @@ const Spawn: React.FC<SpawnProps> = ({
           <Image
             src={"/" + enemy.src}
             alt="enemy"
-            width={100} // Increased from 35
-            height={100} // Increased from 35
+            width={100} 
+            height={100} 
             quality={100}
             className="w-6 h-6 sm:w-8 sm:h-8 md:w-9 md:h-9"
           />
@@ -1625,7 +1202,7 @@ const Spawn: React.FC<SpawnProps> = ({
     }, slowCheckInterval);
 
     return () => clearInterval(slowInterval);
-  }, [isPageVisible, isPaused, isSpeedUp, tower]); // Added tower to dependencies
+  }, [isPageVisible, isPaused, isSpeedUp, tower]);
   useEffect(() => {
     if (!isPageVisible || isPaused) return;
 
@@ -1646,7 +1223,6 @@ const Spawn: React.FC<SpawnProps> = ({
           )
             return enemy;
 
-          // If it's a stun (speed = 0), use the stun duration
           const adjustedDuration =
             enemy.stunDuration / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1);
 
@@ -1876,7 +1452,7 @@ const Spawn: React.FC<SpawnProps> = ({
       selectedTowerType &&
       (event.target as HTMLImageElement).src.includes("buildingSite")
     ) {
-      const newTowerId = `tower-${uuidv4()}`; // Add 'tower-' prefix
+      const newTowerId = `tower-${uuidv4()}`; 
       (event.target as HTMLImageElement).id = newTowerId;
 
       // Check if we have enough money for the selected tower
@@ -1980,8 +1556,8 @@ const Spawn: React.FC<SpawnProps> = ({
                   src={selectedTower.src}
                   alt="Tower"
                   className="w-5 h-5 mr-1 md:w-8 md:h-8 md:mr-2"
-                  width={100} // Increased from 35
-                  height={100} // Increased from 35
+                  width={100} 
+                  height={100} 
                   quality={100}
                 />
                 {selectedTower.type.charAt(0).toUpperCase() +
@@ -1996,8 +1572,8 @@ const Spawn: React.FC<SpawnProps> = ({
                   src={selectedTower.src}
                   alt="Tower"
                   className="w-8 h-8 md:w-10 md:h-10 p-1 bg-blue-900/30 rounded-lg shadow-md"
-                  width={100} // Increased from 35
-                  height={100} // Increased from 35
+                  width={100} 
+                  height={100} 
                   quality={100}
                 />
                 <div className="flex-1 text-xs">
@@ -2493,7 +2069,7 @@ const Spawn: React.FC<SpawnProps> = ({
       );
     }
   };
-  // Add this helper component for stats
+  //  helper component for stats
   const StatBlock = ({
     label,
     value,
@@ -2555,7 +2131,6 @@ const Spawn: React.FC<SpawnProps> = ({
               path1Level: newPath1Level,
               path2Level: newPath2Level,
               path: newPath,
-              // Ensure other properties are preserved
               id: t.id,
               positionX: t.positionX,
               positionY: t.positionY,
@@ -2632,8 +2207,8 @@ const Spawn: React.FC<SpawnProps> = ({
         <Image
           src={effect.effectSrc}
           key={effect.id}
-          width={100} // Increased from 35
-          height={100} // Increased from 35
+          width={100} 
+          height={100} 
           quality={100}
           alt={"Attack Effect"}
           className="pointer-events-none animate-slide h-3 w-3 sm:h-4 sm:w-4 absolute"
@@ -2703,7 +2278,6 @@ const Spawn: React.FC<SpawnProps> = ({
     });
   };
 
-  // Add this new component near your other components
   const RangeIndicator = ({ tower }: { tower: Tower }) => {
     if (!showRangeIndicators) return null;
 
@@ -2726,7 +2300,6 @@ const Spawn: React.FC<SpawnProps> = ({
     );
   };
 
-  // Add this function near your other event handlers
   const handleOutsideClick = (event: React.MouseEvent) => {
     // Check if the click was outside the upgrade menu
     const upgradeMenu = document.querySelector("[data-upgrade-menu]");
@@ -2735,7 +2308,6 @@ const Spawn: React.FC<SpawnProps> = ({
     }
   };
 
-  // Add this near your other useEffects
   useEffect(() => {
     // Check for dead enemies that haven't granted money yet
     setEnemies((prevEnemies) => {
@@ -2770,7 +2342,6 @@ const Spawn: React.FC<SpawnProps> = ({
     }
   }, [hp, round, money, gameMode, resetGame]);
 
-  // Add a helper function to calculate rotation
   const getTowerRotation = (tower: Tower, target: Enemy) => {
     if (!target) return "";
     const shootingRight = target.positionX > tower.positionX;
@@ -2788,7 +2359,7 @@ const Spawn: React.FC<SpawnProps> = ({
               top: `${effect.positionY}%`,
               width: `${effect.radius * 2.5}%`,
               height: `${effect.radius * 2.5}%`,
-              aspectRatio: "1 / 1", // Ensure a perfect circle
+              aspectRatio: "1 / 1",
               transform: "translate(-50%, -50%)",
               borderRadius: "50%",
               background: `radial-gradient(circle, ${effect.color} 0%, transparent 50%)`,
@@ -2813,7 +2384,6 @@ const Spawn: React.FC<SpawnProps> = ({
     
       setIsSaving(true);
       try {
-        // Only save to leaderboard, stats are already being saved each round
         await saveGameResult(round, user.displayName);
         setIsSaved(true);
         setError("");
@@ -2989,9 +2559,9 @@ const Spawn: React.FC<SpawnProps> = ({
       >
         <Image
           src="/test.webp"
-          width={1920} // Set to actual image dimensions
-          height={1080} // Set to actual image dimensions
-          quality={100} // Added quality prop
+          width={1920} 
+          height={1080} 
+          quality={100} 
           className="w-full h-full object-cover sm:object-fill absolute top-0 left-0 z-0"
           alt="map"
           priority // Added priority loading for the map
@@ -3035,9 +2605,9 @@ const Spawn: React.FC<SpawnProps> = ({
                     key={index}
                     id={existingTower?.id || `building-site-${index}`}
                     alt="Tower"
-                    width={100} // Increased from 35
-                    height={100} // Increased from 35
-                    quality={100} // Added quality prop
+                    width={100} 
+                    height={100} 
+                    quality={100}
                     src={
                       existingTower ? existingTower.src : "/buildingSite.png"
                     }
@@ -3073,4 +2643,4 @@ const Spawn: React.FC<SpawnProps> = ({
   );
 };
 
-export default Spawn;
+export default GameLogic;
