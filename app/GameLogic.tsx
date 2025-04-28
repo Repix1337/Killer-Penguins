@@ -12,6 +12,8 @@ import { LingeringEffect } from "./EffectInterfaces";
 import PopUp from "./PopUp";
 import Auth from "./auth";
 import { User } from "firebase/auth";
+import { updateUserStats } from './updateUserStats';
+
 // Define the props for the Spawn component
 interface SpawnProps {
   round: number;
@@ -91,7 +93,7 @@ const Spawn: React.FC<SpawnProps> = ({
   const [showGameOver, setShowGameOver] = useState(false);
   const [showWinScreen, setShowWinScreen] = useState(false);
   const [hasWon, setHasWon] = useState(false);
-
+  const [totalKills, setTotalKills] = useState(0);
   const [lingeringEffects, setLingeringEffects] = useState<LingeringEffect[]>(
     []
   );
@@ -559,6 +561,8 @@ const Spawn: React.FC<SpawnProps> = ({
     setShowGameOver(false);
     setShowWinScreen(false);
     setIsPaused(false);
+    setTotalKills(0);
+
   }, [
     setRound,
     setEnemyCount,
@@ -994,42 +998,43 @@ const Spawn: React.FC<SpawnProps> = ({
 
   useEffect(() => {
     if (isPaused) return;
-
-    if (
-      round !== lastRound.current + 1 &&
-      round !== 0 &&
-      gameMode === "normal"
-    ) {
+  
+    if (round !== lastRound.current + 1 && round !== 0 && gameMode === "normal") {
       alert("Cheating detected");
       resetGame();
       return;
     }
-
-    if (
-      enemies.length === 0 &&
-      enemyCount >= getEnemyLimit(round) &&
-      round !== 0
-    ) {
+  
+    if (enemies.length === 0 && enemyCount >= getEnemyLimit(round) && round !== 0) {
       setCanPause(true); // Allow pausing when round is over
-
+  
+      // Update stats at the end of each round if user is logged in
+      if (user && gameMode === "normal") {
+        try {
+          updateUserStats(user.uid, round, totalKills);
+        } catch (error) {
+          console.error('Failed to update stats:', error);
+        }
+      }
+  
       if (autoStartRounds) {
         const roundTimeout = setTimeout(() => {
-          lastRound.current = round; // Update last valid round
+          lastRound.current = round;
           setRound((prev) => prev + 1);
           setEnemies([]);
           setEnemyCount(0);
-          setCanPause(false); // Disable pausing when new round starts
+          setCanPause(false);
         }, 4000 / (isSpeedUp === 2 ? 3 : isSpeedUp ? 2 : 1));
         return () => clearTimeout(roundTimeout);
       } else {
-        lastRound.current = round; // Update last valid round
+        lastRound.current = round;
         setIsPaused(true);
         setEnemies([]);
         setEnemyCount(0);
-        setCanPause(true); // Keep pause enabled for manual round advancement
+        setCanPause(true);
       }
     } else {
-      setCanPause(false); // Disable pausing during active rounds
+      setCanPause(false);
     }
   }, [
     enemies.length,
@@ -1043,12 +1048,14 @@ const Spawn: React.FC<SpawnProps> = ({
     setCanPause,
     setIsPaused,
     setRound,
+    user,  // Add user to dependencies
+    totalKills,  // Add totalKills to dependencies
   ]);
   const grantMoneyForKill = useCallback(
     (enemy: Enemy) => {
       if (!processedEnemies.has(enemy.id)) {
         processedEnemies.add(enemy.id);
-
+        setTotalKills(prev => prev + 1);
         // Base reward calculation
         let reward = enemy.maxHp / 6.5;
 
@@ -2786,31 +2793,28 @@ const Spawn: React.FC<SpawnProps> = ({
     );
   };
   const GameOverScreen = () => {
-    const [username, setUsername] = useState("");
     const [isSaved, setIsSaved] = useState(false);
     const [error, setError] = useState("");
     const [isSaving, setIsSaving] = useState(false);
 
-    const handleSave = () => {
-      if (!username.trim()) {
-        setError("Please enter a username");
+    const handleSave = async () => {
+      if (!user?.displayName) {
+        setError("No display name found in your account");
         return;
       }
-
+    
       setIsSaving(true);
-      saveGameResult(round, username)
-        .then(() => {
-          setIsSaved(true);
-          setError("");
-          console.log("Game result saved successfully");
-        })
-        .catch((error) => {
-          setError("Failed to save score. Please try again.");
-          console.error("Failed to save game result:", error);
-        })
-        .finally(() => {
-          setIsSaving(false);
-        });
+      try {
+        // Only save to leaderboard, stats are already being saved each round
+        await saveGameResult(round, user.displayName);
+        setIsSaved(true);
+        setError("");
+      } catch (error) {
+        setError("Failed to save score. Please try again.");
+        console.error("Failed to save game result:", error);
+      } finally {
+        setIsSaving(false);
+      }
     };
 
     return (
@@ -2831,17 +2835,9 @@ const Spawn: React.FC<SpawnProps> = ({
             <>
               {user ? (
                 <div className="mb-6 space-y-4">
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Enter your username"
-                    className="w-full px-4 py-2 bg-slate-700 border border-blue-500 rounded-lg 
-                    text-white placeholder-gray-400 focus:outline-none focus:ring-2 
-                    focus:ring-blue-500"
-                    maxLength={20}
-                    disabled={isSaving}
-                  />
+                  <p className="text-white">
+                    Saving score as: <span className="text-blue-400">{user.displayName}</span>
+                  </p>
                   {error && <p className="text-red-500 text-sm">{error}</p>}
                   <button
                     onClick={handleSave}

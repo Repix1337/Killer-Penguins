@@ -5,9 +5,10 @@ import Leaderboard from "./Leaderboard";
 import Settings from "./Settings";
 import ModeSelection from "./ModeSelection";
 import { useState, useEffect } from "react";
-import { getAuth, onAuthStateChanged, signOut, User } from "firebase/auth";
+import { getAuth, onAuthStateChanged, User } from "firebase/auth";
 import Auth from "./auth";
 import Image from "next/image";
+import UserPanel from "./UserPanel";
 
 const Menu: React.FC = () => {
   const [gameMode, setGameMode] = React.useState("");
@@ -17,6 +18,7 @@ const Menu: React.FC = () => {
   const [showLeaderboard, setShowLeaderboard] = React.useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [showUserPanel, setShowUserPanel] = useState(false);
 
   useEffect(() => {
     const auth = getAuth();
@@ -48,15 +50,7 @@ const Menu: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      const auth = getAuth();
-      await signOut(auth);
-      localStorage.removeItem("authUser"); // Clear stored user data on logout
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
-  };
+
 
   return gameMode === "" ? (
     <div className="relative flex flex-col min-h-screen w-screen text-white font-bold overflow-hidden bg-[#0B1D35]">
@@ -228,7 +222,7 @@ const Menu: React.FC = () => {
           />
 
           <MenuButton
-            onClick={() => (user ? handleLogout() : setShowAuth(true))}
+            onClick={() => (user ? setShowUserPanel(true) : setShowAuth(true))}
             className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700"
             icon={
               <svg
@@ -249,7 +243,7 @@ const Menu: React.FC = () => {
                 />
               </svg>
             }
-            label={user ? "Logout" : "Login"}
+            label={user ? "Account" : "Login"}
           />
         </div>
       </div>
@@ -269,6 +263,7 @@ const Menu: React.FC = () => {
         />
       )}
       {showAuth && <Auth onClose={() => setShowAuth(false)} />}
+      {showUserPanel && <UserPanel onClose={() => setShowUserPanel(false)} user={user} />}
     </div>
   ) : (
     <GameInterface
