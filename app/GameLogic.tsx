@@ -629,8 +629,15 @@ const Spawn: React.FC<SpawnProps> = ({
     if (hp <= 0) {
       setIsPaused(true);
       setShowGameOver(true);
+      if (user && gameMode === "normal") {
+        try {
+            updateUserStats(user.uid, round, totalKills, true);
+        } catch (error) {
+            console.error('Failed to update final stats:', error);
+        }
     }
-  }, [hp, setIsPaused]);
+}
+}, [hp, setIsPaused, user, gameMode, round, totalKills]);
 
   const getEnemyLimit = (round: number) => {
     switch (true) {
@@ -1011,7 +1018,7 @@ const Spawn: React.FC<SpawnProps> = ({
       // Update stats at the end of each round if user is logged in
       if (user && gameMode === "normal") {
         try {
-          updateUserStats(user.uid, round, totalKills);
+          updateUserStats(user.uid, round, totalKills, false);
         } catch (error) {
           console.error('Failed to update stats:', error);
         }

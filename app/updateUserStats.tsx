@@ -1,5 +1,5 @@
 import { getAuth } from 'firebase/auth';
-export async function updateUserStats(userId: string, round: number, kills: number) {
+export async function updateUserStats(userId: string, round: number, kills: number, isGameOver: boolean = false) {
     const response = await fetch('/api/users/stats', {
         method: 'PUT',
         headers: {
@@ -9,7 +9,8 @@ export async function updateUserStats(userId: string, round: number, kills: numb
         body: JSON.stringify({
             userId,
             round,
-            kills
+            kills,
+            isGameOver
         })
     });
 

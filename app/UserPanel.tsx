@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { getAuth, signOut, User, sendPasswordResetEmail } from "firebase/auth";
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
 
 interface UserStats {
   gamesPlayed: number;
@@ -8,6 +7,7 @@ interface UserStats {
   lastPlayedDate: string;
   totalKills: number;
   averageRound: number;
+  totalRounds: number;
 }
 
 interface Props {
@@ -167,7 +167,10 @@ const UserPanel: React.FC<Props> = ({onClose, user}) => {
                                   </p>
                                   <p className="text-white text-sm">
                                   Avg. Round: {userStats?.averageRound || 0}
-                              </p>
+                                </p> 
+                                <p className="text-white text-sm">
+                                  Total Rounds: {userStats?.totalRounds || 0}
+                                </p>
                               </div>
                           )}
                       </div>

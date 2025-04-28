@@ -15,7 +15,7 @@ export async function PUT(request: NextRequest) {
 
         // Get request body
         const body = await request.json();
-        const { userId, round, kills } = body;
+        const { userId, round, kills, isGameOver } = body;  // Add isGameOver flag
 
         if (decodedToken.uid !== userId) {
             return NextResponse.json({ error: 'User ID mismatch' }, { status: 403 });
@@ -28,8 +28,11 @@ export async function PUT(request: NextRequest) {
 
         if (userDoc.exists) {
             const currentStats = userDoc.data();
-            const gamesPlayed = (currentStats?.gamesPlayed || 0) + 1;
-            const totalRounds = (currentStats?.totalRounds || 0) + round;
+            // Only increment gamesPlayed if the game is over
+            const gamesPlayed = isGameOver 
+                ? (currentStats?.gamesPlayed || 0) + 1 
+                : (currentStats?.gamesPlayed || 0);
+            const totalRounds = (currentStats?.totalRounds || 0) + 1;
             const totalKills = (currentStats?.totalKills || 0) + kills;
             const highestRound = Math.max(currentStats?.highestRound || 0, round);
 
@@ -43,7 +46,7 @@ export async function PUT(request: NextRequest) {
             }, { merge: true });
         } else {
             await userStatsRef.set({
-                gamesPlayed: 1,
+                gamesPlayed: isGameOver ? 1 : 0,  // Only set to 1 if game is over
                 totalRounds: round,
                 averageRound: round,
                 highestRound: round,
