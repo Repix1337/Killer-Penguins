@@ -1,4 +1,3 @@
-// app/api/leaderboard/route.ts
 import { NextResponse } from 'next/server';
 import { getFirestore, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import app from '@/firebase/config';

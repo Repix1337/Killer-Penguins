@@ -35,7 +35,6 @@ const Auth: React.FC<AuthProps> = ({ onClose }) => {
         });
       }
       
-      // Save minimal user data to localStorage after successful auth
       const user = userCredential.user;
       localStorage.setItem('authUser', JSON.stringify({
         uid: user.uid,

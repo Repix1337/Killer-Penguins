@@ -11,7 +11,6 @@ export const saveGameResult = async (round: number, username: string): Promise<v
     }
 
     const token = await user.getIdToken();
-    console.log('User authenticated, attempting to save score...'); // Debug log
 
     const response = await fetch('/api/leaderboard/save', {
       method: 'POST',
@@ -27,10 +26,6 @@ export const saveGameResult = async (round: number, username: string): Promise<v
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.log('Server response:', {
-        status: response.status,
-        errorData
-      }); // Debug log
       throw new Error(errorData.error || 'Failed to save game result');
     }
 

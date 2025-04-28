@@ -128,7 +128,7 @@ export const towerAttack = (
               duration: tower.lingeringDuration || 2000,
               canStopRegen: tower.canStopRegen,
               color: tower.lingeringColor || "rgba(255, 69, 0, 0.5)",
-              towerId: tower.id, // Add this
+              towerId: tower.id, 
             },
           ]);
         }
@@ -404,7 +404,7 @@ export const towerAttack = (
             duration: tower.lingeringDuration || 2000,
             canStopRegen: tower.canStopRegen,
             color: tower.lingeringColor || "rgba(144, 238, 144, 0.5)",
-            towerId: tower.id, // Add this
+            towerId: tower.id, 
           },
         ]);
 
@@ -429,12 +429,12 @@ export const towerAttack = (
         });
         totalDamageDealt = tower.lingeringDamage || tower.attack * 0.1;
       } else {
-        // Non-explosion attack logic
+        // normal attack logic
         updatedEnemies = prevEnemies.map((enemy) => {
           const isTargeted = targets.some((target) => target.id === enemy.id);
           if (!isTargeted) return enemy;
           let updatedEnemy = { ...enemy };
-          // Update damage calculation to include critical hits
+          
           if (tower.acceleration) {
             updatedEnemy = {
               ...updatedEnemy,
@@ -453,7 +453,6 @@ export const towerAttack = (
               markedExplosion: tower.markedExplosion,
             };
           }
-          // Apply marked damage multiplier if enemy is marked
 
           const actualDamage = Math.min(
             tower.attack *

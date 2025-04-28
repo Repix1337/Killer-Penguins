@@ -991,7 +991,7 @@ export const towerUpgrades: { [key: string]: TowerUpgrade[] } = {
       path: 2,
       description: "-5% enemy max HP, +50 damage",
       effect: (tower) => ({
-        healthReduction: 0.05, // Reduces max HP by 15%
+        healthReduction: 0.05, 
         attack: tower.attack + 300,
         towerWorth: tower.towerWorth + 5000,
         path: 2

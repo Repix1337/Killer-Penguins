@@ -98,8 +98,8 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
                     src={`/${key}.png`}
                     alt={tower.name}
                     className="tower-image w-32 h-32 object-contain"
-                    width={100} // Increased from 35
-                    height={100} // Increased from 35
+                    width={100} 
+                    height={100} 
                     quality={100}
                   />
                   <span className="absolute -top-2 -right-20 tower-cost">
@@ -234,8 +234,8 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
           <div className="flex items-center gap-4">
             <Image
               src="/basicEnemy.png"
-              width={100} // Increased from 35
-              height={100} // Increased from 35
+              width={100} 
+              height={100} 
               quality={100}
               alt="Normal Enemy"
               className="w-8 h-8"
@@ -245,8 +245,8 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
           <div className="flex items-center gap-4">
             <Image
               src="/speedy.png"
-              width={100} // Increased from 35
-              height={100} // Increased from 35
+              width={100} 
+              height={100} 
               quality={100}
               alt="Fast Enemy"
               className="w-8 h-8"
@@ -258,8 +258,8 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
           <div className="flex items-center gap-4">
             <Image
               src="/tank.png"
-              width={100} // Increased from 35
-              height={100} // Increased from 35
+              width={100} 
+              height={100} 
               quality={100}
               alt="Tank Enemy"
               className="w-8 h-8"
@@ -269,8 +269,8 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
           <div className="flex items-center gap-4">
             <Image
               src="/stealth.png"
-              width={100} // Increased from 35
-              height={100} // Increased from 35
+              width={100} 
+              height={100} 
               quality={100}
               alt="Stealth Enemy"
               className="w-8 h-8"
@@ -282,8 +282,8 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
           <div className="flex items-center gap-4">
             <Image
               src="/regenTank.png"
-              width={100} // Increased from 35
-              height={100} // Increased from 35
+              width={100} 
+              height={100} 
               quality={100}
               alt="Regenerating Enemy"
               className="w-8 h-8"
@@ -295,8 +295,8 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
           <div className="flex items-center gap-4">
             <Image
               src="/armoredbasicEnemy.png"
-              width={100} // Increased from 35
-              height={100} // Increased from 35
+              width={100} 
+              height={100} 
               quality={100}
               alt="Armored Enemy"
               className="w-8 h-8"
@@ -309,8 +309,8 @@ const TutorialWindow: React.FC<TutorialWindowProps> = ({ onClose }) => {
             <Image
               src="/boss.png"
               alt="Boss Enemy"
-              width={100} // Increased from 35
-              height={100} // Increased from 35
+              width={100} 
+              height={100} 
               quality={100}
               className="w-8 h-8"
             />

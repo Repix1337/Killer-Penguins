@@ -39,7 +39,7 @@ const Menu: React.FC = () => {
             uid: user.uid,
             email: user.email,
             displayName: user.displayName,
-            // Add any other user properties you need
+            
           })
         );
       } else {
@@ -95,8 +95,8 @@ const Menu: React.FC = () => {
             <Image
               src={penguin.src}
               alt={penguin.alt}
-              width={100} // Increased from 35
-              height={100} // Increased from 35
+              width={100} 
+              height={100} 
               quality={100}
               className="w-full h-full object-contain"
             />

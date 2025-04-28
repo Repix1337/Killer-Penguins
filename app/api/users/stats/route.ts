@@ -15,13 +15,12 @@ export async function PUT(request: NextRequest) {
 
         // Get request body
         const body = await request.json();
-        const { userId, round, kills, isGameOver } = body;  // Add isGameOver flag
+        const { userId, round, kills, isGameOver } = body;  
 
         if (decodedToken.uid !== userId) {
             return NextResponse.json({ error: 'User ID mismatch' }, { status: 403 });
         }
 
-        // Changed to match Firestore rules structure
         const userStatsRef = adminDb.doc(`users/${userId}/stats/${userId}`);
         const userDoc = await userStatsRef.get();
         const currentDate = new Date().toISOString();

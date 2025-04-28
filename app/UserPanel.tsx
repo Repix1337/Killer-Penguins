@@ -25,8 +25,8 @@ const UserPanel: React.FC<Props> = ({onClose, user}) => {
         try {
           const auth = getAuth();
           await signOut(auth);
-          localStorage.removeItem("authUser"); // Clear stored user data on logout
-          onClose(); // Close the user panel after logout
+          localStorage.removeItem("authUser"); 
+          onClose(); 
         } catch (error) {
           console.error("Error signing out:", error);
         }

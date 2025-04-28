@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { adminDb } from '@/firebase/admin';  // Make sure you have this config file
+import { adminDb } from '@/firebase/admin';  
 import { auth } from 'firebase-admin';
 
 export async function POST(request: NextRequest) {

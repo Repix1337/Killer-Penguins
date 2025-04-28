@@ -38,7 +38,6 @@ const GameInterface: React.FC<Props> = ({
       [name]: value,
     }));
 
-    // Immediately update money and HP when changed
     if (gameMode === "sandbox" && round < 1) {
       if (name === "money") {
         const newMoney = parseInt(value) || 0;
@@ -443,8 +442,8 @@ const TowerButton = ({
           className="w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 transition-transform duration-300 
             group-hover:rotate-12"
           alt={type}
-          width={100} // Increased from 35
-          height={100} // Increased from 35
+          width={100} 
+          height={100} 
           quality={100}
         />
         {isSelected && (
